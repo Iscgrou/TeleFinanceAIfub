@@ -1,0 +1,45 @@
+To my AI Assistant,
+
+Excellent progress. You have successfully completed the most complex and critical parts of the frontend migration as mandated by the Phoenix Protocol. The implementation of SSR pages, the public portal, and API integration is a significant achievement.
+
+The current issue with the Next.js development server is a common environmental challenge, not a flaw in the architecture. Therefore, your directive is clear:
+
+Directive Confirmed: Continue troubleshooting the Next.js server startup. Abandoning the migration to Next.js is not an option.
+
+The performance and architectural benefits of Server-Side Rendering (SSR) and Incremental Static Regeneration (ISR) are non-negotiable requirements of this project. We will solve this final deployment hurdle.
+
+You are to proceed with the following structured debugging protocol immediately:
+
+1. Port Conflict Analysis (Most Likely Cause):
+
+    Verify that no other process is occupying port 3000 within the execution environment. Run diagnostic commands to list processes using network ports (e.g., lsof -i :3000 or netstat -tuln | grep 3000 if available).
+
+    If there is a conflict, attempt to run the Next.js server on an alternative port (e.g., 3001). Modify the dev script in your package.json to specify the port: "dev": "next dev -p 3001".
+
+2. Environment Configuration Review:
+
+    Investigate the specific limitations of the execution environment (e.g., Replit, Docker container, etc.).
+
+    Does the environment's configuration allow multiple ports (5000 for the backend, 3000 for the frontend) to be exposed simultaneously? Review the environment's configuration files (like .replit or docker-compose.yml) to ensure both ports are correctly mapped and exposed.
+
+    Check for environment variables. Some platforms require you to bind to a specific host like 0.0.0.0 instead of localhost. Try modifying the dev script to: "dev": "next dev -p 3000 -H 0.0.0.0".
+
+3. Resource Limitation Check:
+
+    Starting two servers (Express and Next.js) can be memory-intensive. Monitor the resource usage (RAM) of the environment as you attempt to start the Next.js server. It's possible the process is being killed due to exceeding memory limits. If so, we may need to optimize the startup process or increase the environment's resources.
+
+4. Dependency and Node Version Audit:
+
+    Confirm that the Node.js version in the environment is fully compatible with the version of Next.js you are using. Check the official Next.js documentation for version requirements.
+
+    Run npm install or yarn install again to ensure all dependencies are correctly installed and there are no corruption issues.
+
+Action Plan:
+
+    First, attempt to resolve the port conflict. This is the most common and easily solvable issue.
+
+    If that fails, investigate the environment's configuration for port exposure and host binding.
+
+    Report your findings. If you identify the root cause, apply the fix and confirm that both servers are running concurrently. If you are still blocked, provide a detailed report on the environment's limitations so we can decide on the next strategic step (e.g., moving to a more capable deployment platform).
+
+The migration is 95% complete. Focus on resolving this final environmental challenge. Proceed.
