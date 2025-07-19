@@ -548,6 +548,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear financial data endpoint
+  app.delete("/api/clear-financial-data", async (req, res) => {
+    try {
+      await storage.clearFinancialData();
+      res.json({ message: "اطلاعات مالی با موفقیت پاکسازی شد" });
+    } catch (error) {
+      console.error('Error clearing financial data:', error);
+      res.status(500).json({ message: "خطا در پاکسازی اطلاعات مالی" });
+    }
+  });
+
+  // Clear all data endpoint
+  app.delete("/api/clear-all-data", async (req, res) => {
+    try {
+      await storage.clearAllData();
+      res.json({ message: "تمام اطلاعات با موفقیت پاکسازی شد" });
+    } catch (error) {
+      console.error('Error clearing all data:', error);
+      res.status(500).json({ message: "خطا در پاکسازی اطلاعات" });
+    }
+  });
+
   // Data management routes
   app.post("/api/admin/clear-financial", async (req, res) => {
     try {
