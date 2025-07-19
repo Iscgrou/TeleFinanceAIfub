@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import DashboardStats from "@/components/dashboard-stats";
 import DashboardCharts from "@/components/dashboard-charts";
 import RecentTransactions from "@/components/recent-transactions";
+import Navigation from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Download, RefreshCw } from "lucide-react";
 
@@ -17,6 +18,8 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6">
+        {/* Navigation */}
+        <Navigation />
         {/* Dashboard Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
