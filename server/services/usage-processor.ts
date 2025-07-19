@@ -35,7 +35,7 @@ interface ProcessingResult {
   error?: string;
 }
 
-// Part 1: Parse and validate usage.json
+// Part 1: Parse and validate usage.json with PHPMyAdmin export format
 export function parseUsageFile(fileContent: string): { data: TransactionRecord[], error?: string } {
   try {
     const parsed = JSON.parse(fileContent);
@@ -45,20 +45,39 @@ export function parseUsageFile(fileContent: string): { data: TransactionRecord[]
       return { data: [], error: 'Root element must be a JSON array' };
     }
     
-    // Find the data payload object
+    console.log(`📋 Parsing JSON array with ${parsed.length} elements`);
+    
+    // Find the data payload object (skip metadata headers)
     let dataPayload: TransactionRecord[] | null = null;
     
     for (const element of parsed) {
       if (element && typeof element === 'object' && 'data' in element) {
         if (Array.isArray(element.data)) {
           dataPayload = element.data;
+          console.log(`✓ Found data array with ${element.data.length} transactions`);
           break;
         }
       }
     }
     
     if (!dataPayload) {
-      return { data: [], error: 'No data payload found in JSON array' };
+      console.log('❌ No data payload found, checking if data is directly in root array...');
+      
+      // Check if transactions are directly in the array (alternative format)
+      const directTransactions = parsed.filter(item => 
+        item && typeof item === 'object' && 
+        'admin_username' in item && 
+        'amount' in item &&
+        'description' in item &&
+        'event_timestamp' in item
+      );
+      
+      if (directTransactions.length > 0) {
+        console.log(`✓ Found ${directTransactions.length} direct transactions in root array`);
+        dataPayload = directTransactions;
+      } else {
+        return { data: [], error: 'No data payload found in JSON array. Expected format: [{type: "table", data: [...]}] or direct transaction array' };
+      }
     }
     
     return { data: dataPayload };
