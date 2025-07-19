@@ -84,6 +84,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Demo/Testing routes
+  app.post("/api/demo/create-sample-data", async (req, res) => {
+    try {
+      const { createSampleData } = await import('./routes/demo');
+      await createSampleData(req, res);
+    } catch (error) {
+      res.status(500).json({ message: "Error creating sample data" });
+    }
+  });
+
+  app.post("/api/demo/test-ai", async (req, res) => {
+    try {
+      const { testAIAgent } = await import('./routes/demo');
+      await testAIAgent(req, res);
+    } catch (error) {
+      res.status(500).json({ message: "Error testing AI agent" });
+    }
+  });
+
+  app.get("/api/demo/sample-commands", async (req, res) => {
+    try {
+      const { getSampleCommands } = await import('./routes/demo');
+      await getSampleCommands(req, res);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching sample commands" });
+    }
+  });
+
   // Initialize Telegram bot on startup
   setTimeout(async () => {
     try {

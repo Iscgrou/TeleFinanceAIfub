@@ -6,14 +6,15 @@ let bot: TelegramBot | null = null;
 
 export async function initializeBot(): Promise<void> {
   const settings = await storage.getSystemSettings();
+  const botToken = settings?.telegramBotToken || process.env.TELEGRAM_BOT_TOKEN;
   
-  if (!settings?.telegramBotToken) {
+  if (!botToken) {
     console.log('Telegram bot token not configured. Bot will not start.');
     return;
   }
 
   try {
-    bot = new TelegramBot(settings.telegramBotToken, { polling: true });
+    bot = new TelegramBot(botToken, { polling: true });
     
     bot.on('message', handleMessage);
     bot.on('callback_query', handleCallbackQuery);

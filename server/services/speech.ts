@@ -1,18 +1,52 @@
-export async function transcribeAudio(fileId: string): Promise<string> {
-  try {
-    // This would integrate with a Speech-to-Text service
-    // For now, return a placeholder response
-    // In real implementation, this would:
-    // 1. Download the audio file from Telegram
-    // 2. Send it to Google Speech-to-Text or similar service
-    // 3. Return the transcribed text
-    
-    console.log('Transcribing audio file:', fileId);
-    
-    // Placeholder implementation
-    return "برای فروشگاه آلفا یه فاکتور دستی به مبلغ هفتاد هزار تومان صادر کن";
-  } catch (error) {
-    console.error('Error transcribing audio:', error);
-    throw new Error('خطا در تبدیل صدا به متن');
+import { SpeechClient } from '@google-cloud/speech';
+import * as fs from 'fs';
+
+export class SpeechToTextService {
+  private client: SpeechClient;
+
+  constructor() {
+    if (process.env.GOOGLE_CLOUD_PROJECT_ID) {
+      this.client = new SpeechClient({
+        projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      });
+    }
+  }
+
+  async transcribeAudio(audioBuffer: Buffer, languageCode = 'fa-IR'): Promise<string> {
+    if (!this.client) {
+      throw new Error('Google Cloud Speech not configured');
+    }
+
+    const request = {
+      audio: {
+        content: audioBuffer.toString('base64'),
+      },
+      config: {
+        encoding: 'OGG_OPUS' as const,
+        sampleRateHertz: 16000,
+        languageCode,
+        alternativeLanguageCodes: ['en-US'],
+      },
+    };
+
+    try {
+      const [response] = await this.client.recognize(request);
+      const transcription = response.results
+        ?.map(result => result.alternatives?.[0]?.transcript)
+        .filter(Boolean)
+        .join('\n');
+
+      return transcription || '';
+    } catch (error) {
+      console.error('Speech transcription error:', error);
+      throw new Error('Failed to transcribe audio');
+    }
+  }
+
+  async transcribeFile(filePath: string, languageCode = 'fa-IR'): Promise<string> {
+    const audioBytes = fs.readFileSync(filePath);
+    return this.transcribeAudio(audioBytes, languageCode);
   }
 }
+
+export const speechService = new SpeechToTextService();

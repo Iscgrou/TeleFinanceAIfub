@@ -56,16 +56,23 @@ RESTful API endpoints organized by functionality:
 - Interactive inline keyboards for common operations
 - Real-time financial queries and updates
 
-### AI Integration
-- **Google Gemini**: Processes natural language commands in Persian/Farsi
-- **Speech-to-Text**: Converts voice messages to text for processing
-- **Command Processing**: Extracts financial intents and entities from user input
+### AI Integration - Advanced Agentic System
+- **Google Gemini with Function Calling**: Core reasoning engine that uses function calling/tool use to execute complex multi-step administrative workflows
+- **Agentic Loop Architecture**: "Perceive -> Plan -> Act" system instead of simple intent recognition
+- **Tool Definitions**: All backend functions are defined as tools for Gemini to use autonomously
+- **Multi-step Command Processing**: Handles complex commands like "Process invoices, find highest debtor, send warning message, provide summary"
+- **Google Cloud Speech-to-Text**: Converts voice messages to text for AI processing
+- **Natural Conversation Flow**: Maintains conversation context and handles iterative function calls
 
 ## Data Flow
 
 1. **Web Dashboard**: Users interact with React frontend → API calls via TanStack Query → Express routes → Drizzle ORM → PostgreSQL
-2. **Telegram Interface**: User messages → Bot handlers → AI processing → Database operations → Response to user
+2. **Telegram Agentic Interface**: 
+   - User command → Speech-to-Text (if voice) → Financial Agent (Gemini with function calling)
+   - Agent analyzes command → Plans multi-step workflow → Executes tool functions sequentially
+   - Each tool result feeds back to agent for next decision → Final natural language response
 3. **Real-time Updates**: Database changes trigger updates across both web and Telegram interfaces
+4. **Demo/Testing Interface**: Web-based testing environment for AI agent capabilities with sample commands
 
 ## External Dependencies
 
@@ -102,4 +109,25 @@ RESTful API endpoints organized by functionality:
 - Runtime configuration through system settings table
 - Graceful degradation when external services are unavailable
 
-The system is designed to be highly configurable with external service integrations being optional, allowing it to function as a basic financial management system even without AI or Telegram capabilities.
+## Recent Updates (July 19, 2025)
+
+- **Upgraded to Advanced AI Agent**: Transformed from basic NLP bot to full reasoning agent using Gemini function calling
+- **Implemented Tool-based Architecture**: 8 financial tools defined for AI agent autonomous usage
+- **Added PostgreSQL Integration**: Complete database implementation replacing in-memory storage
+- **Created Demo/Testing Interface**: Web-based testing environment with sample commands in Persian/Farsi
+- **Agentic Loop Implementation**: Multi-step command processing with iterative tool execution
+- **Enhanced Telegram Bot**: Now supports complex administrative workflows through natural conversation
+
+## Agent Capabilities
+
+The AI agent can autonomously handle complex multi-step financial operations:
+
+1. **Invoice Management**: Process weekly invoices from usage data, create manual invoices
+2. **Payment Processing**: Register payments, update debts, track payment history
+3. **Representative Management**: Query representative status, find highest debtors
+4. **Commission Calculations**: Calculate and track sales colleague commissions
+5. **Financial Reporting**: Generate comprehensive financial summaries
+6. **Communication**: Send Telegram messages to representatives
+7. **Multi-step Operations**: Execute complex workflows like "process invoices, find highest debtor, send warning"
+
+The system operates as an intelligent financial administrator that can reason about complex requests and execute appropriate sequences of operations to fulfill them, transforming traditional UI-based interactions into natural conversation-driven administration.

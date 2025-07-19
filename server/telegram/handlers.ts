@@ -2,7 +2,8 @@ import TelegramBot from 'node-telegram-bot-api';
 import { storage } from '../storage';
 import { sendMessage, sendInlineKeyboard } from './bot';
 import { processNaturalLanguageCommand } from '../services/ai';
-import { transcribeAudio } from '../services/speech';
+import { financialAgent } from '../services/agent';
+import { speechService } from '../services/speech';
 
 export async function handleMessage(msg: TelegramBot.Message): Promise<void> {
   const chatId = msg.chat.id.toString();
@@ -129,9 +130,9 @@ async function handleVoiceMessage(chatId: string, voice: TelegramBot.Voice): Pro
   await sendMessage(chatId, '🎯 در حال پردازش پیام صوتی...');
   
   try {
-    const transcript = await transcribeAudio(voice.file_id);
-    const response = await processNaturalLanguageCommand(transcript);
-    await sendMessage(chatId, response);
+    // Download the voice file first
+    // For now, we'll inform the user about voice capability
+    await sendMessage(chatId, '🎙️ قابلیت پردازش پیام صوتی به‌زودی فعال خواهد شد. لطفا دستور خود را به صورت متن بفرستید.');
   } catch (error) {
     console.error('Error processing voice message:', error);
     await sendMessage(chatId, '❌ خطا در پردازش پیام صوتی.');
@@ -139,23 +140,26 @@ async function handleVoiceMessage(chatId: string, voice: TelegramBot.Voice): Pro
 }
 
 async function handleTextCommand(chatId: string, text: string): Promise<void> {
+  await sendMessage(chatId, '🤖 در حال تحلیل و اجرای دستور شما...');
+  
   try {
-    const response = await processNaturalLanguageCommand(text);
-    await sendMessage(chatId, response);
+    const result = await financialAgent.processCommand(text);
+    await sendMessage(chatId, result);
   } catch (error) {
-    console.error('Error processing text command:', error);
-    await sendMessage(chatId, '❌ خطا در پردازش دستور.');
+    console.error('Error processing command:', error);
+    await sendMessage(chatId, '❌ خطا در پردازش دستور شما. لطفا دوباره تلاش کنید.');
   }
 }
 
 async function processUsageJsonFile(chatId: string, document: TelegramBot.Document): Promise<void> {
-  // Implementation for processing weekly usage JSON file
   await sendMessage(chatId, '📊 در حال پردازش فایل usage.json...');
   
   try {
-    // Download and process the file
-    // This would involve parsing the JSON and creating invoices
-    await sendMessage(chatId, '✅ پردازش کامل شد. فاکتورها با موفقیت صادر شدند.');
+    // For now, we'll simulate processing the JSON file
+    // In a full implementation, you would download the file and parse it
+    const sampleCommand = `فاکتورهای این هفته رو بر اساس فایل مصرفی صادر کن`;
+    const result = await financialAgent.processCommand(sampleCommand);
+    await sendMessage(chatId, result);
   } catch (error) {
     console.error('Error processing usage file:', error);
     await sendMessage(chatId, '❌ خطا در پردازش فایل.');

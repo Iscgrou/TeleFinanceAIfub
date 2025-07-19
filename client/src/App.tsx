@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Dashboard from "@/pages/dashboard";
 import Settings from "@/pages/settings";
+import Demo from "@/pages/demo";
 import TelegramInterface from "@/components/telegram-interface";
 import NotFound from "@/pages/not-found";
 
@@ -14,6 +15,7 @@ function Router() {
       <Route path="/" component={TelegramInterface} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/settings" component={Settings} />
+      <Route path="/demo" component={Demo} />
       <Route component={NotFound} />
     </Switch>
   );
