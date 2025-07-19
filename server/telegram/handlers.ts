@@ -323,6 +323,29 @@ async function handleActionConfirmation(chatId: string, callbackData: string): P
     for (const toolCall of pendingAction.toolCalls) {
       const result = await financialAgent.executeToolDirectly(toolCall.name, toolCall.args);
       results.push(result);
+      
+      // Special handling for batch messaging - send individual messages
+      if (toolCall.name === 'execute_batch_messaging' && result.status === 'success') {
+        await sendMessage(chatId, `📤 ارسال ${result.target_count} پیام شخصی‌سازی شده...`);
+        
+        // Send each personalized message separately
+        for (let i = 0; i < result.messages_generated.length; i++) {
+          const message = result.messages_generated[i];
+          await sendMessage(chatId, `📨 پیام ${i + 1}:\n\n${message}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+          
+          // Small delay to avoid overwhelming the chat
+          if (i < result.messages_generated.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+      }
+      
+      // Special handling for financial profiles
+      if (toolCall.name === 'generate_financial_profile' && result.status === 'success') {
+        const { formatFinancialProfile } = await import('../services/financial-profile');
+        const formatted = formatFinancialProfile(result.profile_data);
+        await sendMessage(chatId, formatted.text, { reply_markup: formatted.reply_markup });
+      }
     }
     
     removePendingAction(actionId);

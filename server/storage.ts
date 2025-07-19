@@ -113,8 +113,9 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async updateRepresentativeDebt(id: number, newDebt: string): Promise<void> {
-    await db.update(representatives).set({ totalDebt: newDebt }).where(eq(representatives.id, id));
+  async updateRepresentativeDebt(id: string | number, newDebt: string): Promise<void> {
+    const numericId = typeof id === 'string' ? parseInt(id) : id;
+    await db.update(representatives).set({ totalDebt: newDebt }).where(eq(representatives.id, numericId));
   }
 
   async getInvoices(): Promise<Invoice[]> {

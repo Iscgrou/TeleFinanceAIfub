@@ -57,7 +57,8 @@ export function isDestructiveAction(toolName: string): boolean {
     'register_payment', 
     'create_manual_invoice',
     'calculate_commissions',
-    'send_telegram_message'
+    'send_telegram_message',
+    'execute_batch_messaging'
   ];
   
   return destructiveActions.includes(toolName);
@@ -86,6 +87,9 @@ export function generateActionDescription(toolCalls: Array<{ name: string; args:
       case 'send_telegram_message':
         actionDesc = `ارسال پیام تلگرام برای '${args.recipient_name}': "${args.message_text}"`;
         break;
+      case 'execute_batch_messaging':
+        actionDesc = `تولید پیام‌های شخصی‌سازی شده گروهی: ${args.command_text}`;
+        break;
       case 'find_representative_with_highest_debt':
         actionDesc = 'یافتن نماینده با بیشترین بدهی';
         break;
@@ -95,6 +99,12 @@ export function generateActionDescription(toolCalls: Array<{ name: string; args:
       case 'get_financial_summary':
         const period = args.period_days || 30;
         actionDesc = `تهیه خلاصه مالی ${period} روز گذشته`;
+        break;
+      case 'generate_financial_profile':
+        actionDesc = `تولید پروفایل مالی کامل برای '${args.representative_name}'`;
+        break;
+      case 'get_transaction_history':
+        actionDesc = `دریافت تاریخچه کامل تراکنش‌های '${args.representative_name}'`;
         break;
       default:
         actionDesc = `اجرای عملیات: ${name}`;

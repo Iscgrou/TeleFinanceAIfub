@@ -153,6 +153,52 @@ const AVAILABLE_TOOLS: ToolFunction[] = [
       },
       required: []
     }
+  },
+  {
+    name: "execute_batch_messaging",
+    description: "Generate personalized messages for multiple representatives based on criteria",
+    parameters: {
+      type: "object",
+      properties: {
+        command_text: {
+          type: "string",
+          description: "User command describing the target group and message type"
+        },
+        custom_template: {
+          type: "string",
+          description: "Optional custom message template provided by user"
+        }
+      },
+      required: ["command_text"]
+    }
+  },
+  {
+    name: "generate_financial_profile",
+    description: "Generate comprehensive financial profile for a specific representative",
+    parameters: {
+      type: "object",
+      properties: {
+        representative_name: {
+          type: "string",
+          description: "Name of the representative/store to profile"
+        }
+      },
+      required: ["representative_name"]
+    }
+  },
+  {
+    name: "get_transaction_history",
+    description: "Get detailed transaction history for a specific representative",
+    parameters: {
+      type: "object",
+      properties: {
+        representative_name: {
+          type: "string", 
+          description: "Name of the representative/store"
+        }
+      },
+      required: ["representative_name"]
+    }
   }
 ];
 
@@ -193,15 +239,28 @@ export class FinancialAgent {
       });
 
       // Initial prompt with context about the financial system
-      const systemPrompt = `شما یک مدیر مالی هوشمند هستید که سیستم مدیریت مالی یک کسب‌وکار پروکسی را کنترل می‌کنید.
-      
-شما می‌توانید این عملیات‌ها را انجام دهید:
+      const systemPrompt = `شما یک مدیر مالی هوشمند پیشرفته هستید که سیستم مدیریت مالی یک کسب‌وکار پروکسی را کنترل می‌کنید.
+
+قابلیت‌های پیشرفته شما:
+
+**عملیات‌های پایه:**
 - پردازش فاکتورهای هفتگی از فایل‌های مصرف
 - ثبت پرداخت‌ها و به‌روزرسانی بدهی‌ها
 - ایجاد فاکتورهای دستی
 - ارسال پیام هشدار به نمایندگان
 - محاسبه کمیسیون همکاران فروش
 - تهیه گزارش‌های مالی جامع
+
+**قابلیت‌های پیشرفته جدید:**
+- تولید پیام‌های شخصی‌سازی شده گروهی برای نمایندگان بر اساس شرایط مالی
+- ایجاد پروفایل‌های مالی کامل 360 درجه برای هر نماینده
+- عملیات batch روی گروه‌های دینامیک نمایندگان
+- تاریخچه کامل تراکنش‌ها با جزئیات
+
+**مثال‌های دستورات پیشرفته:**
+- "برای تمام نمایندگانی که بدهی بالای یک میلیون دارند یک پیام یادآوری بفرست"
+- "پروفایل مالی فروشگاه اکباتان رو کامل نشون بده"
+- "برای همه بدهکارها این متن رو آماده کن: [متن پیام]"
 
 هنگام دریافت دستور، ابتدا برنامه‌ای برای انجام کار تشکیل دهید و سپس ابزارهای مورد نیاز را به ترتیب صدا کنید.`;
 
@@ -378,6 +437,15 @@ export class FinancialAgent {
           
         case "get_financial_summary":
           return await this.getFinancialSummary(args.period_days || 30);
+
+        case "execute_batch_messaging":
+          return await this.executeBatchMessaging(args.command_text, args.custom_template);
+
+        case "generate_financial_profile":
+          return await this.generateFinancialProfile(args.representative_name);
+
+        case "get_transaction_history":
+          return await this.getTransactionHistory(args.representative_name);
           
         default:
           return { error: `Unknown function: ${name}` };
@@ -612,6 +680,60 @@ export class FinancialAgent {
         fully_paid: allInvoices.filter(i => i.status === 'paid').length
       }
     };
+  }
+
+  // NEW: Batch messaging implementation
+  private async executeBatchMessaging(commandText: string, customTemplate?: string): Promise<any> {
+    try {
+      const { executeBatchMessaging } = await import('./batch-operations');
+      const result = await executeBatchMessaging(commandText, customTemplate);
+      
+      return {
+        status: "success",
+        target_count: result.targetCount,
+        messages_generated: result.messagesGenerated,
+        batch_description: `Generated ${result.targetCount} personalized messages`
+      };
+    } catch (error) {
+      return { error: `Batch messaging failed: ${error.message}` };
+    }
+  }
+
+  // NEW: Financial profile implementation
+  private async generateFinancialProfile(representativeName: string): Promise<any> {
+    try {
+      const { generateFinancialProfile } = await import('./financial-profile');
+      const profile = await generateFinancialProfile(representativeName);
+      
+      if (!profile) {
+        return { error: `Representative '${representativeName}' not found` };
+      }
+
+      return {
+        status: "success",
+        representative_name: representativeName,
+        profile_data: profile,
+        formatted_profile: profile // Will be handled by Telegram handler
+      };
+    } catch (error) {
+      return { error: `Profile generation failed: ${error.message}` };
+    }
+  }
+
+  // NEW: Transaction history implementation
+  private async getTransactionHistory(representativeName: string): Promise<any> {
+    try {
+      const { generateTransactionHistory } = await import('./financial-profile');
+      const history = await generateTransactionHistory(representativeName);
+      
+      return {
+        status: "success",
+        representative_name: representativeName,
+        transaction_history: history
+      };
+    } catch (error) {
+      return { error: `Transaction history failed: ${error.message}` };
+    }
   }
 }
 
