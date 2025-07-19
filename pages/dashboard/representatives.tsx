@@ -37,8 +37,8 @@ export const getServerSideProps: GetServerSideProps<RepresentativesPageProps> = 
     
     return {
       props: {
-        representatives: data.representatives || [],
-        totalPages: data.totalPages || 1,
+        representatives: data.data || data.representatives || [],
+        totalPages: data.pagination?.totalPages || data.totalPages || 1,
         currentPage: parseInt(page as string),
         search: search as string
       }

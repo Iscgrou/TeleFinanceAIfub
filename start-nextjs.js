@@ -1,25 +1,24 @@
-import { spawn } from 'child_process';
+#!/usr/bin/env node
 
-// Start Express server
-const express = spawn('npm', ['run', 'dev'], {
+console.log('🚀 EMERGENCY: Starting Next.js Frontend for Data Unification...');
+
+const { spawn } = require('child_process');
+
+const nextProcess = spawn('npx', ['next', 'dev', '-p', '3000', '-H', '0.0.0.0'], {
   stdio: 'inherit',
-  shell: true
+  env: { ...process.env }
 });
 
-// Wait a bit for Express to start
-setTimeout(() => {
-  // Start Next.js dev server
-  const nextjs = spawn('npx', ['next', 'dev', '-p', '3000'], {
-    stdio: 'inherit',
-    shell: true
-  });
+nextProcess.on('error', (err) => {
+  console.error(`❌ Next.js startup failed: ${err.message}`);
+  process.exit(1);
+});
 
-  // Handle process termination
-  process.on('SIGINT', () => {
-    express.kill();
-    nextjs.kill();
-    process.exit();
-  });
-}, 2000);
+process.on('SIGINT', () => {
+  console.log('\n🛑 Shutting down Next.js...');
+  nextProcess.kill('SIGINT');
+  process.exit(0);
+});
 
-console.log('Starting Express on port 5000 and Next.js on port 3000...');
+console.log('✅ Next.js startup script running...');
+console.log('🌐 Frontend will be available at: http://localhost:3000');

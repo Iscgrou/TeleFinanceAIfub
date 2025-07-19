@@ -82,7 +82,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalDebt: r.totalDebt
       })));
       
-      res.json(representatives);
+      // Return data in format compatible with both frontend structures
+      res.json({
+        data: representatives,
+        representatives: representatives, // Legacy compatibility
+        total: representatives.length,
+        success: true
+      });
     } catch (error) {
       console.error("🚨 [CRITICAL ERROR] Representatives fetch failed:", error);
       res.status(500).json({ message: "Error fetching representatives" });
