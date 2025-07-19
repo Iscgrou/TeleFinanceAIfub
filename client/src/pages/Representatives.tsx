@@ -41,10 +41,13 @@ export default function Representatives() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [includeInactive, setIncludeInactive] = useState(false);
 
-  // Fetch representatives (use simple endpoint for now)
-  const { data: representatives, isLoading } = useQuery<Representative[]>({
+  // Fetch representatives with new API structure
+  const { data: apiResponse, isLoading } = useQuery<{data: Representative[], representatives: Representative[], success: boolean, total: number}>({
     queryKey: ['/api/representatives'],
   });
+  
+  // Extract representatives array from API response
+  const representatives = apiResponse?.data || apiResponse?.representatives || [];
 
   // Filter and sort data locally for now
   const filteredReps = representatives?.filter(rep => {
