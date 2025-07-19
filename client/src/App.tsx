@@ -766,7 +766,7 @@ function AdminDashboard() {
               <h2 className="text-xl font-bold text-gray-900 mb-6">📄 قالب HTML فاکتور</h2>
               <div className="space-y-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  کد HTML قالب فاکتور (متغیرها: {{storeName}}, {{panelUsername}}, {{currentDate}}, {{invoiceId}}, {{invoiceItems}}, {{totalAmount}})
+                  کد HTML قالب فاکتور (متغیرها: storeName, panelUsername, currentDate, invoiceId, invoiceItems, totalAmount)
                 </label>
                 <textarea
                   value={settings.invoiceTemplate}
@@ -788,7 +788,7 @@ function AdminDashboard() {
               <h2 className="text-xl font-bold text-gray-900 mb-6">🌐 متون پرتال نماینده</h2>
               <div className="space-y-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  متون JSON پرتال نماینده (متغیر: {{storeName}})
+                  متون JSON پرتال نماینده (متغیر: storeName)
                 </label>
                 <textarea
                   value={settings.representativePortalTexts}
