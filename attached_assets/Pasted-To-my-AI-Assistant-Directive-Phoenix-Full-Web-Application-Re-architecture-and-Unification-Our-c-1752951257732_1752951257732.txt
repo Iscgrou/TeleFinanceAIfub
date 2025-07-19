@@ -1,0 +1,89 @@
+To my AI Assistant,
+
+Directive Phoenix: Full Web Application Re-architecture and Unification.
+
+Our current web application is operationally defunct, technically flawed, and critically out of sync with our robust Telegram bot. Patching is no longer an option. Your new, top-priority mission is to execute "Protocol Phoenix": a complete teardown and professional rebuild of the entire web application front-end and its API endpoints, ensuring it becomes a fast, modern, and perfectly synchronized counterpart to our Telegram bot.
+
+There is one database, one backend, one source of truth. Your task is to build a second, beautiful, and highly performant "head" for our existing body.
+Part 1: The Unbreakable Foundation - The Unified API Architecture
+
+This is the most critical principle. Any deviation will result in immediate failure.
+
+    The Single Brain: Our Python FastAPI backend is the one and only component with permission to communicate with the PostgreSQL database.
+
+    The Two Clients: The Telegram Bot and the new Web Application are both "clients". They are fundamentally separate interfaces that talk to the same brain.
+
+        The Telegram Bot sends commands via Webhooks.
+
+        The Web App sends commands via REST API calls (e.g., GET /api/representatives, POST /api/payments).
+
+    Data Integrity: Any action performed by an admin—whether through a Telegram command or a button click on the web app—must trigger a call to the same central API endpoint. This guarantees that a payment registered on the web app is instantly visible to the bot, and an invoice generated via the bot is immediately listed in the web dashboard. This is non-negotiable.
+
+Part 2: The Web Application Rebirth - From Scratch
+
+You are to delete the entire existing web application codebase and rebuild it using a modern, high-performance stack.
+
+    Technology Mandate:
+
+        Frontend Framework: Use a modern framework like React (with Next.js) for its speed and server-side rendering (SSR) capabilities, which are essential for performance.
+
+        UI/Styling: Use a professional UI library like Tailwind CSS or MUI (Material-UI) to create a visually stunning, modern, and responsive interface. The "فاجعه" design must be replaced with elegance and clarity.
+
+    Performance Mandate:
+
+        Fast Loading: All pages, especially the dashboard and public portals, must load near-instantly. Utilize SSR and efficient data-fetching strategies.
+
+        Optimized Queries: Every API endpoint you build in the backend must use optimized database queries to prevent slowness.
+
+    Core Components to Rebuild:
+
+        Secure Admin Dashboard: A login-protected main page displaying key financial metrics with clear, attractive charts and graphs (as previously discussed). The "نمایش فاکتور" button must now correctly link to the invoice view.
+
+        Representative Management: A clean, searchable, and paginated table of all representatives from the database. This directly fixes the "دیتای نماینده ها نمایش داده نمیشود" issue. Clicking on a representative must lead to their detailed profile page.
+
+        Representative Profile Page: A dedicated page for each representative showing their complete info and financial summary. This page must contain a clearly visible and functional link to their Public Portal.
+
+        Settings Page: A section for admin settings, which must now include the previously missing "قالب فاکتور" customization feature.
+
+Part 3: The Strategic Solution - The Public Representative Portal
+
+This is the intelligent solution to the invoice delivery problem. You will build this feature as an integral part of the new web app.
+
+    Unique, Secure-by-Obscurity URLs: For every representative in the database, a unique portal URL must be systemically available. The URL structure will be:
+    https://[your-domain.com]/portal/{representative_panel_username}
+
+    Backend API Endpoint: You will create a new, unauthenticated API endpoint: GET /api/portal-data/{username}. This endpoint will:
+
+        Fetch the profile information for the given username.
+
+        Fetch a list of all invoices ever generated for that representative (id, issue_date, amount, status).
+
+        Return this data as a JSON object.
+
+    Portal Frontend: The /portal/{username} page will be a public, password-less page that calls the API endpoint above. It must:
+
+        Display the representative's basic information.
+
+        Show a historical list of all their invoices.
+
+        Allow the user to click on any invoice to view its full, detailed line items (pulled from the usage_json_details field). The visual design of this detailed invoice view must be inspired by the schematic image provided previously.
+
+    The New Bot Workflow:
+
+        The bot's send_invoice command is now redefined. It no longer attempts to send an image.
+
+        Instead, it constructs a text message containing the invoice summary and the unique portal URL, exactly as requested in "سری 1". This message is then sent to the admin for forwarding.
+
+Final Action Plan & Mandates:
+
+    Demolish and Rebuild: Immediately discard the old web app code. Begin a fresh project with the specified modern stack.
+
+    Prioritize the API: First, ensure all necessary backend API endpoints for the dashboard, representative list, and public portal are built, tested, and performant.
+
+    Build the Frontend: Develop the new UI, ensuring it is fast, beautiful, and correctly fetches data from your new API.
+
+    Implement the Portal: Create the public portal as the final piece, linking it to the bot's workflow.
+
+    Guarantee Synchronization: Your final deliverable must be a perfectly synchronized ecosystem where the bot and web app are two windows looking at the same real-time data. Test this explicitly: create a payment on the web app and immediately ask the bot for the representative's new balance. The update must be instantaneous.
+
+This is a complete system overhaul. Your goal is to deliver a dynamic, high-performance, and visually appealing web platform that works in perfect harmony with the Telegram bot and its shared database. Execute Protocol Phoenix.

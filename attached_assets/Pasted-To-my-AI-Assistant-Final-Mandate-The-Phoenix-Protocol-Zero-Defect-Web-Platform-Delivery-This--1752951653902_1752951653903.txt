@@ -1,0 +1,85 @@
+To my AI Assistant,
+
+Final Mandate: The Phoenix Protocol - Zero-Defect Web Platform Delivery.
+
+This directive is the final and definitive blueprint for the web application's architecture and delivery. Your mission is to engineer a production-grade, fully audited, and high-performance web platform that serves as a flawless counterpart to our Telegram bot. You will act not just as a builder, but as the lead architect and Quality Assurance authority. The final product must be a testament to quality engineering.
+
+Part 1: The Unbreakable Foundation - A Unified, Test-Driven API
+
+The integrity of the entire ecosystem relies on a single, robust API.
+
+    The Principle of One (Reaffirmed): The Python FastAPI backend is the sole gateway to the PostgreSQL database. The Telegram Bot and the Web App are clients that consume this single, authoritative source of truth.
+
+    Test-Driven Development (TDD) is Mandatory: Before a single line of frontend code is written, you must develop a comprehensive test suite for all API endpoints. This must include:
+
+        Unit Tests: Verify the logic of individual functions.
+
+        Integration Tests: Verify that endpoints correctly interact with the database (e.g., creating a payment correctly updates a representative's debt).
+
+        Authentication Tests: Ensure secure endpoints are completely inaccessible without valid admin credentials.
+
+        Validation Tests: Confirm that endpoints reject malformed data with appropriate error codes (e.g., 400, 422).
+
+Part 2: The Phoenix Rebirth - Engineering a Flawless Web Experience
+
+You will now construct the web application upon this tested foundation.
+
+    Technology Mandate:
+
+        Frontend: Next.js (React) is mandated for its superior performance via Server-Side Rendering (SSR) and Static Site Generation (SSG/ISR).
+
+        Styling: Tailwind CSS is mandated to create a modern, consistent, and maintainable design system. The final UI must be elegant, intuitive, and visually appealing.
+
+    Performance as a Core Requirement (Non-Negotiable):
+
+        Sub-Second Load Times: All pages must target sub-second load times.
+
+        Optimized Rendering Strategy:
+
+            Admin Dashboard: Use Server-Side Rendering (SSR) for dynamic, secure data.
+
+            Public Portals (/portal/{username}): Use Incremental Static Regeneration (ISR). This will serve ultra-fast static pages to representatives, which automatically re-generate in the background after an invoice is updated, providing the perfect balance of speed and data freshness.
+
+        Database Optimization: Profile every query. Ensure proper indexing is implemented on the PostgreSQL tables, especially on foreign keys and the panel_username column, to guarantee fast lookups.
+
+    Frontend Robustness - Graceful Failure: The web app must never show a broken or confusing interface. Implement a global error handling strategy. If an API call fails, the user must see a clear, user-friendly message (e.g., "خطا در بارگذاری اطلاعات. لطفاً لحظاتی دیگر تلاش کنید.") instead of a crashed component.
+
+Part 3: The Public Portal - The Strategic Gateway
+
+This feature is the primary interface for your clients. It must be perfect.
+
+    Architecture: As mandated, build using ISR for maximum performance and scalability.
+
+    User Experience: The portal must be fully responsive (mobile-first design) and provide a seamless experience for viewing current and past invoices, including all detailed line items. The design must be clean and directly inspired by the provided schematics.
+
+Final Mandate: The Pre-Launch Quality Assurance Protocol
+
+Before this mission is considered complete, you must execute and report on the following non-negotiable acceptance tests. This is your final check to ensure no hidden flaws exist.
+
+    The Synchronization "Litmus Test":
+
+        Action: From the web app, register a payment of 50,000 تومان for representative "Abedmb".
+
+        Action: Immediately, within seconds, switch to the Telegram bot and request the financial profile for "Abedmb".
+
+        Success Criteria: The bot must instantly return the updated total_debt reflecting the payment. Any delay or data inconsistency is a critical failure.
+
+    The Performance Audit:
+
+        Action: Run a Google Lighthouse audit on the main Dashboard page and a sample Public Portal page.
+
+        Success Criteria: The pages must achieve a score of 90+ in the "Performance" category.
+
+    The Responsiveness Audit:
+
+        Action: Test the web application on three simulated screen sizes: a modern smartphone, a tablet, and a widescreen desktop.
+
+        Success Criteria: The layout must remain clean, usable, and professional across all devices without any broken or overlapping elements.
+
+    The Failure Resilience Test:
+
+        Action: Temporarily disable the backend API. Attempt to load the web application's dashboard.
+
+        Success Criteria: The application must not crash. It must gracefully display the pre-defined, user-friendly error message as mandated in Part 2.
+
+Your final deliverable is more than a web app. It is a production-ready, high-performance, and fully synchronized system that has been rigorously tested for correctness, performance, and resilience. Execute Protocol Phoenix to its complete and verified conclusion.
