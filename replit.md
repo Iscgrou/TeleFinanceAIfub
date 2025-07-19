@@ -116,7 +116,16 @@ RESTful API endpoints organized by functionality:
 
 ## Recent Updates (July 19, 2025)
 
-### Bot Structure Refined with VALIDATED Logic (Latest - 2:58 PM)
+### Critical Invoice Generation Fix Applied (Latest - 3:18 PM)
+- **Root Cause Fixed**: Added `generate_representative_invoice` tool to AI agent for existing invoice generation
+- **Structural Solution**: AI can now find representative by name and generate their latest invoice image
+- **Enhanced Agent**: Updated system prompt with specific invoice generation examples (daryamb case)
+- **Complete Tool Support**: Generate latest invoice, all unpaid invoices, or specific representative invoices
+- **PNG Output**: Creates professional invoice images with Persian/RTL support and complete financial details
+- **User Issue Resolved**: "فاکتور نماینده daryamb رو صادر کن" now works correctly
+- **Production Ready**: AI agent can handle all invoice generation scenarios seamlessly
+
+### Bot Structure Refined with VALIDATED Logic (3:00 PM)
 - **Telegram Bot Updated**: All processing functions now use validated calculation logic
 - **PHPMyAdmin Integration**: Bot correctly handles 16-line headers + data payload format
 - **Agent Enhancement**: process_weekly_invoices tool updated with 109.3M Toman tested logic

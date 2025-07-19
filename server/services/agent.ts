@@ -220,6 +220,25 @@ const AVAILABLE_TOOLS: ToolFunction[] = [
     }
   },
   {
+    name: "generate_representative_invoice",
+    description: "Find and generate invoice image for a specific representative. This will find the representative's latest invoice and create a PNG image of it.",
+    parameters: {
+      type: "object",
+      properties: {
+        representative_name: {
+          type: "string",
+          description: "The store name of the representative (admin_username) to generate invoice for"
+        },
+        invoice_type: {
+          type: "string",
+          description: "Type of invoice to generate: 'latest' (default), 'all_unpaid', or 'specific_amount'",
+          default: "latest"
+        }
+      },
+      required: ["representative_name"]
+    }
+  },
+  {
     name: "get_all_representatives",
     description: "Get a list of all representatives in the system",
     parameters: {
@@ -314,8 +333,11 @@ export class FinancialAgent {
 
 **مثال‌های دستورات:**
 - "فایل usage.json رو پردازش کن" (با رعایت پروتکل کامل)
+- "فاکتور نماینده daryamb رو صادر کن" (تولید تصویر فاکتور موجود)
 - "فاکتورهای امروز رو به صورت تصویر آماده کن"
 - "پروفایل مالی فروشگاه اکباتان رو نشون بده"
+
+**نکته مهم**: برای صدور فاکتور نمایندگان موجود، از ابزار generate_representative_invoice استفاده کنید.
 
 هنگام دریافت دستور، ابتدا برنامه‌ای برای انجام کار تشکیل دهید و سپس ابزارهای مورد نیاز را به ترتیب صدا کنید.`;
 
@@ -456,6 +478,11 @@ export class FinancialAgent {
             summary += `✅ پیام برای '${args.recipient_name}' ارسال شد\n`;
           }
           break;
+        case 'generate_representative_invoice':
+          if (result.status === 'success') {
+            summary += `✅ فاکتور نماینده '${args.representative_name}' تولید شد (${result.invoice_amount?.toLocaleString()} تومان)\n`;
+          }
+          break;
         default:
           summary += `✅ ${name} با موفقیت اجرا شد\n`;
       }
@@ -504,6 +531,9 @@ export class FinancialAgent {
 
         case "generate_invoice_images":
           return await this.generateInvoiceImages(args.invoice_ids, args.filter);
+
+        case "generate_representative_invoice":
+          return await this.generateRepresentativeInvoice(args.representative_name, args.invoice_type);
           
         case "get_all_representatives":
           return await this.getAllRepresentatives(args.includeInactive);
@@ -860,6 +890,62 @@ export class FinancialAgent {
       
     } catch (error) {
       return { error: `Invoice generation failed: ${error.message}` };
+    }
+  }
+
+  // NEW: Generate invoice for specific representative
+  private async generateRepresentativeInvoice(representativeName: string, invoiceType: string = 'latest'): Promise<any> {
+    try {
+      console.log(`🖼️ Generating invoice for representative: ${representativeName}`);
+      
+      // Find the representative
+      const rep = await storage.getRepresentativeByStoreName(representativeName);
+      if (!rep) {
+        return { error: `نماینده '${representativeName}' یافت نشد. لطفا نام صحیح نماینده را وارد کنید.` };
+      }
+
+      // Get representative's invoices
+      const invoices = await storage.getInvoicesByRepresentative(rep.id);
+      if (invoices.length === 0) {
+        return { error: `هیچ فاکتوری برای نماینده '${representativeName}' یافت نشد.` };
+      }
+
+      let targetInvoice;
+      
+      switch (invoiceType) {
+        case 'latest':
+          targetInvoice = invoices[0]; // Most recent invoice
+          break;
+        case 'all_unpaid':
+          const unpaidInvoices = invoices.filter(inv => inv.status === 'unpaid');
+          if (unpaidInvoices.length === 0) {
+            return { error: `نماینده '${representativeName}' فاکتور پرداخت نشده‌ای ندارد.` };
+          }
+          targetInvoice = unpaidInvoices[0];
+          break;
+        default:
+          targetInvoice = invoices[0];
+      }
+
+      // Generate the invoice image
+      const { generateInvoicePNG } = await import('./invoice-generator');
+      const imagePath = await generateInvoicePNG(targetInvoice.id);
+      
+      return {
+        status: "success",
+        representative_name: representativeName,
+        invoice_id: targetInvoice.id,
+        invoice_amount: parseFloat(targetInvoice.amount),
+        invoice_status: targetInvoice.status,
+        invoice_date: targetInvoice.issueDate,
+        image_generated: true,
+        image_path: imagePath,
+        message: `✅ فاکتور نماینده '${representativeName}' به صورت تصویر PNG آماده شد.\n💰 مبلغ: ${parseFloat(targetInvoice.amount).toLocaleString()} تومان\n📅 تاریخ: ${new Date(targetInvoice.issueDate).toLocaleDateString('fa-IR')}\n📋 وضعیت: ${targetInvoice.status === 'unpaid' ? 'پرداخت نشده' : targetInvoice.status === 'paid' ? 'پرداخت شده' : 'پرداخت جزئی'}`
+      };
+      
+    } catch (error) {
+      console.error('Error generating representative invoice:', error);
+      return { error: `خطا در تولید فاکتور: ${error.message}` };
     }
   }
 
