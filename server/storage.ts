@@ -172,20 +172,20 @@ export class DatabaseStorage implements IStorage {
       
       if (conditions.length > 0) {
         const whereClause = and(...conditions);
-        query = query.where(whereClause);
-        countQuery = countQuery.where(whereClause);
+        query = query.where(whereClause) as any;
+        countQuery = countQuery.where(whereClause) as any;
       }
       
       // Apply sorting
       const sortColumn = representatives[sortBy];
       if (sortColumn) {
-        query = sortOrder === 'asc' 
+        query = (sortOrder === 'asc' 
           ? query.orderBy(asc(sortColumn))
-          : query.orderBy(desc(sortColumn));
+          : query.orderBy(desc(sortColumn))) as any;
       }
       
       // Apply pagination
-      query = query.limit(limit).offset(offset);
+      query = query.limit(limit).offset(offset) as any;
       
       // Execute queries in parallel
       const [data, totalResult] = await Promise.all([
@@ -301,16 +301,6 @@ export class DatabaseStorage implements IStorage {
       const result = await db.insert(systemSettings).values(insertSettings).returning();
       return result[0];
     }
-  }
-
-  async getInvoiceById(id: number): Promise<Invoice | undefined> {
-    const result = await db.select().from(invoices).where(eq(invoices.id, id)).limit(1);
-    return result[0];
-  }
-
-  async getRepresentativeById(id: number): Promise<Representative | undefined> {
-    const result = await db.select().from(representatives).where(eq(representatives.id, id)).limit(1);
-    return result[0];
   }
 
   async getDashboardStats(): Promise<{
