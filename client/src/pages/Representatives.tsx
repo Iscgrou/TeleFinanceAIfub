@@ -41,10 +41,50 @@ export default function Representatives() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [includeInactive, setIncludeInactive] = useState(false);
 
-  // Fetch paginated representatives
-  const { data: repData, isLoading } = useQuery<PaginatedResponse>({
-    queryKey: [`/api/representatives/paginated?page=${page}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}&includeInactive=${includeInactive}`],
+  // Fetch representatives (use simple endpoint for now)
+  const { data: representatives, isLoading } = useQuery<Representative[]>({
+    queryKey: ['/api/representatives'],
   });
+
+  // Filter and sort data locally for now
+  const filteredReps = representatives?.filter(rep => {
+    if (!includeInactive && !rep.isActive) return false;
+    if (search) {
+      const searchLower = search.toLowerCase();
+      return rep.storeName.toLowerCase().includes(searchLower) ||
+             rep.panelUsername.toLowerCase().includes(searchLower) ||
+             (rep.ownerName && rep.ownerName.toLowerCase().includes(searchLower));
+    }
+    return true;
+  }) || [];
+
+  // Sort data
+  const sortedReps = [...filteredReps].sort((a, b) => {
+    const order = sortOrder === 'asc' ? 1 : -1;
+    if (sortBy === 'totalDebt') {
+      return (parseFloat(a.totalDebt) - parseFloat(b.totalDebt)) * order;
+    }
+    if (sortBy === 'storeName') {
+      return a.storeName.localeCompare(b.storeName) * order;
+    }
+    return 0;
+  });
+
+  // Paginate locally
+  const itemsPerPage = 20;
+  const totalItems = sortedReps.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (page - 1) * itemsPerPage;
+  const paginatedReps = sortedReps.slice(startIndex, startIndex + itemsPerPage);
+
+  const repData = {
+    data: paginatedReps,
+    total: totalItems,
+    page,
+    totalPages,
+    hasNext: page < totalPages,
+    hasPrev: page > 1
+  };
 
   const handleSearchChange = (value: string) => {
     setSearch(value);

@@ -37,7 +37,7 @@ interface Invoice {
 // Invoice Viewer Modal Component
 function InvoiceViewer({ invoiceId, onClose }: { invoiceId: number | null; onClose: () => void }) {
   const { data: invoiceData, isLoading } = useQuery({
-    queryKey: [`/api/invoices/${invoiceId}/detail`],
+    queryKey: [`/api/invoices/${invoiceId}`],
     enabled: !!invoiceId,
   });
 
@@ -68,49 +68,48 @@ function InvoiceViewer({ invoiceId, onClose }: { invoiceId: number | null; onClo
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">شماره فاکتور</p>
-                    <p className="font-bold text-blue-600 dark:text-blue-400">#{invoiceData.invoice.id}</p>
+                    <p className="font-bold text-blue-600 dark:text-blue-400">#{invoiceData.id}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">مبلغ</p>
-                    <p className="font-bold text-green-600 dark:text-green-400">
-                      {parseFloat(invoiceData.invoice.amount).toLocaleString('fa-IR')} تومان
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">تاریخ صدور</p>
-                    <p className="font-medium">{new Date(invoiceData.invoice.issueDate).toLocaleDateString('fa-IR')}</p>
+                    <p className="font-bold text-green-600 dark:text-green-400">{parseFloat(invoiceData.amount).toLocaleString('fa-IR')} تومان</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">وضعیت</p>
-                    <Badge variant={
-                      invoiceData.invoice.status === 'paid' ? 'default' : 
-                      invoiceData.invoice.status === 'partially_paid' ? 'secondary' : 'destructive'
-                    }>
-                      {invoiceData.invoice.status === 'paid' ? 'پرداخت شده' :
-                       invoiceData.invoice.status === 'partially_paid' ? 'پرداخت جزئی' : 'پرداخت نشده'}
+                    <Badge variant={invoiceData.status === 'paid' ? 'default' : 'secondary'}>
+                      {invoiceData.status === 'paid' ? 'پرداخت شده' : invoiceData.status === 'partially_paid' ? 'جزئی پرداخت' : 'پرداخت نشده'}
                     </Badge>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">تاریخ صدور</p>
+                    <p className="font-medium">{new Date(invoiceData.issueDate).toLocaleDateString('fa-IR')}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Line Items */}
-              {invoiceData.lineItems && invoiceData.lineItems.length > 0 && (
+              {/* Usage Details */}
+              {invoiceData.usageJsonDetails && invoiceData.usageJsonDetails.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
                     📋 جزئیات خدمات
                   </h3>
-                  <div className="space-y-2">
-                    {invoiceData.lineItems.map((item: any, index: number) => (
+                  <div className="max-h-64 overflow-y-auto space-y-2">
+                    {invoiceData.usageJsonDetails.slice(0, 10).map((item: any, index: number) => (
                       <div key={index} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded">
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-gray-100">{item.description}</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{new Date(item.date).toLocaleDateString('fa-IR')}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{item.description}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{item.event_timestamp}</p>
                         </div>
-                        <p className="font-bold text-green-600 dark:text-green-400">
-                          {item.amount.toLocaleString('fa-IR')} تومان
+                        <p className="font-bold text-green-600 dark:text-green-400 mr-4">
+                          {parseFloat(item.amount).toLocaleString('fa-IR')} تومان
                         </p>
                       </div>
                     ))}
+                    {invoiceData.usageJsonDetails.length > 10 && (
+                      <div className="text-center text-gray-500 p-2">
+                        و {invoiceData.usageJsonDetails.length - 10} آیتم دیگر...
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
