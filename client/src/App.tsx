@@ -23,6 +23,15 @@ interface Stats {
   activeRepresentatives: number;
 }
 
+interface Settings {
+  id?: number;
+  geminiApiKey: string;
+  telegramBotToken: string;
+  adminChatId: string;
+  invoiceTemplate: string;
+  representativePortalTexts: string;
+}
+
 function App() {
   const [representatives, setRepresentatives] = useState<Representative[]>([]);
   const [loading, setLoading] = useState(true);
