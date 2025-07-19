@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertSystemSettingsSchema } from "@shared/schema";
 import { initializeBot } from "./telegram/bot";
 import { generateInvoiceImage } from "./services/svg-invoice-generator";
+import { registerTelegramTestRoutes } from "./routes/test-telegram";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Test invoice generation endpoint
@@ -303,6 +304,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Invoice templates routes
   const invoiceTemplateRoutes = await import('./routes/invoice-templates');
   app.use("/api/invoice-templates", invoiceTemplateRoutes.default);
+  
+  // Direct Invoice Test Endpoint (bypassing AI agent for now)
+  app.post("/api/test-agent-invoice", async (req, res) => {
+    try {
+      const { representativeName, chatId } = req.body;
+      const repName = representativeName || 'daryamb';
+      const targetChatId = chatId || '5120932743';
+      
+      console.log(`🎯 Direct invoice test for representative: ${repName} to chat: ${targetChatId}`);
+      
+      // Find the representative first
+      const rep = await storage.getRepresentativeByStoreName(repName);
+      if (!rep) {
+        return res.status(404).json({ 
+          error: `Representative '${repName}' not found`,
+          available_reps: (await storage.getRepresentatives()).map(r => r.storeName)
+        });
+      }
+
+      // Get their invoices
+      const invoices = await storage.getInvoicesByRepresentative(rep.id);
+      if (invoices.length === 0) {
+        return res.status(404).json({ 
+          error: `No invoices found for representative '${repName}'`
+        });
+      }
+
+      // Get the latest invoice
+      const latestInvoice = invoices[0];
+      
+      // Send via direct messaging service
+      const { sendInvoiceMessage } = await import('./services/direct-telegram');
+      const telegramResult = await sendInvoiceMessage(targetChatId, latestInvoice.id);
+      
+      res.json({
+        success: true,
+        representative: repName,
+        invoice_id: latestInvoice.id,
+        invoice_amount: latestInvoice.amount,
+        telegram_sent: telegramResult.ok,
+        telegram_result: telegramResult,
+        test_message: `Invoice ${latestInvoice.id} for representative ${repName} sent via direct Telegram API`
+      });
+      
+    } catch (error) {
+      console.error('Direct invoice test error:', error);
+      res.status(500).json({ 
+        error: 'Direct invoice test failed', 
+        details: error.message 
+      });
+    }
+  });
+
+  // Register telegram test routes
+  registerTelegramTestRoutes(app);
 
   // Initialize Telegram bot on startup
   setTimeout(async () => {

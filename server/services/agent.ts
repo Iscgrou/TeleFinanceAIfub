@@ -272,6 +272,7 @@ export class FinancialAgent {
   private genAI: GoogleGenerativeAI;
   private model: any;
   private bot: TelegramBot | null = null;
+  private chatId: string | null = null;
 
   constructor() {
     this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
@@ -286,6 +287,10 @@ export class FinancialAgent {
     if (process.env.TELEGRAM_BOT_TOKEN) {
       this.bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false });
     }
+  }
+
+  setChatId(chatId: string): void {
+    this.chatId = chatId;
   }
 
   // Enhanced method for confirmation workflow
@@ -942,38 +947,23 @@ export class FinancialAgent {
           break;
       }
 
-      // Generate invoice image
-      const { generateInvoiceImage } = await import('./svg-invoice-generator');
-      const invoiceBuffer = await generateInvoiceImage(targetInvoice.id);
+      // Send invoice via direct Telegram messaging (bypasses polling conflicts)
+      const { sendInvoiceMessage } = await import('./direct-telegram');
       
-      if (!invoiceBuffer) {
-        return { error: `خطا در تولید تصویر فاکتور برای نماینده '${representativeName}'.` };
+      // Send invoice to the admin who requested it (use current chat)
+      let messageResult;
+      if (this.chatId) {
+        messageResult = await sendInvoiceMessage(this.chatId, targetInvoice.id);
       }
-
-      // Save the image temporarily and get file path for Telegram
-      const fs = await import('fs');
-      const path = await import('path');
-      const tempDir = path.join(process.cwd(), 'temp');
-      
-      // Ensure temp directory exists
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
-      }
-      
-      const filename = `invoice_${targetInvoice.id}_${Date.now()}.png`;
-      const filePath = path.join(tempDir, filename);
-      
-      // Write image to file
-      fs.writeFileSync(filePath, invoiceBuffer);
 
       return {
         status: "success",
         representative_name: representativeName,
         invoice_id: targetInvoice.id,
         invoice_amount: targetInvoice.amount,
-        invoice_file: filePath,
-        invoice_buffer: invoiceBuffer,
-        message: `فاکتور نماینده '${representativeName}' با موفقیت تولید شد. مبلغ: ${parseFloat(targetInvoice.amount).toLocaleString('fa-IR')} تومان`
+        invoice_sent: messageResult ? messageResult.ok : false,
+        telegram_result: messageResult,
+        message: `فاکتور نماینده '${representativeName}' تولید و ارسال شد. شماره فاکتور: ${targetInvoice.id} - مبلغ: ${parseFloat(targetInvoice.amount).toLocaleString('fa-IR')} تومان ${messageResult?.ok ? '✅' : '❌ خطا در ارسال'}`
       };
       
     } catch (error) {

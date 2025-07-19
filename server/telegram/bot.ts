@@ -14,7 +14,33 @@ export async function initializeBot(): Promise<void> {
   }
 
   try {
-    bot = new TelegramBot(botToken, { polling: true });
+    // Stop any existing bot instance first
+    if (bot) {
+      console.log('Stopping existing bot instance...');
+      try {
+        await bot.stopPolling();
+      } catch (e) {
+        console.log('No existing polling to stop');
+      }
+      bot = null;
+    }
+
+    // Clear any webhooks that might be interfering
+    const webhookResponse = await fetch(`https://api.telegram.org/bot${botToken}/deleteWebhook`);
+    console.log('Webhook cleanup:', await webhookResponse.json());
+
+    // Wait a moment before starting new instance
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    bot = new TelegramBot(botToken, { 
+      polling: {
+        interval: 2000,
+        autoStart: true,
+        params: {
+          timeout: 10
+        }
+      }
+    });
     
     bot.on('message', handleMessage);
     bot.on('callback_query', handleCallbackQuery);
@@ -22,6 +48,13 @@ export async function initializeBot(): Promise<void> {
     
     bot.on('polling_error', (error) => {
       console.error('Telegram polling error:', error);
+      // Auto-restart on conflict errors
+      if (error.code === 'EFATAL' || error.message.includes('409')) {
+        console.log('Attempting to restart bot due to conflict...');
+        setTimeout(() => {
+          initializeBot();
+        }, 5000);
+      }
     });
 
     console.log('Telegram bot initialized successfully');
