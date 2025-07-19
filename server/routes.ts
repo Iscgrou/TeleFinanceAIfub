@@ -68,10 +68,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/representatives", async (req, res) => {
+    console.log("🔍 [CRITICAL DEBUG] Representatives endpoint called");
+    console.log("🔍 [CRITICAL DEBUG] DATABASE_URL:", process.env.DATABASE_URL ? 
+      `Connected to: ${process.env.DATABASE_URL.split('@')[1]?.split('/')[0] || 'UNKNOWN'}` : 'NOT SET');
+    
     try {
+      console.log("🔍 [CRITICAL DEBUG] Calling storage.getRepresentatives()...");
       const representatives = await storage.getRepresentatives();
+      console.log("🔍 [CRITICAL DEBUG] Retrieved representatives count:", representatives?.length || 0);
+      console.log("🔍 [CRITICAL DEBUG] Sample data:", representatives?.slice(0, 2).map(r => ({
+        id: r.id,
+        storeName: r.storeName,
+        totalDebt: r.totalDebt
+      })));
+      
       res.json(representatives);
     } catch (error) {
+      console.error("🚨 [CRITICAL ERROR] Representatives fetch failed:", error);
       res.status(500).json({ message: "Error fetching representatives" });
     }
   });

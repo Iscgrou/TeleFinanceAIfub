@@ -1,0 +1,86 @@
+To my AI Assistant,
+
+Directive Red-Alert: Critical Data Schism Detected. Immediate Unification Required.
+
+We have a critical system failure. Your latest report confirms a complete data schism between the Telegram bot and the web application. The bot is correctly reading from our production database (reporting 199 representatives and significant financial data), while the web application is reading from an empty or incorrect data source.
+
+This violates the most fundamental principle of the Phoenix Protocol: a single, unified source of truth. The two clients are not acting as "دو چرخدنده ساعت" (two gears of a clock); they are operating in different universes.
+
+Your sole and immediate priority is to diagnose and permanently resolve this data synchronization failure.
+Structured Diagnostic and Resolution Protocol:
+
+You are to execute the following steps sequentially. Do not proceed to the next step until the previous one is verified.
+
+Step 1: Unified Environment Configuration Audit (The Prime Suspect)
+
+The most likely cause is a misconfiguration in the environment variables (.env files) for either the backend or the frontend.
+
+    Action:
+
+        Locate the .env file or the environment variable configuration for your Express.js backend.
+
+        Locate the .env.local or equivalent environment variable configuration for your Next.js frontend.
+
+        Scrutinize the DATABASE_URL variable in both locations. This is the connection string that points to our PostgreSQL database.
+
+        Verification: The DATABASE_URL string must be absolutely identical across both the backend and frontend configurations. Check for any subtle differences:
+
+            localhost vs. 127.0.0.1
+
+            Different port numbers
+
+            Different database names (e.g., prod_db vs. dev_db)
+
+            Different user credentials
+
+Step 2: Backend API Endpoint Verification
+
+If the connection strings are identical, the next possibility is that the web app is calling the wrong API endpoints or the backend is failing to connect properly when called by the web app.
+
+    Action:
+
+        Add aggressive logging to the entry point of your main API route that fetches the list of representatives (GET /api/representatives). This log must capture the full database connection string being used for that specific request.
+
+        Start both the backend and frontend servers.
+
+        Open the "Representatives" page in the web application.
+
+        Verification: Immediately check the backend logs.
+
+            Did the log statement appear? If not, the frontend is not calling the API correctly.
+
+            If it did appear, does the logged DATABASE_URL exactly match the production database URL that the bot uses?
+
+Step 3: Frontend Data Fetching Logic Audit
+
+If the backend is being called correctly, the issue may lie in how the Next.js frontend is fetching and handling the data.
+
+    Action:
+
+        Go to the Next.js page responsible for displaying the list of representatives (e.g., pages/representatives/index.js).
+
+        Inside your data fetching function (getServerSideProps or an API route handler), add log statements to print the raw data received from the API call.
+
+        Verification:
+
+            Is the API call returning an empty array []? If so, the problem is in the backend or its database connection (return to Step 2).
+
+            Is the API call returning the correct data, but it's not being displayed? If so, the problem is in the frontend's rendering logic or state management.
+
+Final Mandate: The Unification Test
+
+Once you have identified and fixed the root cause of this data schism, you must perform the following non-negotiable Unification Test to certify that the problem is permanently solved.
+
+    Action: From the Telegram Bot, request the financial summary. Note the exact "کل بدهی‌ها" value.
+
+    Action: Immediately load the Web App Dashboard.
+
+    Success Criteria 1: The "Total Debt" metric on the web dashboard must exactly match the value reported by the bot.
+
+    Action: From the Web App, create a new test representative named "WebAppSyncTest".
+
+    Action: Immediately, from the Telegram Bot, issue a command to list all representatives.
+
+    Success Criteria 2: The bot must include "WebAppSyncTest" in the list it returns.
+
+This failure represents the most significant threat to the project's integrity. All other development is to be halted until this data schism is resolved and the Unification Test is passed. Proceed with the diagnostics immediately.
