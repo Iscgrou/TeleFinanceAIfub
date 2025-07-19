@@ -14,6 +14,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { useState } from "react";
+import RepresentativeProfile from "@/components/RepresentativeProfile";
 
 interface Representative {
   id: number;
@@ -40,6 +41,7 @@ export default function Representatives() {
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [includeInactive, setIncludeInactive] = useState(false);
+  const [selectedRepresentativeId, setSelectedRepresentativeId] = useState<number | null>(null);
 
   // Fetch representatives with new API structure
   const { data: apiResponse, isLoading } = useQuery<{data: Representative[], representatives: Representative[], success: boolean, total: number}>({
@@ -268,15 +270,26 @@ export default function Representatives() {
                           </p>
                         </div>
                         
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => window.open(`/representatives/portal/${rep.panelUsername}`, '_blank')}
-                          className="flex items-center gap-2"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          پورتال
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setSelectedRepresentativeId(rep.id)}
+                            className="flex items-center gap-2"
+                          >
+                            <User className="h-3 w-3" />
+                            پروفایل
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => window.open(`/representatives/portal/${rep.panelUsername}`, '_blank')}
+                            className="flex items-center gap-2"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            پورتال
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -334,6 +347,14 @@ export default function Representatives() {
           )}
         </CardContent>
       </Card>
+      
+      {/* Representative Profile Modal */}
+      {selectedRepresentativeId && (
+        <RepresentativeProfile
+          representativeId={selectedRepresentativeId}
+          onClose={() => setSelectedRepresentativeId(null)}
+        />
+      )}
     </div>
   );
 }

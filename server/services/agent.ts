@@ -41,25 +41,7 @@ const AVAILABLE_TOOLS: ToolFunction[] = [
       required: ["usage_data"]
     }
   },
-  {
-    name: "generate_representative_invoice",
-    description: "Find representative by store name and generate their latest unpaid invoice image. Perfect for commands like 'فاکتور نماینده daryamb رو صادر کن'",
-    parameters: {
-      type: "object",
-      properties: {
-        representative_name: {
-          type: "string",
-          description: "Store name or panel username of the representative to generate invoice for"
-        },
-        invoice_type: {
-          type: "string",
-          description: "Type of invoice to generate: 'latest_unpaid' (default), 'all_unpaid', or 'latest'",
-          enum: ["latest_unpaid", "all_unpaid", "latest"]
-        }
-      },
-      required: ["representative_name"]
-    }
-  },
+
   {
     name: "find_representative_with_highest_debt",
     description: "Finds the representative with the highest total debt amount",
