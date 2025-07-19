@@ -112,6 +112,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DEBUG: Test usage processor directly
+  app.post('/api/debug/process-usage', async (req, res) => {
+    try {
+      const { usageData } = req.body;
+      if (!usageData) {
+        return res.status(400).json({ error: 'No usage data provided' });
+      }
+      
+      console.log('\n🔍 DEBUG: Starting direct usage processing test...');
+      const { processUsageFile } = await import('./services/usage-processor');
+      const result = await processUsageFile(usageData);
+      
+      console.log('\n🔍 DEBUG: Processing result:', result);
+      
+      // Get current state
+      const representatives = await storage.getRepresentatives();
+      const invoices = await storage.getInvoices();
+      
+      res.json({
+        processResult: result,
+        databaseState: {
+          representatives: representatives.length,
+          invoices: invoices.length,
+          representativesList: representatives.map(r => ({
+            storeName: r.storeName,
+            panelUsername: r.panelUsername,
+            totalDebt: r.totalDebt
+          }))
+        }
+      });
+    } catch (error) {
+      console.error('DEBUG endpoint error:', error);
+      res.status(500).json({ error: error.message, stack: error.stack });
+    }
+  });
+
   // Initialize Telegram bot on startup
   setTimeout(async () => {
     try {

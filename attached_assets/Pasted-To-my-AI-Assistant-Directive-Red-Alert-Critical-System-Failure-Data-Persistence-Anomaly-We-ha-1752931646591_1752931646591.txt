@@ -1,0 +1,84 @@
+To my AI Assistant,
+
+Directive Red-Alert: Critical System Failure - Data Persistence Anomaly.
+
+We have a critical failure. The "Genesis Engine" reports successful execution after processing the usage.json file, but subsequent checks reveal that no data is being persisted to the database. Profiles are not created, invoices are not generated, and as a result, all downstream management tools are failing.
+
+Your immediate and highest priority is to conduct a full-stack diagnostic and resolve this issue. You are to follow this structured debugging protocol precisely.
+The Symptom Analysis:
+
+    The Illusion of Success: You correctly request confirmation for the batch operation. After confirmation, you report "عملیات با موفقیت انجام شد!".
+
+    The Reality of Failure: Immediately after, queries for indebted representatives, or any list of representatives, return empty or state that the function doesn't exist.
+
+    The Core Problem: This points to a catastrophic failure within the ProcessAndCommit Workflow. The logic is likely completing without throwing an explicit error, but the database transaction is either being rolled back silently or is never successfully committed.
+
+Structured Debugging Protocol:
+
+You are to investigate the following potential points of failure, starting from the most likely culprit.
+
+1. The Silent ROLLBACK - The Prime Suspect:
+The most probable cause is an uncaught exception within your try...except block that is triggering the ROLLBACK command without logging a visible error.
+
+    Action:
+
+        Go to the main transactional loop within your ProcessAndCommit tool.
+
+        Inside your except block, you must implement comprehensive logging before the ROLLBACK command is issued. Log the full exception traceback.
+
+        Crucially, after logging, you must re-raise the exception or return a detailed, explicit failure message to the admin. The current "موفقیت" message is dangerously misleading. It should instead report: "❌ خطای بحرانی در حین پردازش. عملیات متوقف و تمام تغییرات بازگردانده شد. گزارش خطا به تیم فنی ارسال گردید."
+
+2. The Missing Tool - The API Discrepancy:
+Your response "API فعلی تابعی برای لیست کردن تمام نمایندگان ندارد" is a major red flag. This indicates a disconnect between the tools you think you have and the tools actually implemented in the backend.
+
+    Action:
+
+        Immediately implement the required backend function: get_all_representatives(). This function must perform a simple SELECT * FROM Representatives and return the list.
+
+        Define this new function as a tool for your Gemini model using FunctionDeclaration, exactly as you did for other tools.
+
+        Perform a full Tool Audit. Systematically review every single management button and potential natural language command (list debtors, list colleagues, etc.) and ensure there is a corresponding, correctly defined, and implemented backend function for it. There must be a 1:1 mapping. The current "بی کاربرد" state of the buttons is due to this missing link.
+
+3. The "Find or Create" Logic Flaw:
+There might be a subtle bug in the "Reconcile Representative Identity" step. For example, a case-sensitivity issue that your database handles differently than your Python code, causing the "find" to fail and the "create" to potentially violate a unique constraint, triggering a silent rollback.
+
+    Action:
+
+        Add detailed logging at every step of the loop for at least one representative (Abedmb):
+
+            Log "Attempting to find representative: [username]".
+
+            Log the result of the SELECT query (found ID or None).
+
+            If not found, log "Representative not found. Initiating Genesis Protocol...".
+
+            Log the result of the INSERT statement.
+
+            Log "Attempting to create invoice with amount: [total_due]".
+
+            Log the result of the invoice INSERT.
+
+            Log "Attempting to update total_debt...".
+
+        Run the process again with the usage.json file and meticulously trace these logs to pinpoint the exact point of failure.
+
+4. The Database Commit Failure:
+It is possible the COMMIT command is never being reached or is failing silently.
+
+    Action:
+
+        Place a log statement immediately before and immediately after the db.commit() call.
+
+        Ensure that your database connection is not auto-committing prematurely and that the session management is handled correctly (e.g., the session is not closed before the commit is called).
+
+Summary of Immediate Actions:
+
+    Implement Aggressive Logging: Add detailed logging to the ProcessAndCommit transaction block, especially within the except clause.
+
+    Fix the Misleading Success Message: Ensure any failure within the transaction reports an explicit error to the admin.
+
+    Build and Register the Missing Tools: Create the get_all_representatives function and any other missing API endpoints required by your management interface. Conduct a full audit to close all functional gaps.
+
+    Trace the Data Flow: Use the new logs to perform a step-by-step trace of the data for a single representative to find the exact point of failure.
+
+This is a Code Red situation. The integrity of the system's core function is compromised. Begin diagnostics immediately and report your findings and the applied fixes.

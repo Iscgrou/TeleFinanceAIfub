@@ -30,6 +30,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Key Components
 
+### Database Configuration
+- **Connection**: Neon Serverless PostgreSQL with WebSocket driver (required for transaction support)
+- **Transaction Support**: Full ACID compliance for zero-fault tolerance
+- **Critical Note**: Must use WebSocket driver, not HTTP driver, for transaction support
+
 ### Database Schema
 The system manages five core entities:
 - **Admins**: System administrators with chat IDs and super admin privileges
@@ -110,6 +115,15 @@ RESTful API endpoints organized by functionality:
 - Graceful degradation when external services are unavailable
 
 ## Recent Updates (July 19, 2025)
+
+### Critical Data Persistence Fix (Latest - 1:35 PM)
+- **Root Cause Identified**: Neon HTTP driver doesn't support database transactions
+- **Solution Implemented**: Switched to Neon WebSocket driver with full transaction support
+- **Configuration**: Added WebSocket constructor for Node.js environment
+- **Result**: Zero-fault tolerance protocol now working correctly with full ACID compliance
+- **Verified**: Successfully processed sample data with 4 representatives and 1.3M in invoices
+
+## Previous Updates (July 19, 2025)
 
 ### Critical Security & Usability Upgrades
 

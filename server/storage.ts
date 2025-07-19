@@ -9,9 +9,10 @@ import {
   type CommissionRecord, type InsertCommissionRecord,
   type SystemSettings, type InsertSystemSettings
 } from "@shared/schema";
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-serverless';
 import { eq, desc, sql } from 'drizzle-orm';
+import ws from 'ws';
 
 export interface IStorage {
   // Admin management
@@ -58,8 +59,12 @@ export interface IStorage {
   }>;
 }
 
-const sql = neon(process.env.DATABASE_URL!);
-const db = drizzle(sql);
+// Configure WebSocket for Node.js environment
+neonConfig.webSocketConstructor = ws;
+
+// Use WebSocket connection for transaction support
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const db = drizzle(pool);
 
 export class DatabaseStorage implements IStorage {
   constructor() {

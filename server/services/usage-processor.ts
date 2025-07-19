@@ -192,10 +192,15 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
       console.log(`Processing ${entries.length} representatives in single transaction...`);
       
       for (const [username, summary] of entries) {
+        console.log(`\n📊 Processing representative: ${username}`);
+        console.log(`   Total due: ${summary.total_due}, Line items: ${summary.line_items.length}`);
+        
         // Generate hash for this representative's transactions
         const transactionHash = generateTransactionHash(summary.line_items);
+        console.log(`   Transaction hash: ${transactionHash}`);
         
         // Check for duplicate processing
+        console.log(`   Checking for duplicate invoices...`);
         const existingInvoice = await tx
           .select()
           .from(invoices)
@@ -206,10 +211,11 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
           .limit(1);
           
         if (existingInvoice.length > 0) {
-          console.log(`Skipping duplicate invoice for ${username} - already processed with hash ${transactionHash}`);
+          console.log(`   ⚠️ Skipping duplicate invoice for ${username} - already processed`);
           continue;
         }
         // Step A: Reconcile Representative Identity
+        console.log(`   Looking for existing representative with panelUsername: ${username}`);
         let representativeRecord = await tx
           .select()
           .from(representatives)
@@ -221,55 +227,77 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
         
         if (representativeRecord.length > 0) {
           // Representative exists
+          console.log(`   ✓ Found existing representative with ID: ${representativeRecord[0].id}`);
           representative_id = representativeRecord[0].id;
           colleague_id = representativeRecord[0].colleagueId;
         } else {
           // Genesis Protocol: Create new representative
-          const newRep = await tx
-            .insert(representatives)
-            .values({
-              storeName: username, // Using username as default store name
-              ownerName: null,
-              phone: null,
-              panelUsername: username,
-              telegramId: null,
-              salesColleagueName: null,
-              totalDebt: '0',
-              isActive: true,
-              colleagueId: null
-            })
-            .returning();
-          
-          representative_id = newRep[0].id;
-          colleague_id = null;
+          console.log(`   📝 Representative not found. Initiating Genesis Protocol...`);
+          try {
+            const newRep = await tx
+              .insert(representatives)
+              .values({
+                storeName: username, // Using username as default store name
+                ownerName: null,
+                phone: null,
+                panelUsername: username,
+                telegramId: null,
+                salesColleagueName: null,
+                totalDebt: '0',
+                isActive: true,
+                colleagueId: null
+              })
+              .returning();
+            
+            representative_id = newRep[0].id;
+            colleague_id = null;
+            console.log(`   ✓ Created new representative with ID: ${representative_id}`);
+          } catch (createError) {
+            console.error(`   ❌ Failed to create representative: ${createError.message}`);
+            throw createError;
+          }
         }
         
         // Step B: Create the Immutable Invoice Record
-        const newInvoice = await tx
-          .insert(invoices)
-          .values({
-            representativeId: representative_id,
-            amount: summary.total_due.toString(),
-            description: `Usage-based invoice - ${summary.line_items.length} transactions`,
-            status: 'unpaid',
-            isManual: false,
-            usageJsonDetails: JSON.stringify(summary.line_items),
-            usageHash: transactionHash,
-            processingBatchId: batchId
-          })
-          .returning();
-        
-        const new_invoice_id = newInvoice[0].id;
-        invoicesCreated++;
-        totalAmount += summary.total_due;
+        console.log(`   Creating invoice with amount: ${summary.total_due}`);
+        try {
+          const newInvoice = await tx
+            .insert(invoices)
+            .values({
+              representativeId: representative_id,
+              amount: summary.total_due.toString(),
+              description: `Usage-based invoice - ${summary.line_items.length} transactions`,
+              status: 'unpaid',
+              isManual: false,
+              usageJsonDetails: JSON.stringify(summary.line_items),
+              usageHash: transactionHash,
+              processingBatchId: batchId
+            })
+            .returning();
+          
+          const new_invoice_id = newInvoice[0].id;
+          invoicesCreated++;
+          totalAmount += summary.total_due;
+          console.log(`   ✓ Created invoice with ID: ${new_invoice_id}`);
+        } catch (invoiceError) {
+          console.error(`   ❌ Failed to create invoice: ${invoiceError.message}`);
+          throw invoiceError;
+        }
         
         // Step C: Update the Master Financial Profile
-        await tx
-          .update(representatives)
-          .set({
-            totalDebt: sql`${representatives.totalDebt}::numeric + ${summary.total_due}`
-          })
-          .where(eq(representatives.id, representative_id));
+        console.log(`   Updating total debt by adding: ${summary.total_due}`);
+        try {
+          await tx
+            .update(representatives)
+            .set({
+              totalDebt: sql`${representatives.totalDebt}::numeric + ${summary.total_due}`
+            })
+            .where(eq(representatives.id, representative_id));
+          console.log(`   ✓ Updated representative debt`);
+        } catch (updateError) {
+          console.error(`   ❌ Failed to update debt: ${updateError.message}`);
+          throw updateError;
+        }
         
         // Step D: Process Commissions (if applicable)
         if (colleague_id) {
@@ -294,7 +322,30 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
           }
         }
       }
+      
+      console.log('\n✅ All representatives processed within transaction');
+      console.log(`   Total invoices created: ${invoicesCreated}`);
+      console.log(`   Total amount: ${totalAmount}`);
+      // The transaction will automatically commit when this function returns successfully
     });
+    
+    console.log('✅ Transaction committed successfully!');
+    
+    // Verify data persistence
+    console.log('\n🔍 Verifying data persistence...');
+    try {
+      const verificationResults = await Promise.all([
+        storage.getRepresentatives(),
+        storage.getInvoices()
+      ]);
+      
+      const [allReps, allInvoices] = verificationResults;
+      console.log(`   Representatives in DB: ${allReps.length}`);
+      console.log(`   Invoices in DB: ${allInvoices.length}`);
+      console.log(`   ✅ Data persistence verified!`);
+    } catch (verifyError) {
+      console.error('   ❌ Verification failed:', verifyError);
+    }
     
     return {
       success: true,
@@ -304,10 +355,24 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
     };
     
   } catch (error) {
-    console.error('Transaction processing failed:', error);
+    // CRITICAL: Log full error details before rollback
+    console.error('❌ CRITICAL TRANSACTION FAILURE:', {
+      error: error.message,
+      stack: error.stack,
+      batchId: batchId,
+      entriesProcessed: Object.keys(aggregatedData).length,
+      invoicesCreated: invoicesCreated,
+      totalAmount: totalAmount
+    });
+    
+    // Log the specific error type
+    if (error.code) {
+      console.error(`Database error code: ${error.code}`);
+    }
+    
     return {
       success: false,
-      message: 'Transaction processing failed',
+      message: `❌ خطای بحرانی در حین پردازش. عملیات متوقف و تمام تغییرات بازگردانده شد. خطا: ${error.message}`,
       error: error.message
     };
   }

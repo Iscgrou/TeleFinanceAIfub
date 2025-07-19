@@ -218,6 +218,34 @@ const AVAILABLE_TOOLS: ToolFunction[] = [
       },
       required: ["representative_name"]
     }
+  },
+  {
+    name: "get_all_representatives",
+    description: "Get a list of all representatives in the system",
+    parameters: {
+      type: "object",
+      properties: {
+        includeInactive: {
+          type: "boolean",
+          description: "Whether to include inactive representatives (default: false)"
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: "get_all_debtors",
+    description: "Get a list of all representatives with outstanding debts",
+    parameters: {
+      type: "object",
+      properties: {
+        minDebt: {
+          type: "number",
+          description: "Minimum debt amount filter (optional)"
+        }
+      },
+      required: []
+    }
   }
 ];
 
@@ -266,6 +294,8 @@ export class FinancialAgent {
 2. در صورت خطا در حتی یک رکورد، کل فرآیند متوقف می‌شود
 3. تراکنش‌ها به صورت all-or-nothing پردازش می‌شوند
 4. فاکتورها با جزئیات کامل در JSONB ذخیره می‌شوند
+
+**توجه بحرانی**: در صورت هرگونه خطا در پردازش، حتماً پیام خطای دقیق را گزارش کنید
 
 **قابلیت‌های پایه:**
 - پردازش فاکتورهای هفتگی از فایل usage.json با پروتکل غیرقابل‌تغییر
@@ -474,6 +504,12 @@ export class FinancialAgent {
 
         case "generate_invoice_images":
           return await this.generateInvoiceImages(args.invoice_ids, args.filter);
+          
+        case "get_all_representatives":
+          return await this.getAllRepresentatives(args.includeInactive);
+          
+        case "get_all_debtors":
+          return await this.getAllDebtors(args.minDebt);
           
         default:
           return { error: `Unknown function: ${name}` };
@@ -821,6 +857,78 @@ export class FinancialAgent {
       
     } catch (error) {
       return { error: `Invoice generation failed: ${error.message}` };
+    }
+  }
+
+  // NEW: Get all representatives
+  private async getAllRepresentatives(includeInactive: boolean = false): Promise<any> {
+    try {
+      let representatives = await storage.getRepresentatives();
+      
+      // Filter out inactive if requested
+      if (!includeInactive) {
+        representatives = representatives.filter(rep => rep.isActive);
+      }
+      
+      // Format the response with key financial info
+      const formattedReps = representatives.map(rep => ({
+        id: rep.id,
+        storeName: rep.storeName,
+        ownerName: rep.ownerName,
+        panelUsername: rep.panelUsername,
+        totalDebt: parseFloat(rep.totalDebt || '0'),
+        hasPhone: !!rep.phone,
+        hasTelegram: !!rep.telegramId,
+        isActive: rep.isActive,
+        salesColleague: rep.salesColleagueName
+      }));
+      
+      return {
+        status: "success",
+        total_count: formattedReps.length,
+        representatives: formattedReps,
+        summary: {
+          active: formattedReps.filter(r => r.isActive).length,
+          inactive: formattedReps.filter(r => !r.isActive).length,
+          withDebt: formattedReps.filter(r => r.totalDebt > 0).length,
+          totalDebt: formattedReps.reduce((sum, r) => sum + r.totalDebt, 0)
+        }
+      };
+    } catch (error) {
+      return { error: `Failed to get representatives: ${error.message}` };
+    }
+  }
+
+  // NEW: Get all debtors
+  private async getAllDebtors(minDebt: number = 0): Promise<any> {
+    try {
+      const representatives = await storage.getRepresentatives();
+      
+      // Filter representatives with debt
+      const debtors = representatives
+        .filter(rep => {
+          const debt = parseFloat(rep.totalDebt || '0');
+          return debt > minDebt && rep.isActive;
+        })
+        .sort((a, b) => parseFloat(b.totalDebt || '0') - parseFloat(a.totalDebt || '0'));
+      
+      const formattedDebtors = debtors.map(rep => ({
+        storeName: rep.storeName,
+        ownerName: rep.ownerName,
+        totalDebt: parseFloat(rep.totalDebt || '0'),
+        hasTelegram: !!rep.telegramId,
+        salesColleague: rep.salesColleagueName
+      }));
+      
+      return {
+        status: "success",
+        total_debtors: formattedDebtors.length,
+        total_debt_amount: formattedDebtors.reduce((sum, d) => sum + d.totalDebt, 0),
+        debtors: formattedDebtors,
+        top_5_debtors: formattedDebtors.slice(0, 5)
+      };
+    } catch (error) {
+      return { error: `Failed to get debtors: ${error.message}` };
     }
   }
 }
