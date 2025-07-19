@@ -526,6 +526,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get invoices for specific representative
+  app.get("/api/representatives/:id/invoices", async (req, res) => {
+    try {
+      const representativeId = parseInt(req.params.id);
+      const invoices = await storage.getInvoicesByRepresentative(representativeId);
+      res.json(invoices);
+    } catch (error) {
+      res.status(500).json({ message: "خطا در دریافت فاکتورها" });
+    }
+  });
+
+  // Get payments for specific representative
+  app.get("/api/representatives/:id/payments", async (req, res) => {
+    try {
+      const representativeId = parseInt(req.params.id);
+      const payments = await storage.getPaymentsByRepresentative(representativeId);
+      res.json(payments);
+    } catch (error) {
+      res.status(500).json({ message: "خطا در دریافت پرداخت‌ها" });
+    }
+  });
+
   // Data management routes
   app.post("/api/admin/clear-financial", async (req, res) => {
     try {

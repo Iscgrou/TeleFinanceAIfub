@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
+import { Router, Route, Switch, useRoute } from 'wouter'
 import { api } from './utils/api'
+import RepresentativePortal from './components/RepresentativePortal'
 
 interface Representative {
   id: number;
@@ -32,7 +34,246 @@ interface Settings {
   representativePortalTexts: string;
 }
 
-function App() {
+// Portal Route Component
+function PortalRoute() {
+  const [, params] = useRoute('/portal/:username');
+  const username = params?.username;
+  
+  if (!username) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4 text-center">
+          <div className="text-red-500 text-6xl mb-4">❌</div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">نام کاربری نامعتبر</h2>
+          <p className="text-gray-600 mb-4">لطفاً نام کاربری صحیح وارد کنید</p>
+        </div>
+      </div>
+    );
+  }
+  
+  return <RepresentativePortal username={username} />;
+}
+
+// Invoices Tab Component
+function InvoicesTab() {
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadInvoices();
+  }, []);
+
+  const loadInvoices = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/api/invoices');
+      setInvoices(response || []);
+    } catch (error) {
+      console.error('Error loading invoices:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return parseFloat(amount).toLocaleString('fa-IR') + ' تومان';
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('fa-IR');
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'paid': return 'bg-green-100 text-green-800';
+      case 'partially_paid': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-red-100 text-red-800';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'paid': return 'پرداخت شده';
+      case 'partially_paid': return 'نیمه پرداخت';
+      default: return 'پرداخت نشده';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-gray-900">لیست فاکتورها</h2>
+          <span className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+            {invoices.length.toLocaleString('fa-IR')} فاکتور
+          </span>
+        </div>
+        
+        {invoices.length > 0 ? (
+          <div className="space-y-4">
+            {invoices.map((invoice) => (
+              <div key={invoice.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex items-center space-x-4 space-x-reverse">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 font-bold">#{invoice.id}</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">فاکتور #{invoice.id}</h3>
+                    <div className="flex items-center space-x-4 space-x-reverse text-sm text-gray-600">
+                      <span>📅 {formatDate(invoice.createdAt)}</span>
+                      {invoice.dueDate && <span>⏰ سررسید: {formatDate(invoice.dueDate)}</span>}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-4 space-x-reverse">
+                  <div className="text-left">
+                    <p className="font-bold text-lg text-gray-900">
+                      {formatCurrency(invoice.amount)}
+                    </p>
+                    <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(invoice.status)}`}>
+                      {getStatusText(invoice.status)}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => alert('جزئیات فاکتور در حال توسعه است')}
+                    className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                  >
+                    👁️ جزئیات
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">📄</div>
+            <p className="text-gray-600">هنوز فاکتوری ثبت نشده است</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Payments Tab Component
+function PaymentsTab() {
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadPayments();
+  }, []);
+
+  const loadPayments = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/api/payments');
+      setPayments(response || []);
+    } catch (error) {
+      console.error('Error loading payments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return parseFloat(amount).toLocaleString('fa-IR') + ' تومان';
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('fa-IR');
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-gray-900">لیست پرداخت‌ها</h2>
+          <span className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
+            {payments.length.toLocaleString('fa-IR')} پرداخت
+          </span>
+        </div>
+        
+        {payments.length > 0 ? (
+          <div className="space-y-4">
+            {payments.map((payment) => (
+              <div key={payment.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex items-center space-x-4 space-x-reverse">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <span className="text-green-600 text-xl">💳</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">پرداخت #{payment.id}</h3>
+                    <div className="flex items-center space-x-4 space-x-reverse text-sm text-gray-600">
+                      <span>📅 {formatDate(payment.createdAt)}</span>
+                      {payment.paymentDate && <span>📅 تاریخ پرداخت: {formatDate(payment.paymentDate)}</span>}
+                    </div>
+                    {payment.description && (
+                      <p className="text-xs text-gray-500 mt-1">{payment.description}</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-4 space-x-reverse">
+                  <div className="text-left">
+                    <p className="font-bold text-lg text-green-700">
+                      +{formatCurrency(payment.amount)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => alert('جزئیات پرداخت در حال توسعه است')}
+                    className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition-colors"
+                  >
+                    👁️ جزئیات
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">💳</div>
+            <p className="text-gray-600">هنوز پرداختی ثبت نشده است</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Main Admin Dashboard Component  
+function AdminDashboard() {
   const [representatives, setRepresentatives] = useState<Representative[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -449,23 +690,11 @@ function App() {
         )}
 
         {activeTab === 'invoices' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">مدیریت فاکتورها</h2>
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">📄</div>
-              <p className="text-gray-600">بخش فاکتورها در حال توسعه است</p>
-            </div>
-          </div>
+          <InvoicesTab />
         )}
 
         {activeTab === 'payments' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">مدیریت پرداخت‌ها</h2>
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">💳</div>
-              <p className="text-gray-600">بخش پرداخت‌ها در حال توسعه است</p>
-            </div>
-          </div>
+          <PaymentsTab />
         )}
 
         {activeTab === 'settings' && (
@@ -717,6 +946,33 @@ function App() {
         </div>
       )}
     </div>
+  );
+}
+
+// Main App Component with Routing
+function App() {
+  return (
+    <Router>
+      <Switch>
+        <Route path="/portal/:username" component={PortalRoute} />
+        <Route path="/" component={AdminDashboard} />
+        <Route>
+          <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 flex items-center justify-center">
+            <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4 text-center">
+              <div className="text-gray-500 text-6xl mb-4">🔍</div>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">صفحه یافت نشد</h2>
+              <p className="text-gray-600 mb-4">صفحه مورد نظر وجود ندارد</p>
+              <button
+                onClick={() => window.location.href = '/'}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                بازگشت به صفحه اصلی
+              </button>
+            </div>
+          </div>
+        </Route>
+      </Switch>
+    </Router>
   );
 }
 
