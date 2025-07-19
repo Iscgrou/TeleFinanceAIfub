@@ -59,6 +59,10 @@ export interface IStorage {
   // System settings
   getSystemSettings(): Promise<SystemSettings | undefined>;
   updateSystemSettings(settings: InsertSystemSettings): Promise<SystemSettings>;
+  
+  // Data management
+  clearFinancialData(): Promise<void>;
+  clearAllData(): Promise<void>;
 
   // Dashboard stats
   getDashboardStats(): Promise<{
@@ -465,6 +469,24 @@ export class DatabaseStorage implements IStorage {
       .where(eq(invoiceTemplates.id, id));
 
     return true;
+  }
+
+  async clearFinancialData(): Promise<void> {
+    await db.delete(commissionRecords);
+    await db.delete(payments);
+    await db.delete(invoices);
+    await db.update(representatives)
+      .set({ totalDebt: '0' });
+  }
+
+  async clearAllData(): Promise<void> {
+    await db.delete(commissionRecords);
+    await db.delete(payments);
+    await db.delete(invoices);
+    await db.delete(representatives);
+    await db.delete(salesColleagues);
+    await db.delete(admins);
+    await db.delete(invoiceTemplates);
   }
 }
 

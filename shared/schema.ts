@@ -65,6 +65,9 @@ export const systemSettings = pgTable("system_settings", {
   speechToTextProvider: text("speech_to_text_provider").default("google"),
   speechToTextApiKey: text("speech_to_text_api_key"),
   telegramBotToken: text("telegram_bot_token"),
+  adminChatId: text("admin_chat_id"),
+  invoiceTemplate: text("invoice_template"),
+  representativePortalTexts: text("representative_portal_texts"),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 

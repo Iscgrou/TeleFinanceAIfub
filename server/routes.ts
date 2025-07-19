@@ -343,38 +343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Settings API routes
-  app.get("/api/settings", async (req, res) => {
-    try {
-      const settings = await storage.getSystemSettings();
-      // Don't return sensitive data
-      const sanitizedSettings = settings ? {
-        speechToTextProvider: settings.speechToTextProvider,
-        hasGeminiKey: !!settings.geminiApiKey,
-        hasSpeechKey: !!settings.speechToTextApiKey,
-        hasBotToken: !!settings.telegramBotToken
-      } : null;
-      res.json(sanitizedSettings);
-    } catch (error) {
-      res.status(500).json({ message: "Error fetching settings" });
-    }
-  });
 
-  app.post("/api/settings", async (req, res) => {
-    try {
-      const validatedData = insertSystemSettingsSchema.parse(req.body);
-      const settings = await storage.updateSystemSettings(validatedData);
-      
-      // Reinitialize bot with new token if provided
-      if (validatedData.telegramBotToken) {
-        await initializeBot();
-      }
-      
-      res.json({ message: "Settings updated successfully" });
-    } catch (error) {
-      res.status(400).json({ message: "Invalid settings data" });
-    }
-  });
 
   // Demo/Testing routes
   app.post("/api/demo/create-sample-data", async (req, res) => {
@@ -501,6 +470,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: 'Direct invoice test failed', 
         details: error.message 
       });
+    }
+  });
+
+  // Enhanced Settings API routes for the web interface
+  app.get("/api/settings", async (req, res) => {
+    try {
+      const settings = await storage.getSystemSettings();
+      // Return complete settings for frontend (don't hide sensitive data for admin panel)
+      res.json(settings || {
+        geminiApiKey: '',
+        telegramBotToken: '',
+        adminChatId: '',
+        invoiceTemplate: '',
+        representativePortalTexts: ''
+      });
+    } catch (error) {
+      res.status(500).json({ message: "خطا در دریافت تنظیمات" });
+    }
+  });
+
+  app.post("/api/settings", async (req, res) => {
+    try {
+      const validatedData = insertSystemSettingsSchema.parse(req.body);
+      const settings = await storage.updateSystemSettings(validatedData);
+      
+      // Reinitialize bot with new token if provided
+      if (validatedData.telegramBotToken) {
+        await initializeBot();
+      }
+      
+      res.json(settings);
+    } catch (error) {
+      if (error.name === 'ZodError') {
+        res.status(400).json({ message: "داده‌های تنظیمات نامعتبر است" });
+      } else {
+        res.status(500).json({ message: "خطا در ذخیره تنظیمات" });
+      }
+    }
+  });
+
+  // Representative portal routes
+  app.get("/api/representatives/by-username/:username", async (req, res) => {
+    try {
+      const username = req.params.username;
+      const representative = await storage.getRepresentativeByPanelUsername(username);
+      
+      if (!representative) {
+        return res.status(404).json({ message: "نماینده یافت نشد" });
+      }
+      
+      res.json(representative);
+    } catch (error) {
+      res.status(500).json({ message: "خطا در دریافت اطلاعات نماینده" });
+    }
+  });
+
+  // Data management routes
+  app.post("/api/admin/clear-financial", async (req, res) => {
+    try {
+      await storage.clearFinancialData();
+      res.json({ message: "اطلاعات مالی با موفقیت پاکسازی شد" });
+    } catch (error) {
+      res.status(500).json({ message: "خطا در پاکسازی اطلاعات مالی" });
+    }
+  });
+
+  app.post("/api/admin/clear-all", async (req, res) => {
+    try {
+      await storage.clearAllData();
+      res.json({ message: "تمام اطلاعات با موفقیت پاکسازی شد" });
+    } catch (error) {
+      res.status(500).json({ message: "خطا در پاکسازی تمام اطلاعات" });
     }
   });
 

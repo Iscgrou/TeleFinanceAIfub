@@ -38,9 +38,71 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<Stats>({ totalRepresentatives: 0, totalDebt: 0, activeRepresentatives: 0 });
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedRepresentative, setSelectedRepresentative] = useState<Representative | null>(null);
+  const [showRepresentativeModal, setShowRepresentativeModal] = useState(false);
+  const [settings, setSettings] = useState<Settings>({
+    geminiApiKey: '',
+    telegramBotToken: '',
+    adminChatId: '',
+    invoiceTemplate: `<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>فاکتور خرید - {{storeName}}</title>
+    <style>
+        body { font-family: 'Vazirmatn', sans-serif; direction: rtl; margin: 20px; }
+        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .invoice-info { margin: 20px 0; }
+        .table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .table th { background-color: #f2f2f2; }
+        .total { text-align: left; font-weight: bold; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>فاکتور خرید</h1>
+        <p>نماینده: {{storeName}}</p>
+        <p>تاریخ: {{currentDate}}</p>
+    </div>
+    <div class="invoice-info">
+        <p><strong>نام فروشگاه:</strong> {{storeName}}</p>
+        <p><strong>نام کاربری پنل:</strong> {{panelUsername}}</p>
+        <p><strong>شماره فاکتور:</strong> {{invoiceId}}</p>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ردیف</th>
+                <th>شرح خدمات</th>
+                <th>مقدار مصرف</th>
+                <th>قیمت واحد</th>
+                <th>مبلغ کل</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{invoiceItems}}
+        </tbody>
+    </table>
+    <div class="total">
+        <p>مبلغ کل: {{totalAmount}} تومان</p>
+    </div>
+</body>
+</html>`,
+    representativePortalTexts: `{
+  "welcome": "به پرتال نماینده {{storeName}} خوش آمدید",
+  "debt_status": "وضعیت بدهی شما",
+  "current_debt": "بدهی فعلی",
+  "last_payment": "آخرین پرداخت",
+  "invoice_history": "تاریخچه فاکتورها",
+  "contact_support": "تماس با پشتیبانی",
+  "payment_methods": "روش‌های پرداخت"
+}`
+  });
 
   useEffect(() => {
     loadData();
+    loadSettings();
   }, []);
 
   const loadData = async () => {
@@ -77,6 +139,50 @@ function App() {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSettings = async () => {
+    try {
+      const response = await api.get<Settings>('/api/settings');
+      setSettings({ ...settings, ...response });
+    } catch (err) {
+      console.log('Using default settings');
+    }
+  };
+
+  const saveSettings = async () => {
+    try {
+      await api.post('/api/settings', settings);
+      alert('تنظیمات با موفقیت ذخیره شد');
+    } catch (err) {
+      alert('خطا در ذخیره تنظیمات');
+    }
+  };
+
+  const clearFinancialData = async () => {
+    if (confirm('آیا از پاکسازی تمام اطلاعات مالی اطمینان دارید؟ این عمل قابل برگشت نیست.')) {
+      try {
+        await api.post('/api/admin/clear-financial', {});
+        alert('اطلاعات مالی پاکسازی شد');
+        loadData();
+      } catch (err) {
+        alert('خطا در پاکسازی اطلاعات');
+      }
+    }
+  };
+
+  const clearAllData = async () => {
+    if (confirm('آیا از پاکسازی تمام اطلاعات اطمینان دارید؟ این عمل قابل برگشت نیست.')) {
+      if (confirm('هشدار نهایی: تمام داده‌ها حذف خواهند شد. ادامه می‌دهید؟')) {
+        try {
+          await api.post('/api/admin/clear-all', {});
+          alert('تمام اطلاعات پاکسازی شد');
+          loadData();
+        } catch (err) {
+          alert('خطا در پاکسازی اطلاعات');
+        }
+      }
     }
   };
 
@@ -162,6 +268,36 @@ function App() {
                 }`}
               >
                 👥 نمایندگان
+              </button>
+              <button
+                onClick={() => setActiveTab('invoices')}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  activeTab === 'invoices' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                📄 فاکتورها
+              </button>
+              <button
+                onClick={() => setActiveTab('payments')}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  activeTab === 'payments' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                💳 پرداخت‌ها
+              </button>
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  activeTab === 'settings' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                ⚙️ تنظیمات
               </button>
             </div>
           </div>
@@ -280,11 +416,30 @@ function App() {
                       </div>
                     </div>
                     
-                    <div className="text-left">
-                      <p className="text-sm text-gray-600">بدهی کل</p>
-                      <p className={`font-bold text-lg ${getDebtColor(rep.totalDebt)}`}>
-                        {formatCurrency(parseFloat(rep.totalDebt))}
-                      </p>
+                    <div className="flex items-center space-x-2 space-x-reverse">
+                      <div className="text-left">
+                        <p className="text-sm text-gray-600">بدهی کل</p>
+                        <p className={`font-bold text-lg ${getDebtColor(rep.totalDebt)}`}>
+                          {formatCurrency(parseFloat(rep.totalDebt))}
+                        </p>
+                      </div>
+                      <div className="flex space-x-2 space-x-reverse">
+                        <button
+                          onClick={() => {
+                            setSelectedRepresentative(rep);
+                            setShowRepresentativeModal(true);
+                          }}
+                          className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                        >
+                          👁️ پروفایل
+                        </button>
+                        <button
+                          onClick={() => window.open(`/portal/${rep.panelUsername}`, '_blank')}
+                          className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition-colors"
+                        >
+                          🔗 پرتال
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -292,7 +447,275 @@ function App() {
             </div>
           </div>
         )}
+
+        {activeTab === 'invoices' && (
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">مدیریت فاکتورها</h2>
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">📄</div>
+              <p className="text-gray-600">بخش فاکتورها در حال توسعه است</p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'payments' && (
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">مدیریت پرداخت‌ها</h2>
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">💳</div>
+              <p className="text-gray-600">بخش پرداخت‌ها در حال توسعه است</p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="space-y-6">
+            {/* API Settings */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">🔑 تنظیمات API</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">کلید API جمینی 2.5 پرو</label>
+                  <input
+                    type="password"
+                    value={settings.geminiApiKey}
+                    onChange={(e) => setSettings({...settings, geminiApiKey: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="کلید API جمینی خود را وارد کنید"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">توکن ربات تلگرام</label>
+                  <input
+                    type="password"
+                    value={settings.telegramBotToken}
+                    onChange={(e) => setSettings({...settings, telegramBotToken: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="توکن ربات تلگرام خود را وارد کنید"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">شناسه چت ادمین</label>
+                  <input
+                    type="text"
+                    value={settings.adminChatId}
+                    onChange={(e) => setSettings({...settings, adminChatId: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="شناسه چت ادمین را وارد کنید"
+                  />
+                </div>
+                <button
+                  onClick={saveSettings}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  💾 ذخیره تنظیمات
+                </button>
+              </div>
+            </div>
+
+            {/* Invoice Template */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">📄 قالب HTML فاکتور</h2>
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  کد HTML قالب فاکتور (متغیرها: {{storeName}}, {{panelUsername}}, {{currentDate}}, {{invoiceId}}, {{invoiceItems}}, {{totalAmount}})
+                </label>
+                <textarea
+                  value={settings.invoiceTemplate}
+                  onChange={(e) => setSettings({...settings, invoiceTemplate: e.target.value})}
+                  className="w-full h-64 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                  placeholder="کد HTML قالب فاکتور"
+                />
+                <button
+                  onClick={saveSettings}
+                  className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  💾 ذخیره قالب فاکتور
+                </button>
+              </div>
+            </div>
+
+            {/* Portal Texts */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">🌐 متون پرتال نماینده</h2>
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  متون JSON پرتال نماینده (متغیر: {{storeName}})
+                </label>
+                <textarea
+                  value={settings.representativePortalTexts}
+                  onChange={(e) => setSettings({...settings, representativePortalTexts: e.target.value})}
+                  className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                  placeholder="متون JSON پرتال"
+                />
+                <button
+                  onClick={saveSettings}
+                  className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  💾 ذخیره متون پرتال
+                </button>
+              </div>
+            </div>
+
+            {/* Data Management */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">🗂️ مدیریت داده‌ها</h2>
+              <div className="space-y-4">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-yellow-800 mb-2">⚠️ پاکسازی اطلاعات مالی</h3>
+                  <p className="text-yellow-700 text-sm mb-3">تمام فاکتورها، پرداخت‌ها و بدهی‌ها حذف می‌شوند اما نمایندگان باقی می‌مانند</p>
+                  <button
+                    onClick={clearFinancialData}
+                    className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
+                  >
+                    🧹 پاکسازی اطلاعات مالی
+                  </button>
+                </div>
+
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-red-800 mb-2">🚨 پاکسازی تمام اطلاعات</h3>
+                  <p className="text-red-700 text-sm mb-3">تمام داده‌های سیستم شامل نمایندگان، فاکتورها، پرداخت‌ها و... حذف می‌شوند</p>
+                  <button
+                    onClick={clearAllData}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    💥 پاکسازی تمام اطلاعات
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
+
+      {/* Representative Profile Modal */}
+      {showRepresentativeModal && selectedRepresentative && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-900">پروفایل نماینده</h2>
+                <button
+                  onClick={() => setShowRepresentativeModal(false)}
+                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Basic Info */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
+                <div className="flex items-center space-x-4 space-x-reverse">
+                  <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-2xl">🏪</span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900">{selectedRepresentative.storeName}</h3>
+                    <p className="text-gray-600">@{selectedRepresentative.panelUsername}</p>
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm ${
+                      selectedRepresentative.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {selectedRepresentative.isActive ? 'فعال' : 'غیرفعال'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Financial Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-red-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-red-600 text-sm font-medium">بدهی فعلی</p>
+                      <p className="text-2xl font-bold text-red-700">
+                        {formatCurrency(parseFloat(selectedRepresentative.totalDebt))}
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                      <span className="text-red-600 text-xl">💰</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-green-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-green-600 text-sm font-medium">تاریخ عضویت</p>
+                      <p className="text-xl font-bold text-green-700">
+                        {formatDate(selectedRepresentative.createdAt)}
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <span className="text-green-600 text-xl">📅</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Portal Link */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 mb-3">🔗 لینک پرتال عمومی</h4>
+                <div className="flex items-center space-x-3 space-x-reverse">
+                  <input
+                    type="text"
+                    value={`${window.location.origin}/portal/${selectedRepresentative.panelUsername}`}
+                    readOnly
+                    className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg font-mono text-sm"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/portal/${selectedRepresentative.panelUsername}`);
+                      alert('لینک کپی شد');
+                    }}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    📋 کپی
+                  </button>
+                  <button
+                    onClick={() => window.open(`/portal/${selectedRepresentative.panelUsername}`, '_blank')}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    🔗 بازکردن
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="border-t pt-6">
+                <h4 className="font-semibold text-gray-900 mb-4">عملیات سریع</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => alert('ایجاد فاکتور جدید در حال توسعه است')}
+                    className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    📄 ایجاد فاکتور
+                  </button>
+                  <button
+                    onClick={() => alert('ثبت پرداخت در حال توسعه است')}
+                    className="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    💳 ثبت پرداخت
+                  </button>
+                  <button
+                    onClick={() => alert('ارسال پیام در حال توسعه است')}
+                    className="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    💬 ارسال پیام
+                  </button>
+                  <button
+                    onClick={() => alert('تاریخچه تراکنش‌ها در حال توسعه است')}
+                    className="bg-orange-600 text-white px-4 py-3 rounded-lg hover:bg-orange-700 transition-colors"
+                  >
+                    📊 تاریخچه
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
