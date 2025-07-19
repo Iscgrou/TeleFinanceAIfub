@@ -346,6 +346,30 @@ async function handleActionConfirmation(chatId: string, callbackData: string): P
         const formatted = formatFinancialProfile(result.profile_data);
         await sendMessage(chatId, formatted.text, { reply_markup: formatted.reply_markup });
       }
+      
+      // Special handling for invoice image generation
+      if (toolCall.name === 'generate_invoice_images' && result.status === 'success' && result.images_ready) {
+        await sendMessage(chatId, `✅ ${result.images_generated} فاکتور آماده ارسال شد.\n\nدر حال ارسال تصاویر...`);
+        
+        const { generateInvoicePNG } = await import('../services/invoice-generator');
+        
+        for (const invoiceId of result.invoice_ids) {
+          try {
+            const imageBuffer = await generateInvoicePNG(invoiceId);
+            if (imageBuffer) {
+              // Send image to admin
+              await bot.sendPhoto(chatId, imageBuffer, {
+                caption: `فاکتور شماره #${invoiceId}`
+              });
+              
+              // Small delay between images
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          } catch (error) {
+            console.error(`Failed to send invoice ${invoiceId}:`, error);
+          }
+        }
+      }
     }
     
     removePendingAction(actionId);

@@ -119,13 +119,24 @@ RESTful API endpoints organized by functionality:
 - **Super Admin Management**: Implemented /add_admin command for secure admin management, ensuring first user becomes super admin.
 - **Enhanced Security Architecture**: Three-tier authorization (admin verification, operation confirmation, audit logging).
 
-### Advanced Batch Operations & Financial Profiling (Latest)
+### Advanced Batch Operations & Financial Profiling
 
 - **Sophisticated Batch Messaging System**: Implemented AI-powered group messaging for representatives based on dynamic criteria (debt amount, store name patterns, payment history)
 - **360° Financial Profiling**: Created comprehensive financial profile system with detailed analytics, payment patterns, and risk assessment for each representative
 - **Advanced Agent Capabilities**: Added 3 new AI tools: execute_batch_messaging, generate_financial_profile, get_transaction_history for sophisticated financial management
 - **Database Stack Overflow Fix**: Resolved critical Drizzle ORM ordering function error ensuring system stability
 - **Enhanced Demo Interface**: Updated with advanced batch operation examples and financial profiling test commands
+
+### Immutable Ledger Ingestion Protocol Implementation (Latest - July 19, 2025)
+
+- **Zero-Fault Tolerance System**: Implemented Directive Omega-Prime for processing usage.json files with complete transaction validation
+- **All-or-Nothing Transactions**: Usage data processing now uses database transactions with automatic ROLLBACK on any error
+- **JSONB Storage**: Invoice details stored as immutable JSONB fields containing all original transaction records
+- **PNG Invoice Generation**: Added Puppeteer-based invoice generator producing professional PNG images with Persian/RTL support
+- **Three-Part Protocol**: Sanitize → Commit → Present workflow ensures data integrity and auditability
+- **Genesis Protocol**: Automatic representative creation when new usernames appear in usage data
+- **Commission Auto-calculation**: Commissions calculated and recorded during invoice creation
+- **Admin-Controlled Distribution**: System generates invoice images for admin to manually forward to representatives
 
 ### Previous Foundational Updates
 

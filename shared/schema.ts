@@ -19,8 +19,11 @@ export const salesColleagues = pgTable("sales_colleagues", {
 export const representatives = pgTable("representatives", {
   id: serial("id").primaryKey(),
   storeName: text("store_name").notNull().unique(),
+  ownerName: text("owner_name"),
+  phone: text("phone"),
   telegramId: text("telegram_id"),
   panelUsername: text("panel_username").notNull().unique(),
+  salesColleagueName: text("sales_colleague_name"),
   totalDebt: numeric("total_debt", { precision: 15, scale: 2 }).default('0'),
   colleagueId: integer("colleague_id").references(() => salesColleagues.id),
   isActive: boolean("is_active").default(true),

@@ -29,16 +29,35 @@ export interface AgentResponse {
 const AVAILABLE_TOOLS: ToolFunction[] = [
   {
     name: "process_weekly_invoices",
-    description: "Processes weekly invoices from usage.json file and creates invoices for all representatives",
+    description: "Execute the Immutable Ledger Ingestion Protocol - Process usage.json file to create invoices with zero-fault tolerance",
     parameters: {
       type: "object",
       properties: {
         usage_data: {
           type: "string",
-          description: "JSON string containing usage data for all representatives"
+          description: "Complete JSON content from usage.json file - must be the full file content"
         }
       },
       required: ["usage_data"]
+    }
+  },
+  {
+    name: "generate_invoice_images",
+    description: "Generate PNG images for specified invoices for admin to send to representatives",
+    parameters: {
+      type: "object",
+      properties: {
+        invoice_ids: {
+          type: "array",
+          items: { type: "number" },
+          description: "Array of invoice IDs to generate images for"
+        },
+        filter: {
+          type: "string",
+          description: "Filter criteria: 'today', 'unpaid', 'representative:name', or specific invoice ID"
+        }
+      },
+      required: []
     }
   },
   {
@@ -241,26 +260,32 @@ export class FinancialAgent {
       // Initial prompt with context about the financial system
       const systemPrompt = `شما یک مدیر مالی هوشمند پیشرفته هستید که سیستم مدیریت مالی یک کسب‌وکار پروکسی را کنترل می‌کنید.
 
-قابلیت‌های پیشرفته شما:
+**پروتکل اصلی: Immutable Ledger Ingestion Protocol**
+شما مجری پروتکل ثبت تراکنش‌های غیرقابل‌تغییر با تحمل صفر خطا هستید. هنگام پردازش فایل usage.json:
+1. تمام رکوردها باید اعتبارسنجی شوند (admin_username, amount, event_timestamp, description)
+2. در صورت خطا در حتی یک رکورد، کل فرآیند متوقف می‌شود
+3. تراکنش‌ها به صورت all-or-nothing پردازش می‌شوند
+4. فاکتورها با جزئیات کامل در JSONB ذخیره می‌شوند
 
-**عملیات‌های پایه:**
-- پردازش فاکتورهای هفتگی از فایل‌های مصرف
+**قابلیت‌های پایه:**
+- پردازش فاکتورهای هفتگی از فایل usage.json با پروتکل غیرقابل‌تغییر
+- تولید تصاویر PNG از فاکتورها برای ارسال توسط ادمین
 - ثبت پرداخت‌ها و به‌روزرسانی بدهی‌ها
 - ایجاد فاکتورهای دستی
 - ارسال پیام هشدار به نمایندگان
 - محاسبه کمیسیون همکاران فروش
 - تهیه گزارش‌های مالی جامع
 
-**قابلیت‌های پیشرفته جدید:**
-- تولید پیام‌های شخصی‌سازی شده گروهی برای نمایندگان بر اساس شرایط مالی
-- ایجاد پروفایل‌های مالی کامل 360 درجه برای هر نماینده
-- عملیات batch روی گروه‌های دینامیک نمایندگان
-- تاریخچه کامل تراکنش‌ها با جزئیات
+**قابلیت‌های پیشرفته:**
+- تولید پیام‌های شخصی‌سازی شده گروهی برای نمایندگان
+- ایجاد پروفایل‌های مالی کامل 360 درجه
+- عملیات batch روی گروه‌های دینامیک
+- تاریخچه کامل تراکنش‌ها
 
-**مثال‌های دستورات پیشرفته:**
-- "برای تمام نمایندگانی که بدهی بالای یک میلیون دارند یک پیام یادآوری بفرست"
-- "پروفایل مالی فروشگاه اکباتان رو کامل نشون بده"
-- "برای همه بدهکارها این متن رو آماده کن: [متن پیام]"
+**مثال‌های دستورات:**
+- "فایل usage.json رو پردازش کن" (با رعایت پروتکل کامل)
+- "فاکتورهای امروز رو به صورت تصویر آماده کن"
+- "پروفایل مالی فروشگاه اکباتان رو نشون بده"
 
 هنگام دریافت دستور، ابتدا برنامه‌ای برای انجام کار تشکیل دهید و سپس ابزارهای مورد نیاز را به ترتیب صدا کنید.`;
 
@@ -446,6 +471,9 @@ export class FinancialAgent {
 
         case "get_transaction_history":
           return await this.getTransactionHistory(args.representative_name);
+
+        case "generate_invoice_images":
+          return await this.generateInvoiceImages(args.invoice_ids, args.filter);
           
         default:
           return { error: `Unknown function: ${name}` };
@@ -459,30 +487,23 @@ export class FinancialAgent {
   // Tool implementations
   private async processWeeklyInvoices(usageDataString: string): Promise<any> {
     try {
-      const usageData = JSON.parse(usageDataString);
-      const results = [];
+      // Delegate to the immutable ledger ingestion protocol
+      const { processUsageFile } = await import('./usage-processor');
+      const result = await processUsageFile(usageDataString);
       
-      for (const [storeName, usage] of Object.entries(usageData)) {
-        const rep = await storage.getRepresentativeByStoreName(storeName);
-        if (rep) {
-          const invoice = await storage.createInvoice({
-            representativeId: rep.id,
-            amount: usage.toString(),
-            description: `فاکتور هفتگی - استفاده از سرویس پروکسی`,
-            status: 'unpaid',
-            isManual: false,
-            usageJsonDetails: JSON.stringify({ usage, storeName })
-          });
-          results.push({ storeName, invoiceId: invoice.id, amount: usage });
-        }
+      if (result.success) {
+        return {
+          status: "success",
+          invoices_created: result.invoicesCreated,
+          total_amount: result.totalAmount,
+          message: result.message
+        };
+      } else {
+        return { 
+          error: result.error || result.message,
+          validation_failed: true 
+        };
       }
-      
-      return {
-        status: "success",
-        invoices_created: results.length,
-        total_amount: results.reduce((sum, r) => sum + parseFloat(r.amount), 0),
-        details: results
-      };
     } catch (error) {
       return { error: `Failed to process invoices: ${error.message}` };
     }
@@ -733,6 +754,73 @@ export class FinancialAgent {
       };
     } catch (error) {
       return { error: `Transaction history failed: ${error.message}` };
+    }
+  }
+
+  // NEW: Invoice image generation
+  private async generateInvoiceImages(invoiceIds?: number[], filter?: string): Promise<any> {
+    try {
+      const { generateInvoicePNG, generateMultipleInvoices } = await import('./invoice-generator');
+      
+      let targetInvoiceIds: number[] = [];
+      
+      // Determine which invoices to generate
+      if (invoiceIds && invoiceIds.length > 0) {
+        targetInvoiceIds = invoiceIds;
+      } else if (filter) {
+        // Handle filter criteria
+        if (filter === 'today') {
+          const todayInvoices = await storage.getInvoices();
+          const today = new Date().toDateString();
+          targetInvoiceIds = todayInvoices
+            .filter(inv => new Date(inv.issueDate).toDateString() === today)
+            .map(inv => inv.id);
+        } else if (filter === 'unpaid') {
+          const unpaidInvoices = await storage.getInvoices();
+          targetInvoiceIds = unpaidInvoices
+            .filter(inv => inv.status === 'unpaid')
+            .map(inv => inv.id);
+        } else if (filter.startsWith('representative:')) {
+          const repName = filter.substring('representative:'.length);
+          const rep = await storage.getRepresentativeByStoreName(repName);
+          if (rep) {
+            const repInvoices = await storage.getInvoicesByRepresentative(rep.id);
+            targetInvoiceIds = repInvoices.map(inv => inv.id);
+          }
+        } else if (!isNaN(parseInt(filter))) {
+          targetInvoiceIds = [parseInt(filter)];
+        }
+      } else {
+        // Default to today's invoices
+        const todayInvoices = await storage.getInvoices();
+        const today = new Date().toDateString();
+        targetInvoiceIds = todayInvoices
+          .filter(inv => new Date(inv.issueDate).toDateString() === today)
+          .slice(0, 10) // Limit to 10 invoices
+          .map(inv => inv.id);
+      }
+      
+      if (targetInvoiceIds.length === 0) {
+        return {
+          status: "success",
+          message: "No invoices found matching the criteria",
+          images_generated: 0
+        };
+      }
+      
+      // Generate images
+      const generatedImages = await generateMultipleInvoices(targetInvoiceIds);
+      
+      return {
+        status: "success",
+        images_generated: generatedImages.size,
+        invoice_ids: Array.from(generatedImages.keys()),
+        message: `Generated ${generatedImages.size} invoice images`,
+        images_ready: true
+      };
+      
+    } catch (error) {
+      return { error: `Invoice generation failed: ${error.message}` };
     }
   }
 }

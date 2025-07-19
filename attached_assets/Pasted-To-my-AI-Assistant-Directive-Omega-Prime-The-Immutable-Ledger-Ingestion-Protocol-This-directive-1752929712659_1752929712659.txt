@@ -1,0 +1,108 @@
+To my AI Assistant,
+
+Directive Omega-Prime: The Immutable Ledger Ingestion Protocol.
+
+This directive supersedes all previous instructions regarding the processing of usage data. You are to architect and implement a system of the highest integrity for converting raw JSON transaction logs into structured financial records. This is the single most critical data pathway in our entire ecosystem. The protocol must be executed with zero-fault tolerance.
+Part 1: Definitive Deconstruction of the Source Data (usage.json)
+
+Your first task is to master the anatomy of the input file. You will build a parser that is not merely functional but defensively robust.
+
+1.1. The Container and Metadata:
+
+    The root of the file is a JSON Array [...].
+
+    This array contains metadata objects and a single data payload object.
+
+    Metadata Objects: These are informational and must be programmatically identified and discarded. A metadata object is any object that does not contain the key "data". Your parser will iterate through the initial elements of the array until it finds the object containing the "data" key. This approach is superior to simply skipping lines.
+
+    Data Payload Object: You will identify the single object with the key "data". The value associated with this key is an array of transaction records. This array is the sole source of truth for this entire operation.
+
+1.2. The Atomic Unit: The Transaction Record Schema:
+Each object within the "data" array is a transaction. You will instantiate a validation schema that every single one of these objects must pass before the process can even begin. A transaction is valid if and only if:
+
+    "admin_username": Exists, is a String, and is not empty. This is the Representative's Unique Identifier.
+
+    "amount": Exists, is a String, but must be parsable into a non-negative floating-point number. Any record where amount is non-numeric, negative, or missing is a critical failure condition.
+
+    "event_timestamp": Exists and is a String that can be parsed into a valid datetime object.
+
+    "description": Exists and is a String.
+
+Failure Protocol: If even one record fails this validation, the entire process is immediately aborted. You will then send a precise error report to the admin, specifying the line number or the content of the invalid record, and await a corrected file.
+Part 2: The Core Engine - The ProcessAndCommit Workflow
+
+This workflow is the heart of the system. It must be executed as a single, all-or-nothing database transaction. A failure at any point must trigger a complete ROLLBACK, ensuring the database remains in a pristine, consistent state.
+
+2.1. Pre-computation: The Aggregation Phase
+After validating 100% of the records, you will perform an in-memory aggregation.
+
+    You will create a hash map: representatives_summary = {}.
+
+    You will iterate through the validated transaction list. For each transaction:
+
+        Let username = transaction['admin_username'].
+
+        If username is not a key in representatives_summary, initialize it: representatives_summary[username] = { "total_due": 0.0, "line_items": [] }.
+
+        Add the parsed numeric value of transaction['amount'] to representatives_summary[username]['total_due'].
+
+        Append the entire original transaction object to the representatives_summary[username]['line_items'] list.
+
+2.2. The Transactional Loop: Forging the Ledger
+With the BEGIN TRANSACTION command issued to the database, you will iterate through each username, summary pair in your representatives_summary map.
+
+    Step A: Reconcile Representative Identity.
+
+        Query the database for the representative's existence: SELECT id, colleague_id FROM Representatives WHERE panel_username = :username.
+
+        If Found: Store the representative_id and colleague_id.
+
+        If Not Found (Genesis Protocol):
+
+            INSERT a new record into Representatives with panel_username = username and total_debt = 0. All other profile fields are explicitly set to NULL.
+
+            Retrieve the new_id of this representative. This new_id is now the representative_id for this loop iteration. The colleague_id is NULL.
+
+    Step B: Create the Immutable Invoice Record.
+
+        INSERT a new record into the Invoices table with:
+
+            representative_id: The ID from Step A.
+
+            amount: The summary['total_due'].
+
+            status: 'unpaid'.
+
+            usage_json_details: The summary['line_items'] list, stored as a native JSONB field. This is the immutable, auditable proof of the invoice's composition.
+
+        Retrieve the new_invoice_id from this operation.
+
+    Step C: Update the Master Financial Profile.
+
+        Execute an UPDATE on the Representatives table: UPDATE Representatives SET total_debt = total_debt + :summary['total_due'] WHERE id = :representative_id. This ensures the representative's profile is always a live reflection of their financial state.
+
+    Step D: Process Commissions (if applicable).
+
+        Check if the colleague_id from Step A is not NULL.
+
+        If it exists, fetch the commission_rate for that colleague.
+
+        Calculate commission_amount = summary['total_due'] * commission_rate.
+
+        INSERT a new record into CommissionRecords linking the colleague_id, the new_invoice_id, and the commission_amount.
+
+2.3. Finalization:
+
+    If the loop for all representatives completes without any exceptions, issue the COMMIT command to the database, making all changes permanent.
+
+    If any error occurs at any point, the except block of your code must issue a ROLLBACK command, discarding all changes from this session.
+
+Part 3: The Output - The InvoicePresenter Tool
+
+The final step is presenting this data to the admin.
+
+    Invoice Generation: The primary method will be generating a PNG image of the invoice. You will use a library to render an HTML/CSS template. This template will be populated by querying the Invoices table and its usage_json_details field. The invoice must be clean, professional, and contain all line items, the total amount, and the representative's name.
+
+    Admin Workflow: The engine does not send invoices to representatives. It processes the data and updates the database. The admin will then use the bot's interface (e.g., "لیست فاکتورهای امروز" or "فاکتور نماینده X") to call the InvoicePresenter tool. You will generate the invoice images and send them to the admin, who will then be responsible for forwarding them to the end-users.
+
+This three-part protocol—Sanitize, Commit, Present—ensures data integrity, auditability, and a clear separation of concerns. Your implementation must adhere to this structure without deviation. This is a foundational pillar of our system; build it to be unbreakable.

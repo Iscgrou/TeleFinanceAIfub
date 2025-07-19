@@ -58,7 +58,8 @@ export function isDestructiveAction(toolName: string): boolean {
     'create_manual_invoice',
     'calculate_commissions',
     'send_telegram_message',
-    'execute_batch_messaging'
+    'execute_batch_messaging',
+    'generate_invoice_images' // While not modifying DB, it generates files that admin sends out
   ];
   
   return destructiveActions.includes(toolName);
@@ -105,6 +106,15 @@ export function generateActionDescription(toolCalls: Array<{ name: string; args:
         break;
       case 'get_transaction_history':
         actionDesc = `دریافت تاریخچه کامل تراکنش‌های '${args.representative_name}'`;
+        break;
+      case 'generate_invoice_images':
+        if (args.invoice_ids) {
+          actionDesc = `تولید تصاویر برای ${args.invoice_ids.length} فاکتور`;
+        } else if (args.filter) {
+          actionDesc = `تولید تصاویر فاکتور با فیلتر: ${args.filter}`;
+        } else {
+          actionDesc = 'تولید تصاویر فاکتورهای امروز';
+        }
         break;
       default:
         actionDesc = `اجرای عملیات: ${name}`;

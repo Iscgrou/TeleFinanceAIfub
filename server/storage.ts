@@ -170,6 +170,16 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getInvoiceById(id: number): Promise<Invoice | undefined> {
+    const result = await db.select().from(invoices).where(eq(invoices.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getRepresentativeById(id: number): Promise<Representative | undefined> {
+    const result = await db.select().from(representatives).where(eq(representatives.id, id)).limit(1);
+    return result[0];
+  }
+
   async getDashboardStats(): Promise<{
     totalDebt: string;
     pendingCommissions: string;
