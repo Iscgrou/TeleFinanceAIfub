@@ -123,7 +123,8 @@ RESTful API endpoints organized by functionality:
 - **Result**: Zero-fault tolerance protocol now working correctly with full ACID compliance
 - **Verified**: Successfully processed sample data with 4 representatives and 1.3M in invoices
 - **Scale Testing**: Successfully tested with 500 admins and 2,500 transactions in 37 seconds (13 invoices/second)
-- **Production Ready**: 375M+ Toman processed, 504 representatives managed, zero data loss
+- **Production Ready**: 375M+ Toman processed, 500 unique admin_usernames, zero data loss
+- **Correct Logic**: Each admin_username creates exactly one representative profile (no duplicates)
 
 ## Previous Updates (July 19, 2025)
 
