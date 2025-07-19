@@ -1,0 +1,124 @@
+Your progress has been excellent. We are now moving beyond single-user actions to implement sophisticated, multi-user workflows and comprehensive data profiling. Your next evolution is to become a true operational partner that can automate repetitive, large-scale communication tasks and provide deep financial insights on demand.
+
+You are to implement the following two mission-critical capabilities, ensuring there are no functional gaps.
+1. New Core Capability: Intelligent Batch Operations & Personalized Messaging
+
+The Mandate: You must be able to execute a single admin command across a dynamic subset of Representatives. This is not about sending one message to a group; it's about generating multiple, personalized outputs for the admin to use. The admin delegates the repetitive work to you.
+
+Scenario to Implement: The admin gives a command like, "برای تمام نماینده‌هایی که بدهی بالای یک میلیون تومان دارند، یک پیام یادآوری بفرست." or "این متن رو بگیر و برای همه بدهکارها با اطلاعات خودشون آماده کن: [متن پیام]".
+
+Implementation Architecture:
+
+    Dynamic Sub-grouping (The "Who"):
+
+        Your first step in the agentic loop must be to identify the target group. You need to enhance your query_db tool or create a new, more powerful one (query_representatives).
+
+        This tool must accept complex filtering criteria extracted by your Gemini model, such as debt_amount > 1000000, invoice_due_date < 'YYYY-MM-DD', or simply debt_amount > 0.
+
+        The tool will query the database and return a list of Representative objects (or their IDs) that match the criteria.
+
+    Content Generation (The "What"):
+
+        You must be able to handle two types of content:
+
+            AI-Generated: If the admin says "یک پیام یادآوری بنویس", you (the Gemini model) will generate a professional, polite reminder template.
+
+            Admin-Provided: If the admin provides a template, you will use that.
+
+        Crucially, your template (whether AI or admin-generated) must use placeholders, such as {store_name} and {debt_amount}.
+
+    The Batch Processing Loop (The "How"):
+
+        Once you have the list of target representatives and the message template, your backend will enter a loop.
+
+        For each representative in the list:
+
+            It will take the template message.
+
+            It will replace the placeholders {store_name} and {debt_amount} with the actual data of that specific representative from the database.
+
+            It will generate a fully-formed, personalized message.
+
+            It will send this single, complete message back to the admin's Telegram chat.
+
+        Result: If there are 20 indebted representatives, the admin will receive 20 separate, ready-to-forward messages in their chat, one after another.
+
+    Confirmation and Summary:
+
+        Before starting the loop, you must use the "Human-in-the-Loop" protocol: "قصد دارم برای ۲۰ نماینده بدهکار پیام یادآوری شخصی‌سازی شده تولید کنم. آیا تایید می‌کنید؟ [✅ بله] [❌ خیر]".
+
+        After the loop completes, you provide a summary: "✅ عملیات کامل شد. ۲۰ پیام یادآوری برای فوروارد آماده است."
+
+2. New Core Feature: The Dynamic Financial Profile
+
+The Mandate: Every Representative must have a comprehensive, real-time financial profile. This is not just a row in a table; it's a living summary of their entire financial relationship with the business.
+
+Implementation Architecture:
+
+    Database Schema Refinement:
+
+        Your Representatives table is the central hub. Ensure the total_debt field is robustly managed.
+
+        This field must be updated by database triggers or application-level logic whenever a related event occurs:
+
+            On Invoices table INSERT: UPDATE Representatives SET total_debt = total_debt + new_invoice.amount WHERE id = new_invoice.representative_id;
+
+            On Payments table INSERT: UPDATE Representatives SET total_debt = total_debt - new_payment.amount WHERE id = new_payment.representative_id;
+
+        This ensures the total_debt is always accurate and never needs to be calculated on the fly for simple queries.
+
+    The /profile Command & AI Integration:
+
+        You must implement a new command or intent: get_profile. An admin can trigger this by typing /profile فروشگاه اکباتان or asking, "پروفایل مالی فروشگاه اکباتان رو بهم نشون بده".
+
+        Your agent will identify the target representative.
+
+        Your backend will then execute a function (generate_financial_profile) that gathers all relevant data for that representative.
+
+    The Profile Structure (The Output):
+
+        The output must be a single, well-formatted message that provides a 360-degree view. Use Markdown for clarity.
+
+    Example Output for "پروفایل فروشگاه اکباتان":
+    Generated code
+
+      
+👤 **پروفایل مالی: فروشگاه اکباتان**
+
+**اطلاعات پایه:**
+- **همکار فروش معرف:** علی رضایی
+- **یوزرنیم پنل:** `ekbatan_panel`
+- **آی‌دی تلگرام:** `@ekbatan_support`
+
+---
+
+**وضعیت مالی فعلی:**
+- 🟢 **مانده حساب کل:** -۱,۵۰۰,۰۰۰ تومان (بدهکار)
+
+---
+
+**آخرین فعالیت‌ها:**
+- **آخرین فاکتور:**
+  - **تاریخ:** ۱۴۰۳/۰۴/۲۸
+  - **مبلغ:** ۲,۰۰۰,۰۰۰ تومان
+  - **وضعیت:** پرداخت نشده
+- **آخرین پرداخت:**
+  - **تاریخ:** ۱۴۰۳/۰۴/۲۲
+  - **مبلغ:** ۵۰۰,۰۰۰ تومان
+
+---
+
+**دکمه‌های عملیاتی:**
+[💰 ثبت پرداخت جدید] [📜 تاریخچه کامل فاکتورها] [✏️ ویرایش پروفایل]
+```4.  **Deep Dive with Action Buttons:**
+*   The action buttons at the bottom of the profile are essential.
+*   `[📜 تاریخچه کامل فاکتورها]` will trigger another function that queries the `Invoices` and `Payments` tables and returns a detailed, paginated list of all transactions for that user, allowing the admin to see their entire history.
+
+    
+
+IGNORE_WHEN_COPYING_START
+
+    Use code with caution.
+    IGNORE_WHEN_COPYING_END
+
+By implementing these two features, you will eliminate significant manual work for the admins and provide them with the precise, actionable information they need, exactly when they need it. This is the final step in making you an indispensable part of their operational workflow. Ensure your implementation is seamless and leaves no gaps.

@@ -82,7 +82,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllAdmins(): Promise<Admin[]> {
-    return await db.select().from(admins).orderBy(admins.fullName);
+    return await db.select().from(admins);
   }
 
   async getSalesColleagues(): Promise<SalesColleague[]> {
