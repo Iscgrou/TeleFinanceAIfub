@@ -1,13 +1,14 @@
 import { 
   admins, salesColleagues, representatives, invoices, payments, 
-  commissionRecords, systemSettings,
+  commissionRecords, systemSettings, invoiceTemplates,
   type Admin, type InsertAdmin,
   type SalesColleague, type InsertSalesColleague,
   type Representative, type InsertRepresentative,
   type Invoice, type InsertInvoice,
   type Payment, type InsertPayment,
   type CommissionRecord, type InsertCommissionRecord,
-  type SystemSettings, type InsertSystemSettings
+  type SystemSettings, type InsertSystemSettings,
+  type InvoiceTemplate, type InsertInvoiceTemplate
 } from "@shared/schema";
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
@@ -57,6 +58,15 @@ export interface IStorage {
     todayPayments: string;
     activeRepresentatives: number;
   }>;
+  
+  // Invoice template management
+  getInvoiceTemplates(): Promise<InvoiceTemplate[]>;
+  getActiveInvoiceTemplate(): Promise<InvoiceTemplate | null>;
+  getInvoiceTemplateById(id: number): Promise<InvoiceTemplate | null>;
+  createInvoiceTemplate(template: InsertInvoiceTemplate): Promise<InvoiceTemplate>;
+  updateInvoiceTemplate(id: number, template: Partial<InsertInvoiceTemplate>): Promise<InvoiceTemplate | null>;
+  deleteInvoiceTemplate(id: number): Promise<boolean>;
+  setActiveInvoiceTemplate(id: number): Promise<boolean>;
 }
 
 // Configure WebSocket for Node.js environment
@@ -318,6 +328,80 @@ export class DatabaseStorage implements IStorage {
       todayPayments,
       activeRepresentatives
     };
+  }
+
+  // Invoice template management
+  async getInvoiceTemplates(): Promise<InvoiceTemplate[]> {
+    return await db.select().from(invoiceTemplates).orderBy(desc(invoiceTemplates.createdAt));
+  }
+
+  async getActiveInvoiceTemplate(): Promise<InvoiceTemplate | null> {
+    const result = await db.select().from(invoiceTemplates)
+      .where(eq(invoiceTemplates.isActive, true))
+      .limit(1);
+    return result[0] || null;
+  }
+
+  async getInvoiceTemplateById(id: number): Promise<InvoiceTemplate | null> {
+    const result = await db.select().from(invoiceTemplates)
+      .where(eq(invoiceTemplates.id, id))
+      .limit(1);
+    return result[0] || null;
+  }
+
+  async createInvoiceTemplate(template: InsertInvoiceTemplate): Promise<InvoiceTemplate> {
+    // If this template is set as active, deactivate all others first
+    if (template.isActive) {
+      await db.update(invoiceTemplates)
+        .set({ isActive: false, updatedAt: new Date() })
+        .where(eq(invoiceTemplates.isActive, true));
+    }
+
+    const result = await db.insert(invoiceTemplates).values({
+      ...template,
+      updatedAt: new Date()
+    }).returning();
+    return result[0];
+  }
+
+  async updateInvoiceTemplate(id: number, template: Partial<InsertInvoiceTemplate>): Promise<InvoiceTemplate | null> {
+    // If this template is being set as active, deactivate all others first
+    if (template.isActive) {
+      await db.update(invoiceTemplates)
+        .set({ isActive: false, updatedAt: new Date() })
+        .where(eq(invoiceTemplates.isActive, true));
+    }
+
+    const result = await db.update(invoiceTemplates)
+      .set({ ...template, updatedAt: new Date() })
+      .where(eq(invoiceTemplates.id, id))
+      .returning();
+    return result[0] || null;
+  }
+
+  async deleteInvoiceTemplate(id: number): Promise<boolean> {
+    const result = await db.delete(invoiceTemplates)
+      .where(eq(invoiceTemplates.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async setActiveInvoiceTemplate(id: number): Promise<boolean> {
+    // First check if template exists
+    const template = await this.getInvoiceTemplateById(id);
+    if (!template) return false;
+
+    // Deactivate all templates
+    await db.update(invoiceTemplates)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(invoiceTemplates.isActive, true));
+
+    // Activate the specified template
+    await db.update(invoiceTemplates)
+      .set({ isActive: true, updatedAt: new Date() })
+      .where(eq(invoiceTemplates.id, id));
+
+    return true;
   }
 }
 

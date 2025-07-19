@@ -8,6 +8,7 @@ import Representatives from "@/pages/representatives";
 import Settings from "@/pages/settings";
 import Demo from "@/pages/demo";
 import RemindersPage from "./pages/RemindersPage";
+import InvoiceTemplatesPage from "./pages/InvoiceTemplatesPage";
 import TelegramInterface from "@/components/telegram-interface";
 import NotFound from "@/pages/not-found";
 

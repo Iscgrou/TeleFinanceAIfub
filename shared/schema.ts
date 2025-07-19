@@ -86,6 +86,19 @@ export const invoiceTemplates = pgTable('invoice_templates', {
   updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
 
+// Invoice template types
+export type InvoiceTemplate = typeof invoiceTemplates.$inferSelect;
+export type NewInvoiceTemplate = typeof invoiceTemplates.$inferInsert;
+
+// Create insert schema for invoice templates
+export const insertInvoiceTemplateSchema = createInsertSchema(invoiceTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export type InsertInvoiceTemplate = z.infer<typeof insertInvoiceTemplateSchema>;
+
 // Insert schemas
 export const insertAdminSchema = createInsertSchema(admins).omit({ createdAt: true });
 export const insertSalesColleagueSchema = createInsertSchema(salesColleagues).omit({ id: true, createdAt: true });
