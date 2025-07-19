@@ -250,6 +250,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mount reminder routes
+  const reminderRoutes = await import('./routes/reminders');
+  app.use("/api/reminders", reminderRoutes.default);
+
   // Initialize Telegram bot on startup
   setTimeout(async () => {
     try {

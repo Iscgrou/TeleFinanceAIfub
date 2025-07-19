@@ -39,6 +39,16 @@ app.use((req, res, next) => {
 
 (async () => {
   const server = await registerRoutes(app);
+  
+  // Initialize default reminder templates and rules
+  setTimeout(async () => {
+    try {
+      const { initializeDefaultReminders } = await import('./services/reminderInitializer');
+      await initializeDefaultReminders();
+    } catch (error) {
+      console.error('Failed to initialize reminders:', error);
+    }
+  }, 3000);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

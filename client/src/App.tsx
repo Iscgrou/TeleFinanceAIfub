@@ -7,6 +7,7 @@ import Dashboard from "@/pages/dashboard";
 import Representatives from "@/pages/representatives";
 import Settings from "@/pages/settings";
 import Demo from "@/pages/demo";
+import RemindersPage from "./pages/RemindersPage";
 import TelegramInterface from "@/components/telegram-interface";
 import NotFound from "@/pages/not-found";
 
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/" component={TelegramInterface} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/representatives" component={Representatives} />
+      <Route path="/reminders" component={RemindersPage} />
       <Route path="/settings" component={Settings} />
       <Route path="/demo" component={Demo} />
       <Route component={NotFound} />
