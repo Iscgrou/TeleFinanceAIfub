@@ -1,7 +1,8 @@
 import { db } from '../db';
 import { representatives, invoices, commissionRecords, salesColleagues } from '@shared/schema';
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, and } from 'drizzle-orm';
 import { storage } from '../storage';
+import { createHash } from 'crypto';
 
 // Transaction record schema validation
 interface TransactionRecord {
@@ -9,6 +10,7 @@ interface TransactionRecord {
   amount: string;
   event_timestamp: string;
   description: string;
+  event_type?: string; // Optional field from production data
 }
 
 interface ValidationResult {
@@ -162,15 +164,51 @@ export function aggregateTransactions(transactions: TransactionRecord[]): Aggreg
   return representatives_summary;
 }
 
+// Generate hash for idempotency check
+function generateTransactionHash(transactions: TransactionRecord[]): string {
+  const sortedTransactions = [...transactions].sort((a, b) => {
+    return a.event_timestamp.localeCompare(b.event_timestamp) || 
+           a.admin_username.localeCompare(b.admin_username);
+  });
+  
+  const hashContent = sortedTransactions.map(t => 
+    `${t.admin_username}|${t.amount}|${t.event_timestamp}|${t.description}`
+  ).join('\n');
+  
+  return createHash('sha256').update(hashContent).digest('hex');
+}
+
 // Part 3: The ProcessAndCommit Workflow
 export async function processAndCommitTransactions(aggregatedData: AggregatedData): Promise<ProcessingResult> {
   let invoicesCreated = 0;
   let totalAmount = 0;
+  const batchId = `batch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   
   try {
     // Start transaction
     await db.transaction(async (tx) => {
-      for (const [username, summary] of Object.entries(aggregatedData)) {
+      // Process in batches for better performance with 500+ admins
+      const entries = Object.entries(aggregatedData);
+      console.log(`Processing ${entries.length} representatives in single transaction...`);
+      
+      for (const [username, summary] of entries) {
+        // Generate hash for this representative's transactions
+        const transactionHash = generateTransactionHash(summary.line_items);
+        
+        // Check for duplicate processing
+        const existingInvoice = await tx
+          .select()
+          .from(invoices)
+          .where(and(
+            eq(invoices.usageHash, transactionHash),
+            eq(invoices.isManual, false)
+          ))
+          .limit(1);
+          
+        if (existingInvoice.length > 0) {
+          console.log(`Skipping duplicate invoice for ${username} - already processed with hash ${transactionHash}`);
+          continue;
+        }
         // Step A: Reconcile Representative Identity
         let representativeRecord = await tx
           .select()
@@ -215,7 +253,9 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
             description: `Usage-based invoice - ${summary.line_items.length} transactions`,
             status: 'unpaid',
             isManual: false,
-            usageJsonDetails: JSON.stringify(summary.line_items)
+            usageJsonDetails: JSON.stringify(summary.line_items),
+            usageHash: transactionHash,
+            processingBatchId: batchId
           })
           .returning();
         

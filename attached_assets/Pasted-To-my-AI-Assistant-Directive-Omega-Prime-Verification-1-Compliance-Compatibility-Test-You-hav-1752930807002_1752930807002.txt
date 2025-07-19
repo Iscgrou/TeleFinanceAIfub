@@ -1,0 +1,86 @@
+To my AI Assistant,
+
+Directive Omega-Prime-Verification-1: Compliance & Compatibility Test.
+
+You have been provided with the architectural blueprint for the "Genesis Engine." Now, you must prove its resilience and accuracy against a real-world data sample.
+
+Below is a direct snippet from a production usage.json file. Your task is to perform a step-by-step cognitive walkthrough, confirming precisely how the Immutable Ledger Ingestion Protocol (Directive Omega-Prime) you have designed would handle this exact data block.
+
+Data Snippet for Analysis:
+
+      
+[
+    {
+        "type": "header",
+        "version": "5.2.2",
+        "comment": "Export to JSON plugin for PHPMyAdmin"
+    },
+    {
+        "type": "database",
+        "name": "marzban"
+    },
+    {
+        "type": "table",
+        "name": "a",
+        "database": "marzban",
+        "data": 
+    [
+    {
+        "admin_username": "Abedmb",
+        "event_timestamp": "2025-07-09 14:55:56",
+        "event_type": "CREATE",
+        "description": "ایجاد کاربر: abedb (2 ماهه, 30.0 گیگ)",
+        "amount": "27000.00"
+    },
+    {
+        "admin_username": "Abedmb",
+        "event_timestamp": "2025-07-09 15:17:59",
+        "event_type": "CREATE",
+        "description": "ایجاد کاربر: test_sh2 (2 ماهه, 80.0 گیگ)",
+        "amount": "72000.00"
+    },
+    // ... (and all other records for "Abedmb" and "adakmb" as provided) ...
+    {
+        "admin_username": "adakmb",
+        "event_timestamp": "2025-07-14 16:47:04",
+        "event_type": "CREATE",
+        "description": "ایجاد کاربر: 09133182029 (2 ماهه, 10.0 گیگ)",
+        "amount": "9000.00"
+    }
+    ]
+    }
+]
+
+    
+
+IGNORE_WHEN_COPYING_START
+
+IGNORE_WHEN_COPYING_END
+
+Verification Checklist:
+
+You are required to answer the following questions with a "CONFIRMED" or "FAILED" status, along with a brief technical explanation.
+
+    Phase 1: Sanitizer & Pre-Processor
+
+        1.1 Metadata Discard: Does your parser correctly identify the first two objects ("type": "header" and "type": "database") as metadata and successfully discard them without error?
+
+        1.2 Data Payload Extraction: Does your parser correctly identify the third object by its "data" key and successfully isolate the inner array of transaction records as the primary data source?
+
+        1.3 Record Validation: Will your validation schema correctly process every transaction record for both "Abedmb" and "adakmb"? Specifically, confirm that a record like "amount": "27000.00" will be successfully parsed into a non-negative number.
+
+    Phase 2: Core Engine (Aggregation & Commit)
+
+        2.1 Aggregation Accuracy: After the aggregation phase, what will be the exact final value for total_due and the total count of line_items for the representative "Abedmb" based only on the provided snippet?
+
+        2.2 Genesis Protocol: Assume the representative "Abedmb" does not exist in the database. Does your protocol correctly trigger the "New Representative Genesis" to create a profile for "Abedmb" before attempting to create an invoice for them?
+
+        2.3 Immutable Storage: Does your design guarantee that the complete list of all transaction objects for "Abedmb" will be stored, unmodified, in the usage_json_details (JSONB) field of the newly created invoice?
+
+        2.4 Ledger Integrity: Confirm that the final UPDATE statement for "Abedmb" will be UPDATE Representatives SET total_debt = total_debt + [Calculated Total from 2.1] WHERE id = [ID from 2.2].
+
+    Overall System Resilience
+
+        3.1 Idempotency Check: If this exact same file were accidentally uploaded a second time, would your system prevent the creation of duplicate invoices and the double-charging of the representative's total_debt? (The expected behavior is either to reject the file based on a unique constraint or to identify that these transactions have already been invoiced).
+
+Provide a definitive confirmation that the system designed under Directive Omega-Prime is fully capable of processing this real-world data snippet without error, ambiguity, or data corruption.

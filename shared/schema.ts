@@ -38,6 +38,8 @@ export const invoices = pgTable("invoices", {
   issueDate: timestamp("issue_date").defaultNow(),
   usageJsonDetails: jsonb("usage_json_details"),
   isManual: boolean("is_manual").default(false),
+  usageHash: text("usage_hash"), // Hash to prevent duplicate processing
+  processingBatchId: text("processing_batch_id"), // Track which batch created this invoice
 });
 
 export const payments = pgTable("payments", {
