@@ -30,6 +30,7 @@ export interface IStorage {
   // Representatives
   getRepresentatives(): Promise<Representative[]>;
   getRepresentativeByStoreName(storeName: string): Promise<Representative | undefined>;
+  getRepresentativeByPanelUsername(panelUsername: string): Promise<Representative | undefined>;
   getRepresentativeById(id: number): Promise<Representative | undefined>;
   createRepresentative(representative: InsertRepresentative): Promise<Representative>;
   updateRepresentativeDebt(id: number, newDebt: string): Promise<void>;
@@ -222,6 +223,11 @@ export class DatabaseStorage implements IStorage {
 
   async getRepresentativeByStoreName(storeName: string): Promise<Representative | undefined> {
     const result = await db.select().from(representatives).where(eq(representatives.storeName, storeName)).limit(1);
+    return result[0];
+  }
+
+  async getRepresentativeByPanelUsername(panelUsername: string): Promise<Representative | undefined> {
+    const result = await db.select().from(representatives).where(eq(representatives.panelUsername, panelUsername)).limit(1);
     return result[0];
   }
 

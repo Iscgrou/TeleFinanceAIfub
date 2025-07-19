@@ -58,11 +58,13 @@ export async function sendInvoiceMessage(chatId: string, invoiceId: number): Pro
     }
     
     // Format invoice as text with emojis and Persian text
+    const portalUrl = `${process.env.REPL_URL || 'https://tele-finance-ai-iscdevtech.replit.app'}/representatives/portal/${representative.panelUsername}`;
+    
     const invoiceText = `
 📋 <b>فاکتور شماره ${invoiceId}</b>
 
 🏪 نماینده: ${representative.storeName}
-👤 صاحب فروشگاه: ${representative.ownerName}
+👤 صاحب فروشگاه: ${representative.ownerName || 'null'}
 📱 شناسه پنل: ${representative.panelUsername}
 
 💰 مبلغ فاکتور: <b>${parseFloat(invoice.amount).toLocaleString('fa-IR')} تومان</b>
@@ -70,7 +72,9 @@ export async function sendInvoiceMessage(chatId: string, invoiceId: number): Pro
 🔍 وضعیت: <b>${invoice.status === 'unpaid' ? 'پرداخت نشده ❌' : 
                   invoice.status === 'paid' ? 'پرداخت شده ✅' : 'پرداخت جزئی 🔄'}</b>
 
-ℹ️ برای مشاهده جزئیات کامل فاکتور، از دشبورد وب استفاده کنید.
+ℹ️ برای مشاهده جزئیات کامل فاکتور، وارد لینک زیر بشوید
+
+${portalUrl}
 
 <i>تولید شده توسط سیستم مدیریت مالی 🤖</i>
     `.trim();

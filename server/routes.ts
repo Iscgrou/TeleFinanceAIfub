@@ -71,6 +71,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Representative portal endpoints
+  app.get("/api/representatives/by-username/:username", async (req, res) => {
+    try {
+      const { username } = req.params;
+      const representative = await storage.getRepresentativeByPanelUsername(username);
+      if (!representative) {
+        return res.status(404).json({ message: "نماینده یافت نشد" });
+      }
+      res.json(representative);
+    } catch (error) {
+      res.status(500).json({ message: "خطا در دریافت اطلاعات نماینده" });
+    }
+  });
+
+  app.get("/api/representatives/:id/invoices", async (req, res) => {
+    try {
+      const representativeId = parseInt(req.params.id);
+      const invoices = await storage.getInvoicesByRepresentative(representativeId);
+      res.json(invoices);
+    } catch (error) {
+      res.status(500).json({ message: "خطا در دریافت فاکتورها" });
+    }
+  });
+
+  app.get("/api/invoices/:id/detail", async (req, res) => {
+    try {
+      const invoiceId = parseInt(req.params.id);
+      const invoice = await storage.getInvoiceById(invoiceId);
+      
+      if (!invoice) {
+        return res.status(404).json({ message: "فاکتور یافت نشد" });
+      }
+
+      // Parse usage details to line items
+      let lineItems = [];
+      if (invoice.usageJsonDetails) {
+        try {
+          const details = invoice.usageJsonDetails;
+          if (Array.isArray(details)) {
+            lineItems = details.map((item: any) => ({
+              description: item.description || 'ایجاد کاربر',
+              amount: parseFloat(item.amount || '0'),
+              date: item.event_timestamp || invoice.issueDate
+            }));
+          }
+        } catch (error) {
+          console.log('Error parsing usage details:', error);
+        }
+      }
+
+      res.json({
+        invoice,
+        lineItems
+      });
+    } catch (error) {
+      res.status(500).json({ message: "خطا در دریافت جزئیات فاکتور" });
+    }
+  });
+
   // Enhanced pagination endpoint for scalability
   app.get("/api/representatives/paginated", async (req, res) => {
     try {

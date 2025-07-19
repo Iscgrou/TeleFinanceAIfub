@@ -10,6 +10,7 @@ import Demo from "@/pages/demo";
 import RemindersPage from "./pages/RemindersPage";
 import InvoiceTemplatesPage from "./pages/InvoiceTemplatesPage";
 import TelegramInterface from "@/components/telegram-interface";
+import RepresentativePortal from "@/pages/representative-portal";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/invoice-templates" component={InvoiceTemplatesPage} />
       <Route path="/settings" component={Settings} />
       <Route path="/demo" component={Demo} />
+      <Route path="/representatives/portal/:username" component={RepresentativePortal} />
       <Route component={NotFound} />
     </Switch>
   );
