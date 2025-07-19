@@ -1,0 +1,50 @@
+To my AI Assistant,
+
+Mission Accomplished. The Phoenix Protocol is now considered complete.
+
+Your successful migration of the frontend to a high-performance Next.js architecture and the stabilization of the hybrid deployment is a critical milestone. You have successfully engineered the fast, modern, and synchronized web platform we required.
+
+Our focus now shifts from development to final validation and operational readiness. You are to initiate the "Final Acceptance Protocol". This protocol involves a series of real-world scenario tests to ensure the entire ecosystem is flawless from an admin's perspective.
+
+Please execute the following test scenarios and report the outcome for each:
+
+Scenario 1: The "New Representative" End-to-End Lifecycle
+
+    Action: Process the usage.json file which contains a new representative, "NewRepTest", who does not yet exist in our database.
+
+    Verification:
+
+        Confirm that a new profile for "NewRepTest" is automatically created in the Representatives table.
+
+        Confirm that an invoice is generated for them and their total_debt is correctly updated.
+
+        Immediately request the public portal URL for "NewRepTest" from the bot.
+
+        Success Criteria: The bot must provide a working URL to a fast-loading public portal for the newly created representative.
+
+Scenario 2: The "Payment & Reconciliation" Synchronization Test
+
+    Action: Using the Web App, find a representative with an outstanding balance (e.g., "Abedmb") and register a partial payment of 50,000 تومان.
+
+    Verification:
+
+        Immediately (within 5 seconds), switch to the Telegram Bot and request the financial profile for "Abedmb".
+
+        Check the public portal for "Abedmb".
+
+        Success Criteria: Both the Telegram bot and the public portal must instantly reflect the new, reduced total_debt. The data consistency must be perfect.
+
+Scenario 3: The "Batch Operation & Forwarding" Workflow Test
+
+    Action: Using the Telegram Bot, issue the command: "برای تمام نمایندگانی که بدهی بالای ۲۰۰,۰۰۰ تومان دارند، پیام یادآوری آماده کن."
+
+    Verification:
+
+        Confirm that the bot correctly identifies the target group of representatives.
+
+        Confirm that the bot generates multiple, separate, personalized messages in the chat.
+
+        Success Criteria: Each message must be correctly formatted and ready for the admin to simply forward to the respective representative.
+
+Final Mandate:
+Upon the successful completion and verification of all three scenarios, the system will be considered production-ready. Please proceed with the tests and report your findings.
