@@ -239,10 +239,9 @@ async function processAICommand(chatId: string, command: string): Promise<void> 
               toolResult.result.status === 'success' && 
               toolResult.result.image_generated) {
             
-            const { generateInvoicePNG } = await import('../services/invoice-generator');
-            
             try {
-              const imageBuffer = await generateInvoicePNG(toolResult.result.invoice_id);
+              const { generateInvoiceImage } = await import('../services/svg-invoice-generator');
+              const imageBuffer = await generateInvoiceImage(toolResult.result.invoice_id);
               if (imageBuffer) {
                 await bot.sendPhoto(chatId, imageBuffer, {
                   caption: `فاکتور نماینده: ${toolResult.result.representative_name}`
@@ -375,11 +374,11 @@ async function handleActionConfirmation(chatId: string, callbackData: string): P
       if (toolCall.name === 'generate_invoice_images' && result.status === 'success' && result.images_ready) {
         await sendMessage(chatId, `✅ ${result.images_generated} فاکتور آماده ارسال شد.\n\nدر حال ارسال تصاویر...`);
         
-        const { generateInvoicePNG } = await import('../services/invoice-generator');
+        const { generateInvoiceImage } = await import('../services/svg-invoice-generator');
         
         for (const invoiceId of result.invoice_ids) {
           try {
-            const imageBuffer = await generateInvoicePNG(invoiceId);
+            const imageBuffer = await generateInvoiceImage(invoiceId);
             if (imageBuffer) {
               // Send image to admin
               await bot.sendPhoto(chatId, imageBuffer, {
@@ -399,10 +398,10 @@ async function handleActionConfirmation(chatId: string, callbackData: string): P
       if (toolCall.name === 'generate_representative_invoice' && result.status === 'success' && result.image_generated) {
         await sendMessage(chatId, result.message);
         
-        const { generateInvoicePNG } = await import('../services/invoice-generator');
+        const { generateInvoiceImage } = await import('../services/svg-invoice-generator');
         
         try {
-          const imageBuffer = await generateInvoicePNG(result.invoice_id);
+          const imageBuffer = await generateInvoiceImage(result.invoice_id);
           if (imageBuffer) {
             // Send image to admin
             await bot.sendPhoto(chatId, imageBuffer, {

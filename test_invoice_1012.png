@@ -1,0 +1,10 @@
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 50
+ETag: W/"32-4df9MYd0D0sU7xeOuc9OcQhOMyY"
+Date: Sat, 19 Jul 2025 16:43:58 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Invoice not found or generation failed"}

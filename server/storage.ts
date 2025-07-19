@@ -30,12 +30,14 @@ export interface IStorage {
   // Representatives
   getRepresentatives(): Promise<Representative[]>;
   getRepresentativeByStoreName(storeName: string): Promise<Representative | undefined>;
+  getRepresentativeById(id: number): Promise<Representative | undefined>;
   createRepresentative(representative: InsertRepresentative): Promise<Representative>;
   updateRepresentativeDebt(id: number, newDebt: string): Promise<void>;
 
   // Invoices
   getInvoices(): Promise<Invoice[]>;
   getInvoicesByRepresentative(representativeId: number): Promise<Invoice[]>;
+  getInvoiceById(id: number): Promise<Invoice | undefined>;
   createInvoice(invoice: InsertInvoice): Promise<Invoice>;
 
   // Payments
@@ -223,6 +225,11 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async getRepresentativeById(id: number): Promise<Representative | undefined> {
+    const result = await db.select().from(representatives).where(eq(representatives.id, id)).limit(1);
+    return result[0];
+  }
+
   async createRepresentative(insertRepresentative: InsertRepresentative): Promise<Representative> {
     const result = await db.insert(representatives).values(insertRepresentative).returning();
     return result[0];
@@ -239,6 +246,11 @@ export class DatabaseStorage implements IStorage {
 
   async getInvoicesByRepresentative(representativeId: number): Promise<Invoice[]> {
     return await db.select().from(invoices).where(eq(invoices.representativeId, representativeId)).orderBy(desc(invoices.issueDate));
+  }
+
+  async getInvoiceById(id: number): Promise<Invoice | undefined> {
+    const result = await db.select().from(invoices).where(eq(invoices.id, id)).limit(1);
+    return result[0];
   }
 
   async createInvoice(insertInvoice: InsertInvoice): Promise<Invoice> {

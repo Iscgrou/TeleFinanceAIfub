@@ -1,0 +1,303 @@
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: image/png
+Content-Disposition: attachment; filename="invoice_1012.png"
+Content-Length: 20504
+ETag: W/"5018-F7H+/U2QMixsEgrySjBAlOL1VM8"
+Date: Sat, 19 Jul 2025 16:48:03 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+<svg width="800" height="1200" xmlns="http://www.w3.org/2000/svg" direction="rtl">
+  <defs>
+    <style>
+      .persian-text { font-family: 'Tahoma', Arial, sans-serif; direction: rtl; text-anchor: end; }
+      .header-title { font-size: 28px; font-weight: bold; fill: #333; }
+      .header-subtitle { font-size: 14px; fill: #666; }
+      .section-title { font-size: 16px; font-weight: bold; fill: #333; }
+      .label { font-size: 12px; fill: #333; font-weight: bold; }
+      .value { font-size: 12px; fill: #333; }
+      .footer-text { font-size: 10px; fill: #666; text-anchor: middle; }
+      .total-amount { font-size: 16px; font-weight: bold; fill: #333; }
+      .status-unpaid { fill: #dc3545; }
+      .status-paid { fill: #28a745; }
+      .status-partially_paid { fill: #ffc107; }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="1200" fill="white" stroke="#ddd" stroke-width="1"/>
+  
+  <!-- Header -->
+  <rect x="0" y="0" width="800" height="100" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="400" y="35" class="persian-text header-title" text-anchor="middle">فاکتور فروش</text>
+  <text x="400" y="55" class="persian-text header-subtitle" text-anchor="middle">سرویس پروکسی پرسرعت</text>
+  <line x1="50" y1="80" x2="750" y2="80" stroke="#333" stroke-width="2"/>
+  
+  <!-- Representative Info -->
+  <text x="750" y="130" class="persian-text section-title">اطلاعات نماینده</text>
+  <text x="750" y="150" class="persian-text label">نام فروشگاه:</text>
+  <text x="550" y="150" class="persian-text value">Abedmb</text>
+  <text x="750" y="170" class="persian-text label">نام مالک:</text>
+  <text x="550" y="170" class="persian-text value">نامشخص</text>
+  <text x="750" y="190" class="persian-text label">نام کاربری پنل:</text>
+  <text x="550" y="190" class="persian-text value">Abedmb</text>
+  
+  <!-- Invoice Info -->
+  <text x="350" y="130" class="persian-text section-title">اطلاعات فاکتور</text>
+  <text x="350" y="150" class="persian-text label">شماره فاکتور:</text>
+  <text x="200" y="150" class="persian-text value">#1012</text>
+  <text x="350" y="170" class="persian-text label">تاریخ صدور:</text>
+  <text x="200" y="170" class="persian-text value">۱۴۰۴/۴/۲۸</text>
+  <text x="350" y="190" class="persian-text label">وضعیت:</text>
+  <text x="200" y="190" class="persian-text value status-unpaid">پرداخت نشده</text>
+  
+  <!-- Line Items Section -->
+  
+  <rect x="50" y="220" width="700" height="30" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="240" class="persian-text label">ردیف</text>
+  <text x="600" y="240" class="persian-text label">شرح خدمات</text>
+  <text x="300" y="240" class="persian-text label">مبلغ (تومان)</text>
+  <text x="150" y="240" class="persian-text label">تاریخ</text>
+  
+  
+  <rect x="50" y="260" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="275" class="persian-text value" text-anchor="middle">1</text>
+  <text x="600" y="275" class="persian-text value">ایجاد کاربر: abedb (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="275" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="275" class="persian-text value">۱۴۰۴/۴/۱۸</text>
+  
+  <rect x="50" y="285" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="300" class="persian-text value" text-anchor="middle">2</text>
+  <text x="600" y="300" class="persian-text value">ایجاد کاربر: test_sh2 (2 ماهه, 80.0 گیگ)</text>
+  <text x="300" y="300" class="persian-text value">۷۲٬۰۰۰</text>
+  <text x="150" y="300" class="persian-text value">۱۴۰۴/۴/۱۸</text>
+  
+  <rect x="50" y="310" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="325" class="persian-text value" text-anchor="middle">3</text>
+  <text x="600" y="325" class="persian-text value">ایجاد کاربر: khanomnazarbin (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="325" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="325" class="persian-text value">۱۴۰۴/۴/۱۸</text>
+  
+  <rect x="50" y="335" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="350" class="persian-text value" text-anchor="middle">4</text>
+  <text x="600" y="350" class="persian-text value">ایجاد کاربر: samirashirzad (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="350" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="350" class="persian-text value">۱۴۰۴/۴/۱۹</text>
+  
+  <rect x="50" y="360" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="375" class="persian-text value" text-anchor="middle">5</text>
+  <text x="600" y="375" class="persian-text value">ایجاد کاربر: aghayehasani (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="375" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="375" class="persian-text value">۱۴۰۴/۴/۱۹</text>
+  
+  <rect x="50" y="385" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="400" class="persian-text value" text-anchor="middle">6</text>
+  <text x="600" y="400" class="persian-text value">ایجاد کاربر: sourosh_h (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="400" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="400" class="persian-text value">۱۴۰۴/۴/۱۹</text>
+  
+  <rect x="50" y="410" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="425" class="persian-text value" text-anchor="middle">7</text>
+  <text x="600" y="425" class="persian-text value">ایجاد کاربر: mosamehsabee (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="425" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="425" class="persian-text value">۱۴۰۴/۴/۱۹</text>
+  
+  <rect x="50" y="435" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="450" class="persian-text value" text-anchor="middle">8</text>
+  <text x="600" y="450" class="persian-text value">ایجاد کاربر: aminjamadi1 (2 ماهه, 40.0 گیگ)</text>
+  <text x="300" y="450" class="persian-text value">۳۶٬۰۰۰</text>
+  <text x="150" y="450" class="persian-text value">۱۴۰۴/۴/۲۰</text>
+  
+  <rect x="50" y="460" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="475" class="persian-text value" text-anchor="middle">9</text>
+  <text x="600" y="475" class="persian-text value">ایجاد کاربر: emran (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="475" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="475" class="persian-text value">۱۴۰۴/۴/۲۰</text>
+  
+  <rect x="50" y="485" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="500" class="persian-text value" text-anchor="middle">10</text>
+  <text x="600" y="500" class="persian-text value">ایجاد کاربر: emran1 (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="500" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="500" class="persian-text value">۱۴۰۴/۴/۲۰</text>
+  
+  <rect x="50" y="510" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="525" class="persian-text value" text-anchor="middle">11</text>
+  <text x="600" y="525" class="persian-text value">ایجاد کاربر: khaleshiriinn (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="525" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="525" class="persian-text value">۱۴۰۴/۴/۲۱</text>
+  
+  <rect x="50" y="535" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="550" class="persian-text value" text-anchor="middle">12</text>
+  <text x="600" y="550" class="persian-text value">ایجاد کاربر: mojgankarimi (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="550" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="550" class="persian-text value">۱۴۰۴/۴/۲۱</text>
+  
+  <rect x="50" y="560" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="575" class="persian-text value" text-anchor="middle">13</text>
+  <text x="600" y="575" class="persian-text value">ایجاد کاربر: khanommahdavi (2 ماهه, 20.0 گیگ)</text>
+  <text x="300" y="575" class="persian-text value">۱۸٬۰۰۰</text>
+  <text x="150" y="575" class="persian-text value">۱۴۰۴/۴/۲۱</text>
+  
+  <rect x="50" y="585" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="600" class="persian-text value" text-anchor="middle">14</text>
+  <text x="600" y="600" class="persian-text value">ایجاد کاربر: aghayeshahinfar (2 ماهه, 20.0 گیگ)</text>
+  <text x="300" y="600" class="persian-text value">۱۸٬۰۰۰</text>
+  <text x="150" y="600" class="persian-text value">۱۴۰۴/۴/۲۱</text>
+  
+  <rect x="50" y="610" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="625" class="persian-text value" text-anchor="middle">15</text>
+  <text x="600" y="625" class="persian-text value">ایجاد کاربر: mobinafroozi (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="625" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="625" class="persian-text value">۱۴۰۴/۴/۲۱</text>
+  
+  <rect x="50" y="635" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="650" class="persian-text value" text-anchor="middle">16</text>
+  <text x="600" y="650" class="persian-text value">ایجاد کاربر: hajarhajiahmadi (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="650" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="650" class="persian-text value">۱۴۰۴/۴/۲۱</text>
+  
+  <rect x="50" y="660" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="675" class="persian-text value" text-anchor="middle">17</text>
+  <text x="600" y="675" class="persian-text value">ایجاد کاربر: khanomilkhani (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="675" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="675" class="persian-text value">۱۴۰۴/۴/۲۲</text>
+  
+  <rect x="50" y="685" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="700" class="persian-text value" text-anchor="middle">18</text>
+  <text x="600" y="700" class="persian-text value">ایجاد کاربر: javadrad (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="700" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="700" class="persian-text value">۱۴۰۴/۴/۲۲</text>
+  
+  <rect x="50" y="710" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="725" class="persian-text value" text-anchor="middle">19</text>
+  <text x="600" y="725" class="persian-text value">ایجاد کاربر: farzanehemdadi (2 ماهه, 20.0 گیگ)</text>
+  <text x="300" y="725" class="persian-text value">۱۸٬۰۰۰</text>
+  <text x="150" y="725" class="persian-text value">۱۴۰۴/۴/۲۲</text>
+  
+  <rect x="50" y="735" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="750" class="persian-text value" text-anchor="middle">20</text>
+  <text x="600" y="750" class="persian-text value">ایجاد کاربر: fatemeh (1 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="750" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="750" class="persian-text value">۱۴۰۴/۴/۲۲</text>
+  
+  <rect x="50" y="760" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="775" class="persian-text value" text-anchor="middle">21</text>
+  <text x="600" y="775" class="persian-text value">ایجاد کاربر: aghamajid (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="775" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="775" class="persian-text value">۱۴۰۴/۴/۲۳</text>
+  
+  <rect x="50" y="785" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="800" class="persian-text value" text-anchor="middle">22</text>
+  <text x="600" y="800" class="persian-text value">ایجاد کاربر: aminmansorikhahh (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="800" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="800" class="persian-text value">۱۴۰۴/۴/۲۳</text>
+  
+  <rect x="50" y="810" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="825" class="persian-text value" text-anchor="middle">23</text>
+  <text x="600" y="825" class="persian-text value">ایجاد کاربر: aminmi (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="825" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="825" class="persian-text value">۱۴۰۴/۴/۲۳</text>
+  
+  <rect x="50" y="835" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="850" class="persian-text value" text-anchor="middle">24</text>
+  <text x="600" y="850" class="persian-text value">ایجاد کاربر: iraq_i (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="850" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="850" class="persian-text value">۱۴۰۴/۴/۲۴</text>
+  
+  <rect x="50" y="860" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="875" class="persian-text value" text-anchor="middle">25</text>
+  <text x="600" y="875" class="persian-text value">ایجاد کاربر: khanomghamnak (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="875" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="875" class="persian-text value">۱۴۰۴/۴/۲۴</text>
+  
+  <rect x="50" y="885" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="900" class="persian-text value" text-anchor="middle">26</text>
+  <text x="600" y="900" class="persian-text value">ایجاد کاربر: fatehinia (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="900" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="900" class="persian-text value">۱۴۰۴/۴/۲۴</text>
+  
+  <rect x="50" y="910" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="925" class="persian-text value" text-anchor="middle">27</text>
+  <text x="600" y="925" class="persian-text value">ایجاد کاربر: mohamaaminsahragard (2 ماهه, 40.0 گیگ)</text>
+  <text x="300" y="925" class="persian-text value">۳۶٬۰۰۰</text>
+  <text x="150" y="925" class="persian-text value">۱۴۰۴/۴/۲۵</text>
+  
+  <rect x="50" y="935" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="950" class="persian-text value" text-anchor="middle">28</text>
+  <text x="600" y="950" class="persian-text value">ایجاد کاربر: sajjadbehrozi (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="950" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="950" class="persian-text value">۱۴۰۴/۴/۲۵</text>
+  
+  <rect x="50" y="960" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="975" class="persian-text value" text-anchor="middle">29</text>
+  <text x="600" y="975" class="persian-text value">ایجاد کاربر: khanomhoseinian (2 ماهه, 20.0 گیگ)</text>
+  <text x="300" y="975" class="persian-text value">۱۸٬۰۰۰</text>
+  <text x="150" y="975" class="persian-text value">۱۴۰۴/۴/۲۵</text>
+  
+  <rect x="50" y="985" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="1000" class="persian-text value" text-anchor="middle">30</text>
+  <text x="600" y="1000" class="persian-text value">ایجاد کاربر: khanombagherzadehh (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="1000" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="1000" class="persian-text value">۱۴۰۴/۴/۲۵</text>
+  
+  <rect x="50" y="1010" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="1025" class="persian-text value" text-anchor="middle">31</text>
+  <text x="600" y="1025" class="persian-text value">ایجاد کاربر: mahdiashorii (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="1025" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="1025" class="persian-text value">۱۴۰۴/۴/۲۶</text>
+  
+  <rect x="50" y="1035" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="1050" class="persian-text value" text-anchor="middle">32</text>
+  <text x="600" y="1050" class="persian-text value">ایجاد کاربر: mehranalizadeh (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="1050" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="1050" class="persian-text value">۱۴۰۴/۴/۲۶</text>
+  
+  <rect x="50" y="1060" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="1075" class="persian-text value" text-anchor="middle">33</text>
+  <text x="600" y="1075" class="persian-text value">ایجاد کاربر: soroush_a (2 ماهه, 40.0 گیگ)</text>
+  <text x="300" y="1075" class="persian-text value">۳۶٬۰۰۰</text>
+  <text x="150" y="1075" class="persian-text value">۱۴۰۴/۴/۲۶</text>
+  
+  <rect x="50" y="1085" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="1100" class="persian-text value" text-anchor="middle">34</text>
+  <text x="600" y="1100" class="persian-text value">ایجاد کاربر: alireza_asghari (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="1100" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="1100" class="persian-text value">۱۴۰۴/۴/۲۶</text>
+  
+  <rect x="50" y="1110" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="1125" class="persian-text value" text-anchor="middle">35</text>
+  <text x="600" y="1125" class="persian-text value">ایجاد کاربر: alireza_asghari2 (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="1125" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="1125" class="persian-text value">۱۴۰۴/۴/۲۶</text>
+  
+  <rect x="50" y="1135" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="1150" class="persian-text value" text-anchor="middle">36</text>
+  <text x="600" y="1150" class="persian-text value">ایجاد کاربر: kazemii (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="1150" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="1150" class="persian-text value">۱۴۰۴/۴/۲۶</text>
+  
+  <rect x="50" y="1160" width="700" height="25" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="1175" class="persian-text value" text-anchor="middle">37</text>
+  <text x="600" y="1175" class="persian-text value">ایجاد کاربر: javadradkhah_2 (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="1175" class="persian-text value">۲۷٬۰۰۰</text>
+  <text x="150" y="1175" class="persian-text value">۱۴۰۴/۴/۲۶</text>
+  
+  <rect x="50" y="1185" width="700" height="25" fill="#f8f9fa" stroke="#ddd" stroke-width="1"/>
+  <text x="750" y="1200" class="persian-text value" text-anchor="middle">38</text>
+  <text x="600" y="1200" class="persian-text value">ایجاد کاربر: mohammadsafarpor (2 ماهه, 30.0 گیگ)</text>
+  <text x="300" y="1200" class="persian-text value">۲۴٬۰۰۰</text>
+  <text x="150" y="1200" class="persian-text value">۱۴۰۴/۴/۲۷</text>
+  
+  
+  
+  <!-- Total Section -->
+  <rect x="450" y="1230" width="300" height="60" fill="#f8f9fa" stroke="#333" stroke-width="2"/>
+  <text x="730" y="1250" class="persian-text label">جمع کل:</text>
+  <text x="730" y="1270" class="persian-text total-amount">۱٬۰۵۹٬۰۰۰ تومان</text>
+  
+  <!-- Footer -->
+  <text x="400" y="1330" class="persian-text footer-text">این فاکتور به صورت خودکار توسط سیستم مدیریت مالی تولید شده است</text>
+  <text x="400" y="1350" class="persian-text footer-text">در صورت هرگونه سوال با پشتیبانی تماس بگیرید</text>
+</svg>

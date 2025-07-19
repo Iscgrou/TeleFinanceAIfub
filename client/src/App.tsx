@@ -19,6 +19,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/representatives" component={Representatives} />
       <Route path="/reminders" component={RemindersPage} />
+      <Route path="/invoice-templates" component={InvoiceTemplatesPage} />
       <Route path="/settings" component={Settings} />
       <Route path="/demo" component={Demo} />
       <Route component={NotFound} />

@@ -1,0 +1,10 @@
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 67
+ETag: W/"43-v8w/IIv39SLSAJc0A5ijQ7gVogo"
+Date: Sat, 19 Jul 2025 16:46:45 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Invoice generation failed - PNG generator returned null"}

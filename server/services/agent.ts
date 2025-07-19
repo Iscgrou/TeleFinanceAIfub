@@ -42,22 +42,22 @@ const AVAILABLE_TOOLS: ToolFunction[] = [
     }
   },
   {
-    name: "generate_invoice_images",
-    description: "Generate PNG images for specified invoices for admin to send to representatives",
+    name: "generate_representative_invoice",
+    description: "Find representative by store name and generate their latest unpaid invoice image. Perfect for commands like 'فاکتور نماینده daryamb رو صادر کن'",
     parameters: {
       type: "object",
       properties: {
-        invoice_ids: {
-          type: "array",
-          items: { type: "number" },
-          description: "Array of invoice IDs to generate images for"
-        },
-        filter: {
+        representative_name: {
           type: "string",
-          description: "Filter criteria: 'today', 'unpaid', 'representative:name', or specific invoice ID"
+          description: "Store name or panel username of the representative to generate invoice for"
+        },
+        invoice_type: {
+          type: "string",
+          description: "Type of invoice to generate: 'latest_unpaid' (default), 'all_unpaid', or 'latest'",
+          enum: ["latest_unpaid", "all_unpaid", "latest"]
         }
       },
-      required: []
+      required: ["representative_name"]
     }
   },
   {
@@ -523,6 +523,9 @@ export class FinancialAgent {
         case "execute_batch_messaging":
           return await this.executeBatchMessaging(args.command_text, args.custom_template);
 
+        case "generate_representative_invoice":
+          return await this.generateRepresentativeInvoice(args.representative_name, args.invoice_type || 'latest_unpaid');
+
         case "generate_financial_profile":
           return await this.generateFinancialProfile(args.representative_name);
 
@@ -829,7 +832,7 @@ export class FinancialAgent {
   // NEW: Invoice image generation
   private async generateInvoiceImages(invoiceIds?: number[], filter?: string): Promise<any> {
     try {
-      const { generateInvoicePNG, generateMultipleInvoices } = await import('./invoice-generator');
+      const { generateInvoiceImage } = await import('./svg-invoice-generator');
       
       let targetInvoiceIds: number[] = [];
       
@@ -878,7 +881,13 @@ export class FinancialAgent {
       }
       
       // Generate images
-      const generatedImages = await generateMultipleInvoices(targetInvoiceIds);
+      const generatedImages = new Map();
+      for (const invoiceId of targetInvoiceIds) {
+        const imageBuffer = await generateInvoiceImage(invoiceId);
+        if (imageBuffer) {
+          generatedImages.set(invoiceId, imageBuffer);
+        }
+      }
       
       return {
         status: "success",
@@ -921,26 +930,50 @@ export class FinancialAgent {
           if (unpaidInvoices.length === 0) {
             return { error: `نماینده '${representativeName}' فاکتور پرداخت نشده‌ای ندارد.` };
           }
-          targetInvoice = unpaidInvoices[0];
+          targetInvoice = unpaidInvoices[0]; // Most recent unpaid
           break;
+        case 'latest_unpaid':
         default:
-          targetInvoice = invoices[0];
+          const latestUnpaid = invoices.filter(inv => inv.status === 'unpaid')[0];
+          if (!latestUnpaid) {
+            return { error: `نماینده '${representativeName}' فاکتور پرداخت نشده‌ای ندارد.` };
+          }
+          targetInvoice = latestUnpaid;
+          break;
       }
 
-      // Generate the invoice image
-      const { generateInvoicePNG } = await import('./invoice-generator');
-      const imagePath = await generateInvoicePNG(targetInvoice.id);
+      // Generate invoice image
+      const { generateInvoiceImage } = await import('./svg-invoice-generator');
+      const invoiceBuffer = await generateInvoiceImage(targetInvoice.id);
       
+      if (!invoiceBuffer) {
+        return { error: `خطا در تولید تصویر فاکتور برای نماینده '${representativeName}'.` };
+      }
+
+      // Save the image temporarily and get file path for Telegram
+      const fs = await import('fs');
+      const path = await import('path');
+      const tempDir = path.join(process.cwd(), 'temp');
+      
+      // Ensure temp directory exists
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      const filename = `invoice_${targetInvoice.id}_${Date.now()}.png`;
+      const filePath = path.join(tempDir, filename);
+      
+      // Write image to file
+      fs.writeFileSync(filePath, invoiceBuffer);
+
       return {
         status: "success",
         representative_name: representativeName,
         invoice_id: targetInvoice.id,
-        invoice_amount: parseFloat(targetInvoice.amount),
-        invoice_status: targetInvoice.status,
-        invoice_date: targetInvoice.issueDate,
-        image_generated: true,
-        image_path: imagePath,
-        message: `✅ فاکتور نماینده '${representativeName}' به صورت تصویر PNG آماده شد.\n💰 مبلغ: ${parseFloat(targetInvoice.amount).toLocaleString()} تومان\n📅 تاریخ: ${new Date(targetInvoice.issueDate).toLocaleDateString('fa-IR')}\n📋 وضعیت: ${targetInvoice.status === 'unpaid' ? 'پرداخت نشده' : targetInvoice.status === 'paid' ? 'پرداخت شده' : 'پرداخت جزئی'}`
+        invoice_amount: targetInvoice.amount,
+        invoice_file: filePath,
+        invoice_buffer: invoiceBuffer,
+        message: `فاکتور نماینده '${representativeName}' با موفقیت تولید شد. مبلغ: ${parseFloat(targetInvoice.amount).toLocaleString('fa-IR')} تومان`
       };
       
     } catch (error) {

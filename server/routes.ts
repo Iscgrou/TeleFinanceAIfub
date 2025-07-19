@@ -3,8 +3,54 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertSystemSettingsSchema } from "@shared/schema";
 import { initializeBot } from "./telegram/bot";
+import { generateInvoiceImage } from "./services/svg-invoice-generator";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Test invoice generation endpoint
+  app.get("/api/test/invoice/:id", async (req, res) => {
+    try {
+      const invoiceId = parseInt(req.params.id);
+      console.log(`Testing invoice generation for ID: ${invoiceId}`);
+      
+      // Debug: Check if data exists first
+      const testInvoice = await storage.getInvoiceById(invoiceId);
+      console.log('Found invoice:', testInvoice ? `ID ${testInvoice.id}, Amount: ${testInvoice.amount}` : 'null');
+      
+      if (!testInvoice) {
+        return res.status(404).json({ error: 'Invoice not found in database' });
+      }
+      
+      const testRep = await storage.getRepresentativeById(testInvoice.representativeId);
+      console.log('Found representative:', testRep ? `ID ${testRep.id}, Store: ${testRep.storeName}` : 'null');
+      
+      if (!testRep) {
+        return res.status(404).json({ error: 'Representative not found in database' });
+      }
+      
+      console.log('Generating image for invoice...');
+      const imageBuffer = await generateInvoiceImage(invoiceId);
+      console.log('Image generation result:', imageBuffer ? `Success - ${imageBuffer.length} bytes` : 'Failed - null returned');
+      
+      if (imageBuffer) {
+        // Check if it's SVG or PNG based on content
+        const isSvg = imageBuffer.toString().startsWith('<svg');
+        if (isSvg) {
+          res.setHeader('Content-Type', 'image/svg+xml');
+          res.setHeader('Content-Disposition', `attachment; filename="invoice_${invoiceId}.svg"`);
+        } else {
+          res.setHeader('Content-Type', 'image/png');
+          res.setHeader('Content-Disposition', `attachment; filename="invoice_${invoiceId}.png"`);
+        }
+        res.send(imageBuffer);
+      } else {
+        res.status(404).json({ error: 'Invoice generation failed - Image generator returned null' });
+      }
+    } catch (error) {
+      console.error('Invoice generation test error:', error);
+      res.status(500).json({ error: 'Invoice generation failed', details: error.message });
+    }
+  });
+
   // Dashboard API routes
   app.get("/api/dashboard/stats", async (req, res) => {
     try {
@@ -253,6 +299,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mount reminder routes
   const reminderRoutes = await import('./routes/reminders');
   app.use("/api/reminders", reminderRoutes.default);
+  
+  // Invoice templates routes
+  const invoiceTemplateRoutes = await import('./routes/invoice-templates');
+  app.use("/api/invoice-templates", invoiceTemplateRoutes.default);
 
   // Initialize Telegram bot on startup
   setTimeout(async () => {

@@ -1,10 +1,10 @@
 import puppeteer from 'puppeteer';
 import Handlebars from 'handlebars';
 import { storage } from '../storage';
-import { Invoice, Representative } from '@shared/schema';
+import { Invoice, Representative, InvoiceTemplate } from '@shared/schema';
 
-// Invoice template HTML
-const invoiceTemplate = `
+// Default invoice template HTML with template variable support
+const invoiceTemplateHTML = `
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -161,13 +161,13 @@ const invoiceTemplate = `
 <body>
   <div class="invoice-container">
     <div class="header">
-      <h1>فاکتور فروش</h1>
-      <p>سرویس پروکسی پرسرعت</p>
+      <h1>{{template.headerTitle}}</h1>
+      <p>{{template.headerSubtitle}}</p>
     </div>
     
     <div class="invoice-info">
       <div class="info-section">
-        <h3>اطلاعات نماینده</h3>
+        <h3>{{template.representativeLabel}}</h3>
         <p><strong>نام فروشگاه:</strong> {{storeName}}</p>
         <p><strong>یوزرنیم پنل:</strong> {{panelUsername}}</p>
         {{#if representativeName}}
@@ -179,7 +179,7 @@ const invoiceTemplate = `
       </div>
       
       <div class="info-section">
-        <h3>اطلاعات فاکتور</h3>
+        <h3>{{template.invoiceLabel}}</h3>
         <p><strong>شماره فاکتور:</strong> #{{invoiceId}}</p>
         <p><strong>تاریخ صدور:</strong> {{issueDate}}</p>
         <p><strong>وضعیت:</strong> <span class="status-badge status-{{status}}">{{statusText}}</span></p>
@@ -191,7 +191,7 @@ const invoiceTemplate = `
       <thead>
         <tr>
           <th style="width: 50px;">ردیف</th>
-          <th>شرح</th>
+          <th>{{template.lineItemLabel}}</th>
           <th style="width: 150px;">مبلغ (تومان)</th>
           <th style="width: 180px;">تاریخ</th>
         </tr>
@@ -215,7 +215,7 @@ const invoiceTemplate = `
     
     <div class="total-section">
       <div class="total-row">
-        <span>جمع کل:</span>
+        <span>{{template.totalLabel}}:</span>
         <span>{{totalAmount}} تومان</span>
       </div>
       {{#if previousDebt}}
@@ -225,14 +225,14 @@ const invoiceTemplate = `
       </div>
       {{/if}}
       <div class="total-row grand-total">
-        <span>مبلغ قابل پرداخت:</span>
+        <span>{{template.payableLabel}}:</span>
         <span>{{grandTotal}} تومان</span>
       </div>
     </div>
     
     <div class="footer">
-      <p>این فاکتور به صورت خودکار توسط سیستم مدیریت مالی تولید شده است</p>
-      <p>در صورت هرگونه سوال با پشتیبانی تماس بگیرید</p>
+      <p>{{template.footerText}}</p>
+      <p>{{template.footerContact}}</p>
     </div>
   </div>
 </body>
@@ -251,9 +251,34 @@ interface InvoiceData {
   lineItems?: any[];
 }
 
-// Generate invoice HTML
-function generateInvoiceHTML(data: InvoiceData): string {
+// Generate invoice HTML with template support
+async function generateInvoiceHTML(data: InvoiceData, template?: InvoiceTemplate): Promise<string> {
   const { invoice, representative, lineItems } = data;
+  
+  // Get active template if not provided
+  if (!template) {
+    template = await storage.getActiveInvoiceTemplate();
+  }
+  
+  // Use default template if none found
+  if (!template) {
+    template = {
+      id: 0,
+      name: 'Default',
+      headerTitle: 'فاکتور فروش',
+      headerSubtitle: 'سرویس پروکسی پرسرعت',
+      footerText: 'این فاکتور به صورت خودکار توسط سیستم مدیریت مالی تولید شده است',
+      footerContact: 'در صورت هرگونه سوال با پشتیبانی تماس بگیرید',
+      representativeLabel: 'اطلاعات نماینده',
+      invoiceLabel: 'اطلاعات فاکتور',
+      lineItemLabel: 'شرح خدمات',
+      totalLabel: 'جمع کل',
+      payableLabel: 'مبلغ قابل پرداخت',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+  }
   
   // Parse line items from usageJsonDetails
   let parsedLineItems = [];
@@ -277,6 +302,9 @@ function generateInvoiceHTML(data: InvoiceData): string {
   
   // Prepare template data
   const templateData = {
+    // Template configuration
+    template,
+    
     // Representative info
     storeName: representative.storeName,
     panelUsername: representative.panelUsername,
@@ -304,8 +332,8 @@ function generateInvoiceHTML(data: InvoiceData): string {
   };
   
   // Compile and render template
-  const template = Handlebars.compile(invoiceTemplate);
-  return template(templateData);
+  const compiledTemplate = Handlebars.compile(invoiceTemplateHTML);
+  return compiledTemplate(templateData);
 }
 
 // Generate invoice PNG
@@ -326,12 +354,24 @@ export async function generateInvoicePNG(invoiceId: number): Promise<Buffer | nu
     }
     
     // Generate HTML
-    const html = generateInvoiceHTML({ invoice, representative });
+    const html = await generateInvoiceHTML({ invoice, representative });
     
-    // Launch puppeteer
+    // Launch puppeteer with additional Replit-friendly options
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding'
+      ]
     });
     
     const page = await browser.newPage();
