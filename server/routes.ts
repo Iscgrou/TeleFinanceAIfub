@@ -1,7 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertSystemSettingsSchema } from "@shared/schema";
+import { 
+  insertSystemSettingsSchema,
+  insertRepresentativeSchema,
+  insertInvoiceSchema,
+  insertPaymentSchema
+} from "@shared/schema";
 import { initializeBot } from "./telegram/bot";
 import { generateInvoiceImage } from "./services/svg-invoice-generator";
 import { registerTelegramTestRoutes } from "./routes/test-telegram";
@@ -68,6 +73,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(representatives);
     } catch (error) {
       res.status(500).json({ message: "Error fetching representatives" });
+    }
+  });
+
+  // Create new representative
+  app.post("/api/representatives", async (req, res) => {
+    try {
+      const validatedData = insertRepresentativeSchema.parse(req.body);
+      const representative = await storage.createRepresentative(validatedData);
+      res.status(201).json(representative);
+    } catch (error) {
+      if (error.name === 'ZodError') {
+        res.status(400).json({ message: "Invalid representative data" });
+      } else {
+        res.status(500).json({ message: "خطا در ایجاد نماینده" });
+      }
+    }
+  });
+
+  // Update representative
+  app.patch("/api/representatives/:id", async (req, res) => {
+    try {
+      const representativeId = parseInt(req.params.id);
+      const updatedRep = await storage.updateRepresentative(representativeId, req.body);
+      
+      if (!updatedRep) {
+        return res.status(404).json({ message: "نماینده یافت نشد" });
+      }
+      
+      res.json(updatedRep);
+    } catch (error) {
+      res.status(500).json({ message: "خطا در بروزرسانی نماینده" });
+    }
+  });
+
+  // Delete representative
+  app.delete("/api/representatives/:id", async (req, res) => {
+    try {
+      const representativeId = parseInt(req.params.id);
+      const deleted = await storage.deleteRepresentative(representativeId);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "نماینده یافت نشد" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "خطا در حذف نماینده" });
     }
   });
 
@@ -241,12 +293,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create new invoice
+  app.post("/api/invoices", async (req, res) => {
+    try {
+      const validatedData = insertInvoiceSchema.parse(req.body);
+      const invoice = await storage.createInvoice(validatedData);
+      res.status(201).json(invoice);
+    } catch (error) {
+      if (error.name === 'ZodError') {
+        res.status(400).json({ message: "Invalid invoice data" });
+      } else {
+        res.status(500).json({ message: "خطا در ایجاد فاکتور" });
+      }
+    }
+  });
+
+  // Update invoice
+  app.patch("/api/invoices/:id", async (req, res) => {
+    try {
+      const invoiceId = parseInt(req.params.id);
+      const validatedData = req.body;
+      
+      // Validate status if provided
+      if (validatedData.status && !['unpaid', 'partially_paid', 'paid'].includes(validatedData.status)) {
+        return res.status(400).json({ message: "Invalid status value" });
+      }
+      
+      const updatedInvoice = await storage.updateInvoice(invoiceId, validatedData);
+      
+      if (!updatedInvoice) {
+        return res.status(404).json({ message: "فاکتور یافت نشد" });
+      }
+      
+      res.json(updatedInvoice);
+    } catch (error) {
+      res.status(500).json({ message: "خطا در بروزرسانی فاکتور" });
+    }
+  });
+
+  // Process weekly invoices
+  app.post("/api/invoices/process-weekly", async (req, res) => {
+    try {
+      const result = await storage.processWeeklyInvoices(req.body);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "خطا در پردازش فاکتورهای هفتگی" });
+    }
+  });
+
   app.get("/api/payments", async (req, res) => {
     try {
       const payments = await storage.getPayments();
       res.json(payments);
     } catch (error) {
-      res.status(500).json({ message: "Error fetching payments" });
+      res.status(500).json({ message: "خطا در دریافت پرداخت‌ها" });
+    }
+  });
+
+  // Create new payment
+  app.post("/api/payments", async (req, res) => {
+    try {
+      const validatedData = insertPaymentSchema.parse(req.body);
+      
+      // Additional validation for amount
+      const amount = parseFloat(validatedData.amount);
+      if (isNaN(amount) || amount < 0) {
+        return res.status(400).json({ message: "مبلغ نامعتبر است" });
+      }
+      
+      const payment = await storage.createPayment(validatedData);
+      res.status(201).json(payment);
+    } catch (error) {
+      if (error.name === 'ZodError') {
+        res.status(400).json({ message: "اطلاعات پرداخت نامعتبر است" });
+      } else {
+        res.status(500).json({ message: "خطا در ثبت پرداخت" });
+      }
+    }
+  });
+
+  // Get payments for a specific representative
+  app.get("/api/payments/representative/:id", async (req, res) => {
+    try {
+      const representativeId = parseInt(req.params.id);
+      const payments = await storage.getPaymentsByRepresentative(representativeId);
+      res.json(payments);
+    } catch (error) {
+      res.status(500).json({ message: "خطا در دریافت پرداخت‌های نماینده" });
+    }
+  });
+
+  // Update payment
+  app.patch("/api/payments/:id", async (req, res) => {
+    try {
+      const paymentId = parseInt(req.params.id);
+      const updatedPayment = await storage.updatePayment(paymentId, req.body);
+      
+      if (!updatedPayment) {
+        return res.status(404).json({ message: "پرداخت یافت نشد" });
+      }
+      
+      res.json(updatedPayment);
+    } catch (error) {
+      res.status(500).json({ message: "خطا در بروزرسانی پرداخت" });
+    }
+  });
+
+  // Delete payment
+  app.delete("/api/payments/:id", async (req, res) => {
+    try {
+      const paymentId = parseInt(req.params.id);
+      const deleted = await storage.deletePayment(paymentId);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "پرداخت یافت نشد" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "خطا در حذف پرداخت" });
     }
   });
 

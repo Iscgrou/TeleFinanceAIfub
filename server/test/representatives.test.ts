@@ -57,7 +57,10 @@ describe('Representatives API', () => {
         .get('/api/representatives')
         .expect(200);
 
-      expect(response.body).toEqual(mockRepresentatives);
+      expect(response.body).toEqual(mockRepresentatives.map(rep => ({
+        ...rep,
+        createdAt: rep.createdAt.toISOString()
+      })));
       expect(storage.getRepresentatives).toHaveBeenCalledOnce();
     });
 
@@ -94,7 +97,10 @@ describe('Representatives API', () => {
         .get('/api/representatives/by-username/testuser')
         .expect(200);
 
-      expect(response.body).toEqual(mockRep);
+      expect(response.body).toEqual({
+        ...mockRep,
+        createdAt: mockRep.createdAt.toISOString()
+      });
       expect(storage.getRepresentativeByPanelUsername).toHaveBeenCalledWith('testuser');
     });
 
@@ -141,7 +147,10 @@ describe('Representatives API', () => {
         .get('/api/representatives/1/invoices')
         .expect(200);
 
-      expect(response.body).toEqual(mockInvoices);
+      expect(response.body).toEqual(mockInvoices.map(inv => ({
+        ...inv,
+        issueDate: inv.issueDate.toISOString()
+      })));
       expect(storage.getInvoicesByRepresentative).toHaveBeenCalledWith(1);
     });
 
@@ -191,7 +200,10 @@ describe('Representatives API', () => {
         .send(newRepData)
         .expect(201);
 
-      expect(response.body).toEqual(createdRep);
+      expect(response.body).toEqual({
+        ...createdRep,
+        createdAt: createdRep.createdAt.toISOString()
+      });
       expect(storage.createRepresentative).toHaveBeenCalledWith(newRepData);
     });
 
@@ -239,7 +251,10 @@ describe('Representatives API', () => {
         .send(updateData)
         .expect(200);
 
-      expect(response.body).toEqual(updatedRep);
+      expect(response.body).toEqual({
+        ...updatedRep,
+        createdAt: updatedRep.createdAt.toISOString()
+      });
       expect(storage.updateRepresentative).toHaveBeenCalledWith(1, updateData);
     });
 

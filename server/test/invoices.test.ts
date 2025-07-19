@@ -66,7 +66,10 @@ describe('Invoices API', () => {
         .get('/api/invoices/1/detail')
         .expect(200);
 
-      expect(response.body.invoice).toEqual(mockInvoice);
+      expect(response.body.invoice).toEqual({
+        ...mockInvoice,
+        issueDate: mockInvoice.issueDate.toISOString()
+      });
       expect(response.body.lineItems).toHaveLength(2);
       expect(response.body.lineItems[0]).toEqual({
         description: 'ایجاد کاربر',
@@ -211,7 +214,10 @@ describe('Invoices API', () => {
         .send(newInvoiceData)
         .expect(201);
 
-      expect(response.body).toEqual(createdInvoice);
+      expect(response.body).toEqual({
+        ...createdInvoice,
+        issueDate: createdInvoice.issueDate.toISOString()
+      });
       expect(storage.createInvoice).toHaveBeenCalledWith(newInvoiceData);
     });
 
@@ -271,7 +277,10 @@ describe('Invoices API', () => {
         .send(updateData)
         .expect(200);
 
-      expect(response.body).toEqual(updatedInvoice);
+      expect(response.body).toEqual({
+        ...updatedInvoice,
+        issueDate: updatedInvoice.issueDate.toISOString()
+      });
       expect(storage.updateInvoice).toHaveBeenCalledWith(1, updateData);
     });
 

@@ -51,7 +51,10 @@ describe('Payments API', () => {
         .send(newPaymentData)
         .expect(201);
 
-      expect(response.body).toEqual(createdPayment);
+      expect(response.body).toEqual({
+        ...createdPayment,
+        paymentDate: createdPayment.paymentDate.toISOString()
+      });
       expect(storage.createPayment).toHaveBeenCalledWith(newPaymentData);
     });
 
@@ -127,7 +130,10 @@ describe('Payments API', () => {
         .get('/api/payments')
         .expect(200);
 
-      expect(response.body).toEqual(mockPayments);
+      expect(response.body).toEqual(mockPayments.map(payment => ({
+        ...payment,
+        paymentDate: payment.paymentDate.toISOString()
+      })));
       expect(storage.getPayments).toHaveBeenCalled();
     });
 
@@ -160,7 +166,10 @@ describe('Payments API', () => {
         .get('/api/payments/representative/1')
         .expect(200);
 
-      expect(response.body).toEqual(repPayments);
+      expect(response.body).toEqual(repPayments.map(payment => ({
+        ...payment,
+        paymentDate: payment.paymentDate.toISOString()
+      })));
       expect(storage.getPaymentsByRepresentative).toHaveBeenCalledWith(1);
     });
 
@@ -197,7 +206,10 @@ describe('Payments API', () => {
         .send(updateData)
         .expect(200);
 
-      expect(response.body).toEqual(updatedPayment);
+      expect(response.body).toEqual({
+        ...updatedPayment,
+        paymentDate: updatedPayment.paymentDate.toISOString()
+      });
       expect(storage.updatePayment).toHaveBeenCalledWith(1, updateData);
     });
 

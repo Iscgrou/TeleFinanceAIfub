@@ -90,7 +90,13 @@ describe('Dashboard API', () => {
         .get('/api/dashboard/stats')
         .expect(200);
 
-      expect(response.body).toEqual(mockStats);
+      expect(response.body).toEqual({
+        ...mockStats,
+        recentPayments: mockStats.recentPayments.map(payment => ({
+          ...payment,
+          paymentDate: payment.paymentDate.toISOString()
+        }))
+      });
       expect(storage.getDashboardStats).toHaveBeenCalled();
     });
 

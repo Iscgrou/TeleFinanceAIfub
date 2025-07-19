@@ -103,7 +103,16 @@ export type InsertInvoiceTemplate = z.infer<typeof insertInvoiceTemplateSchema>;
 export const insertAdminSchema = createInsertSchema(admins).omit({ createdAt: true });
 export const insertSalesColleagueSchema = createInsertSchema(salesColleagues).omit({ id: true, createdAt: true });
 export const insertRepresentativeSchema = createInsertSchema(representatives).omit({ id: true, createdAt: true, totalDebt: true });
-export const insertInvoiceSchema = createInsertSchema(invoices).omit({ id: true, issueDate: true });
+export const insertInvoiceSchema = createInsertSchema(invoices)
+  .omit({ id: true, issueDate: true })
+  .extend({
+    amount: z.string().refine((val) => {
+      const num = parseFloat(val);
+      return !isNaN(num) && num >= 0;
+    }, {
+      message: "Amount must be a valid non-negative number"
+    })
+  });
 export const insertPaymentSchema = createInsertSchema(payments).omit({ id: true, paymentDate: true });
 export const insertCommissionRecordSchema = createInsertSchema(commissionRecords).omit({ id: true, createdAt: true });
 export const insertSystemSettingsSchema = createInsertSchema(systemSettings).omit({ id: true, updatedAt: true });
