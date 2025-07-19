@@ -11,7 +11,7 @@ import {
 } from "@shared/schema";
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import { eq, desc, sql } from 'drizzle-orm';
+import { eq, desc, sql, or, and, asc } from 'drizzle-orm';
 import ws from 'ws';
 
 export interface IStorage {
@@ -106,6 +106,106 @@ export class DatabaseStorage implements IStorage {
 
   async getRepresentatives(): Promise<Representative[]> {
     return await db.select().from(representatives);
+  }
+
+  // NEW: Paginated representatives with enhanced performance
+  async getRepresentativesPaginated(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    sortBy?: keyof Representative;
+    sortOrder?: 'asc' | 'desc';
+    includeInactive?: boolean;
+  } = {}): Promise<{
+    data: Representative[];
+    total: number;
+    page: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  }> {
+    const startTime = performance.now();
+    console.log(`📊 Starting paginated representatives query...`);
+    
+    try {
+      // Validate and set defaults
+      const page = Math.max(1, params.page || 1);
+      const limit = Math.min(100, Math.max(1, params.limit || 20));
+      const offset = (page - 1) * limit;
+      const sortOrder = params.sortOrder || 'desc';
+      const sortBy = params.sortBy || 'createdAt';
+      
+      // Build base queries
+      let query = db.select().from(representatives);
+      let countQuery = db.select({ count: sql<number>`count(*)` }).from(representatives);
+      
+      // Apply filters
+      const conditions: any[] = [];
+      
+      if (!params.includeInactive) {
+        conditions.push(eq(representatives.isActive, true));
+      }
+      
+      if (params.search) {
+        const searchTerm = `%${params.search.toLowerCase()}%`;
+        conditions.push(
+          or(
+            sql`LOWER(${representatives.storeName}) LIKE ${searchTerm}`,
+            sql`LOWER(${representatives.ownerName}) LIKE ${searchTerm}`,
+            sql`LOWER(${representatives.panelUsername}) LIKE ${searchTerm}`
+          )
+        );
+      }
+      
+      if (conditions.length > 0) {
+        const whereClause = and(...conditions);
+        query = query.where(whereClause);
+        countQuery = countQuery.where(whereClause);
+      }
+      
+      // Apply sorting
+      const sortColumn = representatives[sortBy];
+      if (sortColumn) {
+        query = sortOrder === 'asc' 
+          ? query.orderBy(asc(sortColumn))
+          : query.orderBy(desc(sortColumn));
+      }
+      
+      // Apply pagination
+      query = query.limit(limit).offset(offset);
+      
+      // Execute queries in parallel
+      const [data, totalResult] = await Promise.all([
+        query,
+        countQuery
+      ]);
+      
+      const total = totalResult[0]?.count || 0;
+      const totalPages = Math.ceil(total / limit);
+      
+      const endTime = performance.now();
+      const duration = endTime - startTime;
+      console.log(`📊 Paginated query completed in ${duration.toFixed(2)}ms - ${data.length} records`);
+      
+      // Alert for slow queries
+      if (duration > 5000) {
+        console.warn(`⚠️ Slow paginated query: ${duration.toFixed(2)}ms`);
+      }
+      
+      return {
+        data,
+        total,
+        page,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      };
+    } catch (error) {
+      const endTime = performance.now();
+      const duration = endTime - startTime;
+      console.error(`❌ Paginated query failed after ${duration.toFixed(2)}ms:`, error);
+      throw error;
+    }
   }
 
   async getRepresentativeByStoreName(storeName: string): Promise<Representative | undefined> {

@@ -24,6 +24,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced pagination endpoint for scalability
+  app.get("/api/representatives/paginated", async (req, res) => {
+    try {
+      const {
+        page = '1',
+        limit = '20',
+        search = '',
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
+        includeInactive = 'false'
+      } = req.query;
+
+      const params = {
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        search: search as string,
+        sortBy: sortBy as any,
+        sortOrder: sortOrder as 'asc' | 'desc',
+        includeInactive: includeInactive === 'true'
+      };
+
+      const result = await (storage as any).getRepresentativesPaginated(params);
+      
+      res.json({
+        success: true,
+        data: result.data,
+        pagination: {
+          currentPage: result.page,
+          totalPages: result.totalPages,
+          totalItems: result.total,
+          hasNext: result.hasNext,
+          hasPrev: result.hasPrev,
+          limit: params.limit
+        }
+      });
+    } catch (error) {
+      console.error('Error in paginated representatives:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch paginated representatives'
+      });
+    }
+  });
+
+  // Performance optimization testing endpoint
+  app.get("/api/representatives/performance-test", async (req, res) => {
+    try {
+      const startTime = performance.now();
+      
+      const tests = [
+        { page: 1, limit: 10, label: "Small page (10)" },
+        { page: 1, limit: 50, label: "Medium page (50)" },
+        { page: 1, limit: 100, label: "Large page (100)" },
+        { page: 2, limit: 50, label: "Second page" },
+        { page: 1, limit: 20, search: "dar", label: "Search test" }
+      ];
+      
+      const results = [];
+      
+      for (const test of tests) {
+        const testStart = performance.now();
+        const result = await (storage as any).getRepresentativesPaginated(test);
+        const testEnd = performance.now();
+        
+        results.push({
+          ...test,
+          duration: parseFloat((testEnd - testStart).toFixed(2)),
+          durationMs: `${(testEnd - testStart).toFixed(2)}ms`,
+          recordCount: result.data.length,
+          totalRecords: result.total
+        });
+      }
+      
+      const endTime = performance.now();
+      const totalDuration = endTime - startTime;
+      
+      const optimal = results.sort((a, b) => a.duration - b.duration)[0];
+      
+      res.json({
+        success: true,
+        totalDuration: `${totalDuration.toFixed(2)}ms`,
+        tests: results,
+        analysis: {
+          fastest: optimal,
+          averageDuration: `${(results.reduce((sum, r) => sum + r.duration, 0) / results.length).toFixed(2)}ms`,
+          recommendation: `Optimal: ${optimal.limit} records/page (${optimal.durationMs})`
+        },
+        systemStats: {
+          totalRepresentatives: results[0]?.totalRecords || 0,
+          pagesAt20: Math.ceil((results[0]?.totalRecords || 0) / 20),
+          pagesAt50: Math.ceil((results[0]?.totalRecords || 0) / 50)
+        }
+      });
+    } catch (error) {
+      console.error('Performance test error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Performance test failed'
+      });
+    }
+  });
+
   app.get("/api/invoices", async (req, res) => {
     try {
       const invoices = await storage.getInvoices();
