@@ -116,7 +116,16 @@ RESTful API endpoints organized by functionality:
 
 ## Recent Updates (July 19, 2025)
 
-### Phase 1 Implementation Complete: Enhanced Pagination System (Latest - 3:35 PM)
+### Telegram Bot Invoice Image Sending Fixed (Latest - 4:27 PM)
+- **Critical Fix Applied**: Telegram bot now properly sends invoice images when requested
+- **Dual Handler Implementation**: Added image sending to both action confirmation and direct command handlers
+- **Invoice Template Customization**: Added `invoiceTemplates` table to schema for customizable invoice labels
+- **Line Items Already Supported**: Invoice generator already displays detailed line items from `usageJsonDetails`
+- **User Issue Resolved**: "فاکتور نماینده daryamb رو صادر کن" now sends the actual invoice image
+- **Image Format**: PNG images with Persian/RTL support, detailed line items, and professional layout
+- **Next Steps**: Create web interface for invoice template customization in settings
+
+### Phase 1 Implementation Complete: Enhanced Pagination System (3:35 PM)
 - **Critical Scalability Fix**: Enterprise-grade pagination system successfully implemented for 199 representatives
 - **Performance Metrics**: Optimal configuration identified as 20 records/page in ~17ms average query time
 - **Search & Sort Features**: Full-text search across store names, owners, panel usernames with sorting by debt/date

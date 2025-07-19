@@ -68,6 +68,24 @@ export const systemSettings = pgTable("system_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Invoice templates for customizable invoice layouts
+export const invoiceTemplates = pgTable('invoice_templates', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 100 }).notNull(),
+  headerTitle: varchar('header_title', { length: 200 }).notNull().default('فاکتور فروش'),
+  headerSubtitle: varchar('header_subtitle', { length: 200 }).notNull().default('سرویس پروکسی پرسرعت'),
+  footerText: text('footer_text').notNull().default('این فاکتور به صورت خودکار توسط سیستم مدیریت مالی تولید شده است'),
+  footerContact: text('footer_contact').notNull().default('در صورت هرگونه سوال با پشتیبانی تماس بگیرید'),
+  representativeLabel: varchar('representative_label', { length: 100 }).notNull().default('اطلاعات نماینده'),
+  invoiceLabel: varchar('invoice_label', { length: 100 }).notNull().default('اطلاعات فاکتور'),
+  lineItemLabel: varchar('line_item_label', { length: 100 }).notNull().default('شرح خدمات'),
+  totalLabel: varchar('total_label', { length: 100 }).notNull().default('جمع کل'),
+  payableLabel: varchar('payable_label', { length: 100 }).notNull().default('مبلغ قابل پرداخت'),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow()
+});
+
 // Insert schemas
 export const insertAdminSchema = createInsertSchema(admins).omit({ createdAt: true });
 export const insertSalesColleagueSchema = createInsertSchema(salesColleagues).omit({ id: true, createdAt: true });

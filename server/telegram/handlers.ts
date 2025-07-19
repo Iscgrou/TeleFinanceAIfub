@@ -231,6 +231,30 @@ async function processAICommand(chatId: string, command: string): Promise<void> 
     } else {
       // Non-destructive actions can execute immediately
       await sendMessage(chatId, result.response);
+      
+      // Check if this was an invoice generation command
+      if (result.toolResults && result.toolResults.length > 0) {
+        for (const toolResult of result.toolResults) {
+          if (toolResult.toolName === 'generate_representative_invoice' && 
+              toolResult.result.status === 'success' && 
+              toolResult.result.image_generated) {
+            
+            const { generateInvoicePNG } = await import('../services/invoice-generator');
+            
+            try {
+              const imageBuffer = await generateInvoicePNG(toolResult.result.invoice_id);
+              if (imageBuffer) {
+                await bot.sendPhoto(chatId, imageBuffer, {
+                  caption: `فاکتور نماینده: ${toolResult.result.representative_name}`
+                });
+              }
+            } catch (error) {
+              console.error('Failed to send invoice image:', error);
+              await sendMessage(chatId, '❌ خطا در ارسال تصویر فاکتور. لطفا دوباره تلاش کنید.');
+            }
+          }
+        }
+      }
     }
   } catch (error) {
     console.error('Error processing AI command:', error);
@@ -368,6 +392,26 @@ async function handleActionConfirmation(chatId: string, callbackData: string): P
           } catch (error) {
             console.error(`Failed to send invoice ${invoiceId}:`, error);
           }
+        }
+      }
+      
+      // Special handling for single representative invoice generation
+      if (toolCall.name === 'generate_representative_invoice' && result.status === 'success' && result.image_generated) {
+        await sendMessage(chatId, result.message);
+        
+        const { generateInvoicePNG } = await import('../services/invoice-generator');
+        
+        try {
+          const imageBuffer = await generateInvoicePNG(result.invoice_id);
+          if (imageBuffer) {
+            // Send image to admin
+            await bot.sendPhoto(chatId, imageBuffer, {
+              caption: `فاکتور نماینده: ${result.representative_name}`
+            });
+          }
+        } catch (error) {
+          console.error(`Failed to send invoice image:`, error);
+          await sendMessage(chatId, '❌ خطا در ارسال تصویر فاکتور. لطفا دوباره تلاش کنید.');
         }
       }
     }
