@@ -11,13 +11,14 @@ import {
 } from "@shared/schema";
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 
 export interface IStorage {
   // Admin management
   getAdmin(chatId: string): Promise<Admin | undefined>;
   createAdmin(admin: InsertAdmin): Promise<Admin>;
   getAdminCount(): Promise<number>;
+  getAllAdmins(): Promise<Admin[]>;
 
   // Sales colleagues
   getSalesColleagues(): Promise<SalesColleague[]>;
@@ -76,8 +77,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAdminCount(): Promise<number> {
-    const result = await db.select().from(admins);
-    return result.length;
+    const result = await db.select({ count: sql`COUNT(*)` }).from(admins);
+    return Number(result[0].count);
+  }
+
+  async getAllAdmins(): Promise<Admin[]> {
+    return await db.select().from(admins).orderBy(admins.fullName);
   }
 
   async getSalesColleagues(): Promise<SalesColleague[]> {

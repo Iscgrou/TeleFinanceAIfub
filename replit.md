@@ -111,6 +111,16 @@ RESTful API endpoints organized by functionality:
 
 ## Recent Updates (July 19, 2025)
 
+### Critical Security & Usability Upgrades
+
+- **Mandatory Admin Authorization Protocol**: Implemented strict admin verification for all bot functions except /start. Only registered admins in the database can access the system.
+- **Hybrid Command Interface (Buttons + AI)**: Added comprehensive menu system using Telegram inline buttons alongside natural language processing. Every function is accessible through structured menus.
+- **Human-in-the-Loop Safety Protocol**: Enhanced agentic loop to "Plan → Propose → Confirm → Act" with explicit confirmation required for all destructive operations.
+- **Super Admin Management**: Implemented /add_admin command for secure admin management, ensuring first user becomes super admin.
+- **Enhanced Security Architecture**: Three-tier authorization (admin verification, operation confirmation, audit logging).
+
+### Previous Foundational Updates
+
 - **Upgraded to Advanced AI Agent**: Transformed from basic NLP bot to full reasoning agent using Gemini function calling
 - **Implemented Tool-based Architecture**: 8 financial tools defined for AI agent autonomous usage
 - **Added PostgreSQL Integration**: Complete database implementation replacing in-memory storage

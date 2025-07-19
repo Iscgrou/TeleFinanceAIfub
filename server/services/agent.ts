@@ -176,7 +176,13 @@ export class FinancialAgent {
     }
   }
 
-  async processCommand(userMessage: string, context?: any): Promise<string> {
+  // Enhanced method for confirmation workflow
+  async processCommandWithConfirmation(userMessage: string, chatId: string): Promise<{
+    requiresConfirmation: boolean;
+    response: string;
+    actionDescription?: string;
+    plannedActions?: Array<{ name: string; args: Record<string, any> }>;
+  }> {
     try {
       const chat = this.model.startChat({
         history: [],
@@ -205,39 +211,71 @@ export class FinancialAgent {
       // Check if the model wants to use tools
       const functionCalls = response.functionCalls();
       if (functionCalls && functionCalls.length > 0) {
-        // Execute function calls and continue conversation
-        const functionResponses = [];
-        
-        for (const call of functionCalls) {
-          const functionResult = await this.executeFunction(call.name, call.args);
-          functionResponses.push({
-            functionResponse: {
-              name: call.name,
-              response: functionResult
-            }
-          });
-        }
+        // Check if any of the planned functions are destructive (require confirmation)
+        const { isDestructiveAction } = await import('../services/confirmations');
+        const hasDestructiveActions = functionCalls.some(call => {
+          return isDestructiveAction(call.name);
+        });
 
-        // Send function results back to the model
-        const nextResult = await chat.sendMessage(functionResponses);
-        const nextResponse = await nextResult.response;
-        
-        // Check if there are more function calls
-        const moreFunctionCalls = nextResponse.functionCalls();
-        if (moreFunctionCalls && moreFunctionCalls.length > 0) {
-          // Handle additional function calls recursively
-          return await this.handleAdditionalFunctionCalls(chat, moreFunctionCalls);
+        if (hasDestructiveActions) {
+          // Return plan for human confirmation
+          const plannedActions = functionCalls.map(call => ({
+            name: call.name,
+            args: call.args
+          }));
+          
+          const { generateActionDescription } = await import('../services/confirmations');
+          const actionDescription = generateActionDescription(plannedActions);
+          
+          return {
+            requiresConfirmation: true,
+            response: '',
+            actionDescription,
+            plannedActions
+          };
+        } else {
+          // Execute non-destructive actions immediately
+          const functionResponses = [];
+          
+          for (const call of functionCalls) {
+            const functionResult = await this.executeFunction(call.name, call.args);
+            functionResponses.push({
+              functionResponse: {
+                name: call.name,
+                response: functionResult
+              }
+            });
+          }
+
+          // Send function results back to the model
+          const nextResult = await chat.sendMessage(functionResponses);
+          const nextResponse = await nextResult.response;
+          
+          return {
+            requiresConfirmation: false,
+            response: nextResponse.text() || "عملیات با موفقیت انجام شد."
+          };
         }
-        
-        return nextResponse.text() || "عملیات با موفقیت انجام شد.";
       }
 
-      return response.text() || "متوجه نشدم. لطفا دستور خود را واضح‌تر بیان کنید.";
+      return {
+        requiresConfirmation: false,
+        response: response.text() || "متوجه نشدم. لطفا دستور خود را واضح‌تر بیان کنید."
+      };
 
     } catch (error) {
       console.error('Agent processing error:', error);
-      return "خطایی در پردازش دستور شما رخ داد. لطفا مجددا تلاش کنید.";
+      return {
+        requiresConfirmation: false,
+        response: "خطایی در پردازش دستور شما رخ داد. لطفا مجددا تلاش کنید."
+      };
     }
+  }
+
+  // Original method for backward compatibility
+  async processCommand(userMessage: string, context?: any): Promise<string> {
+    const result = await this.processCommandWithConfirmation(userMessage, 'default');
+    return result.response;
   }
 
   private async handleAdditionalFunctionCalls(chat: any, functionCalls: any[]): Promise<string> {
@@ -263,6 +301,53 @@ export class FinancialAgent {
     }
     
     return response.text() || "عملیات با موفقیت انجام شد.";
+  }
+
+  // Direct tool execution for confirmed actions
+  async executeToolDirectly(name: string, args: any): Promise<any> {
+    return this.executeFunction(name, args);
+  }
+
+  // Generate summary of execution results
+  generateExecutionSummary(toolCalls: Array<{ name: string; args: Record<string, any> }>, results: any[]): string {
+    let summary = '';
+    
+    toolCalls.forEach((call, index) => {
+      const result = results[index];
+      const { name, args } = call;
+      
+      switch (name) {
+        case 'process_weekly_invoices':
+          if (result.status === 'success') {
+            summary += `✅ ${result.invoices_created} فاکتور هفتگی صادر شد\n`;
+          }
+          break;
+        case 'register_payment':
+          if (result.status === 'success') {
+            summary += `✅ پرداخت ${args.amount?.toLocaleString()} تومان برای '${args.representative_name}' ثبت شد\n`;
+          }
+          break;
+        case 'create_manual_invoice':
+          if (result.status === 'success') {
+            summary += `✅ فاکتور ${args.amount?.toLocaleString()} تومان برای '${args.representative_name}' صادر شد\n`;
+          }
+          break;
+        case 'calculate_commissions':
+          if (result.status === 'success') {
+            summary += `✅ کمیسیون ${result.commissions_calculated} همکار محاسبه شد\n`;
+          }
+          break;
+        case 'send_telegram_message':
+          if (result.status === 'success') {
+            summary += `✅ پیام برای '${args.recipient_name}' ارسال شد\n`;
+          }
+          break;
+        default:
+          summary += `✅ ${name} با موفقیت اجرا شد\n`;
+      }
+    });
+    
+    return summary || 'عملیات با موفقیت انجام شد.';
   }
 
   private async executeFunction(name: string, args: any): Promise<any> {

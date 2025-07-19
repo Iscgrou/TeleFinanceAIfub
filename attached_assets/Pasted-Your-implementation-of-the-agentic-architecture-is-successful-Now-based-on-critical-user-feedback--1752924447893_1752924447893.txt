@@ -1,0 +1,80 @@
+Your implementation of the agentic architecture is successful. Now, based on critical user feedback, we must refine the system's operational logic to enhance security, usability, and safety. You are to implement the following three mandatory upgrades.
+1. Upgrade: Strict Admin Authorization Protocol
+
+The Mandate: No user can interact with the bot's core functions unless their Telegram chat_id is explicitly registered in the Admins table of our database.
+
+Implementation Steps:
+
+    Create a Master Decorator/Middleware: In your Python (FastAPI) backend, create a function decorator named @admin_required.
+
+    Enforce on All Endpoints: Apply this decorator to every single function that handles incoming messages or callbacks from Telegram, except for the initial /start command.
+
+    Logic within the Decorator:
+
+        Upon receiving any request, the decorator will first extract the chat_id from the incoming Telegram update object.
+
+        It will then perform a quick, efficient query on the Admins table: SELECT 1 FROM Admins WHERE chat_id = :user_chat_id.
+
+        If the query returns no result: The decorator must immediately stop any further processing. It should instruct the bot to send a polite but firm "Access Denied" message to the user and terminate the request.
+
+        If the query is successful: The decorator allows the function to proceed as normal.
+
+    Admin Management Command: You must implement a special command, accessible only to the first registered admin (the super-admin), to manage other admins: /add_admin <chat_id>. This ensures the list of authorized users can be securely managed.
+
+2. Upgrade: The Hybrid Command Interface (Buttons & AI)
+
+The Mandate: The bot must not be a blank slate. It needs a comprehensive, non-blocking menu system using Telegram's inline buttons. This will exist alongside your natural language processing capabilities, providing a hybrid interface.
+
+Implementation Steps:
+
+    Design a Static Main Menu (/menu):
+
+        Create a primary command, /menu, that presents a clear, well-structured main menu using InlineKeyboardMarkup.
+
+        Structure Example:
+
+            Level 1: [👤 نمایندگان] [👥 همکاران] [⚙️ عملیات مالی]
+
+            Level 2 (after clicking [👤 نمایندگان]): [➕ افزودن نماینده] [🔍 جستجوی نماینده] [📊 لیست همه]
+
+            ...and so on for all major functions.
+
+    Ensure No Functional Gaps: Every single action a user might need to perform must be accessible through this button-based menu system. Map out every feature (add, edit, view, register payment, generate report, etc.) and ensure it has a corresponding button path.
+
+    Contextual Dynamic Buttons: The buttons should also appear dynamically based on context. After an admin searches for a representative and you display their details, you must also show relevant action buttons like: [💰 ثبت پرداخت] [📜 سابقه مالی] [✏️ ویرایش اطلاعات].
+
+    Systemic Integration: This is critical. A button press is not a separate system. The callback_data of each button must trigger the exact same backend function that your AI agent would call. For example, the callback_data for the [💰 ثبت پرداخت] button will ultimately call your register_payment tool, just as if the admin had said "ثبت پرداخت کن" in a voice message. This ensures 100% consistency and avoids technical debt.
+
+3. Upgrade: The "Human-in-the-Loop" Safety Protocol
+
+The Mandate: You are a powerful admin. Therefore, you are not permitted to perform any action that modifies the database (create, update, delete) without explicit, final confirmation from a human admin.
+
+Implementation Steps:
+
+    Modify the Agentic Loop: Your core reasoning loop is currently "Plan -> Act". You will upgrade it to "Plan -> Propose -> Confirm -> Act".
+
+    Step 1: Plan: As before, when you receive a command, you formulate a plan consisting of a sequence of tool calls (e.g., [call: process_invoices, call: find_highest_debtor]).
+
+    Step 2: Propose (The New, Critical Step):
+
+        Instead of immediately executing the plan, your backend will first translate the plan into a simple, human-readable summary.
+
+        Example: If the plan is to create invoices and then register a payment, you must generate the text:
+
+            "⚠️ درخواست تاییدیه ⚠️\n\nمن قصد دارم عملیات زیر را انجام دهم:\n1. صدور فاکتور: برای ۴۲ نماینده بر اساس فایل ارسالی فاکتور صادر کنم.\n2. ثبت پرداخت: مبلغ ۵۰۰,۰۰۰ تومان برای 'فروشگاه اکباتان' ثبت کنم.\n\nآیا این عملیات را تایید می‌کنید؟"
+
+    Step 3: Confirm:
+
+        Along with this proposal message, you must present two inline buttons: [✅ بله، انجام بده] and [❌ خیر، لغو کن].
+
+        The callback_data for these buttons must be unique to this specific transaction to avoid mix-ups. For example: confirm_action:<transaction_id> and cancel_action:<transaction_id>.
+
+    Step 4: Act:
+
+        The backend will now wait.
+
+        If the admin clicks [✅ بله، انجام بده], the backend retrieves the stored plan associated with that transaction_id and executes it.
+
+        If the admin clicks [❌ خیر، لغو کن], the backend discards the plan and sends a confirmation message: "عملیات لغو شد."
+
+By implementing these three upgrades, you will transform from a powerful tool into a trustworthy, secure, and user-friendly administrative partner. Proceed with these refinements.
