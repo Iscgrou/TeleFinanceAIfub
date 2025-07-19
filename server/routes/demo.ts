@@ -2,102 +2,13 @@ import { Request, Response } from 'express';
 import { storage } from '../storage';
 import { financialAgent } from '../services/agent';
 
-// Create sample data to demonstrate the AI agent capabilities
+// Database is now clean - ready for production use
 export async function createSampleData(req: Request, res: Response): Promise<void> {
-  try {
-    // Create sample sales colleagues
-    const colleague1 = await storage.createSalesColleague({
-      name: 'احمد محمدی',
-      commissionRate: 5.0,
-      phone: '09123456789'
-    });
-
-    const colleague2 = await storage.createSalesColleague({
-      name: 'فاطمه احمدی',
-      commissionRate: 7.5,
-      phone: '09987654321'
-    });
-
-    // Create sample representatives
-    const rep1 = await storage.createRepresentative({
-      storeName: 'فروشگاه اکباتان',
-      ownerName: 'علی رضایی',
-      phone: '02188776655',
-      totalDebt: '15000000',
-      isActive: true,
-      colleagueId: colleague1.id
-    });
-
-    const rep2 = await storage.createRepresentative({
-      storeName: 'مرکز خرید پارس',
-      ownerName: 'مریم کریمی',
-      phone: '02177665544',
-      totalDebt: '8500000',
-      isActive: true,
-      colleagueId: colleague2.id
-    });
-
-    const rep3 = await storage.createRepresentative({
-      storeName: 'فروشگاه تهران',
-      ownerName: 'محمد حسینی',
-      phone: '02166554433',
-      totalDebt: '3200000',
-      isActive: true,
-      colleagueId: colleague1.id
-    });
-
-    // Create sample invoices
-    await storage.createInvoice({
-      representativeId: rep1.id,
-      amount: '5000000',
-      description: 'فاکتور هفتگی - استفاده از سرویس پروکسی',
-      status: 'unpaid',
-      isManual: false
-    });
-
-    await storage.createInvoice({
-      representativeId: rep2.id,
-      amount: '3500000',
-      description: 'فاکتور هفتگی - استفاده از سرویس پروکسی',
-      status: 'partially_paid',
-      isManual: false
-    });
-
-    await storage.createInvoice({
-      representativeId: rep3.id,
-      amount: '2200000',
-      description: 'فاکتور دستی - خدمات اضافی',
-      status: 'paid',
-      isManual: true
-    });
-
-    // Create sample payments
-    await storage.createPayment({
-      representativeId: rep2.id,
-      amount: '2000000',
-      notes: 'پرداخت جزئی بابت فاکتور جاری'
-    });
-
-    await storage.createPayment({
-      representativeId: rep3.id,
-      amount: '2200000',
-      notes: 'تسویه کامل فاکتور'
-    });
-
-    res.json({
-      success: true,
-      message: 'Sample data created successfully',
-      data: {
-        colleagues: [colleague1, colleague2],
-        representatives: [rep1, rep2, rep3],
-        summary: 'Data includes sales colleagues, representatives, invoices, and payments for testing AI capabilities'
-      }
-    });
-
-  } catch (error) {
-    console.error('Error creating sample data:', error);
-    res.status(500).json({ error: 'Failed to create sample data' });
-  }
+  res.json({
+    success: false,
+    message: 'Sample data creation disabled - system is ready for production use',
+    note: 'Upload your usage.json file to process real transactions'
+  });
 }
 
 // Test AI agent with sample commands
