@@ -294,8 +294,8 @@ function AdminDashboard() {
     geminiApiKey: '',
     telegramBotToken: '',
     adminChatId: '',
-    invoiceTemplate: '<!DOCTYPE html>\n<html dir="rtl" lang="fa">\n<head>\n    <meta charset="UTF-8">\n    <title>فاکتور خرید - {{storeName}}</title>\n    <style>\n        body { font-family: \'Vazirmatn\', sans-serif; direction: rtl; margin: 20px; }\n        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; }\n        .invoice-info { margin: 20px 0; }\n        .table { width: 100%; border-collapse: collapse; margin: 20px 0; }\n        .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: center; }\n        .table th { background-color: #f2f2f2; }\n        .total { text-align: left; font-weight: bold; font-size: 18px; }\n    </style>\n</head>\n<body>\n    <div class="header">\n        <h1>فاکتور خرید</h1>\n        <p>نماینده: {{storeName}}</p>\n        <p>تاریخ: {{currentDate}}</p>\n    </div>\n    <div class="invoice-info">\n        <p><strong>نام فروشگاه:</strong> {{storeName}}</p>\n        <p><strong>نام کاربری پنل:</strong> {{panelUsername}}</p>\n        <p><strong>شماره فاکتور:</strong> {{invoiceId}}</p>\n    </div>\n    <table class="table">\n        <thead>\n            <tr>\n                <th>ردیف</th>\n                <th>شرح خدمات</th>\n                <th>مقدار مصرف</th>\n                <th>قیمت واحد</th>\n                <th>مبلغ کل</th>\n            </tr>\n        </thead>\n        <tbody>\n            {{invoiceItems}}\n        </tbody>\n    </table>\n    <div class="total">\n        <p>مبلغ کل: {{totalAmount}} تومان</p>\n    </div>\n</body>\n</html>',
-    representativePortalTexts: '{\n  "welcome": "به پرتال نماینده {{storeName}} خوش آمدید",\n  "debt_status": "وضعیت بدهی شما",\n  "current_debt": "بدهی فعلی",\n  "last_payment": "آخرین پرداخت",\n  "invoice_history": "تاریخچه فاکتورها",\n  "contact_support": "تماس با پشتیبانی",\n  "payment_methods": "روش‌های پرداخت"\n}'
+    invoiceTemplate: '',
+    representativePortalTexts: ''
   });
 
   useEffect(() => {
@@ -343,7 +343,69 @@ function AdminDashboard() {
   const loadSettings = async () => {
     try {
       const response = await api.get<Settings>('/api/settings');
-      setSettings({ ...settings, ...response });
+      const defaultTemplate = `<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>فاکتور خرید - ${"{{storeName}}"}}</title>
+    <style>
+        body { font-family: 'Vazirmatn', sans-serif; direction: rtl; margin: 20px; }
+        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .invoice-info { margin: 20px 0; }
+        .table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .table th { background-color: #f2f2f2; }
+        .total { text-align: left; font-weight: bold; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>فاکتور خرید</h1>
+        <p>نماینده: ${"{{storeName}}"}}</p>
+        <p>تاریخ: ${"{{currentDate}}"}}</p>
+    </div>
+    <div class="invoice-info">
+        <p><strong>نام فروشگاه:</strong> ${"{{storeName}}"}}</p>
+        <p><strong>نام کاربری پنل:</strong> ${"{{panelUsername}}"}}</p>
+        <p><strong>شماره فاکتور:</strong> ${"{{invoiceId}}"}}</p>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ردیف</th>
+                <th>شرح خدمات</th>
+                <th>مقدار مصرف</th>
+                <th>قیمت واحد</th>
+                <th>مبلغ کل</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${"{{invoiceItems}}"}
+        </tbody>
+    </table>
+    <div class="total">
+        <p>مبلغ کل: ${"{{totalAmount}}"} تومان</p>
+    </div>
+</body>
+</html>`;
+
+      const defaultPortalTexts = `{
+  "welcome": "به پرتال نماینده ${"{{storeName}}"} خوش آمدید",
+  "debt_status": "وضعیت بدهی شما",
+  "current_debt": "بدهی فعلی",
+  "last_payment": "آخرین پرداخت",
+  "invoice_history": "تاریخچه فاکتورها",
+  "contact_support": "تماس با پشتیبانی",
+  "payment_methods": "روش‌های پرداخت"
+}`;
+
+      setSettings({
+        geminiApiKey: response.geminiApiKey || '',
+        telegramBotToken: response.telegramBotToken || '',
+        adminChatId: response.adminChatId || '',
+        invoiceTemplate: response.invoiceTemplate || defaultTemplate,
+        representativePortalTexts: response.representativePortalTexts || defaultPortalTexts
+      });
     } catch (err) {
       console.log('Using default settings');
     }
