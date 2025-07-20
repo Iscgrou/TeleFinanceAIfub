@@ -7,11 +7,8 @@ import RepresentativePortal from './components/RepresentativePortal'
 import RepresentativesManagement from './pages/RepresentativesManagement'
 import SalesColleaguesManagement from './pages/SalesColleaguesManagement'
 import InvoicesManagement from './pages/InvoicesManagement'
-import CreditManagement from './pages/CreditManagement'
-import CashFlowForecast from './pages/CashFlowForecast'
-import ProfitabilityAnalysis from './pages/ProfitabilityAnalysis'
-import BankReconciliation from './pages/BankReconciliation'
-import SecurityDashboard from './components/SecurityDashboard'
+import Reports from './pages/Reports'
+import ActivityLog from './pages/ActivityLog'
 
 // Create QueryClient instance
 const queryClient = new QueryClient({
@@ -100,14 +97,9 @@ export default function App() {
                   <Route path="/admin/colleagues" component={SalesColleaguesManagement} />
                   <Route path="/admin/invoices" component={InvoicesManagement} />
                   
-                  {/* Financial Analysis Routes */}
-                  <Route path="/financial/credit" component={CreditManagement} />
-                  <Route path="/financial/cashflow" component={CashFlowForecast} />
-                  <Route path="/financial/profitability" component={ProfitabilityAnalysis} />
-                  <Route path="/financial/reconciliation" component={BankReconciliation} />
-                  
-                  {/* Security Route */}
-                  <Route path="/security" component={SecurityDashboard} />
+                  {/* Reports and Activity Routes */}
+                  <Route path="/reports" component={Reports} />
+                  <Route path="/activity" component={ActivityLog} />
                   
                   {/* Settings Route */}
                   <Route path="/settings" component={SettingsPage} />
