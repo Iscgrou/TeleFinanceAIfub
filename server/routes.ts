@@ -283,7 +283,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertRepresentativeSchema.parse(req.body);
       const representative = await storage.createRepresentative(validatedData);
       res.status(201).json(representative);
-    } catch (error) {
+    } catch (error: any) {
       if (error.name === 'ZodError') {
         res.status(400).json({ message: "Invalid representative data" });
       } else {
@@ -538,7 +538,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const payment = await storage.createPayment(validatedData);
       res.status(201).json(payment);
-    } catch (error) {
+    } catch (error: any) {
       if (error.name === 'ZodError') {
         res.status(400).json({ message: "اطلاعات پرداخت نامعتبر است" });
       } else {
@@ -605,7 +605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertSalesColleagueSchema.parse(req.body);
       const colleague = await storage.createSalesColleague(validatedData);
       res.status(201).json(colleague);
-    } catch (error) {
+    } catch (error: any) {
       if (error.name === 'ZodError') {
         res.status(400).json({ message: "Invalid sales colleague data" });
       } else {
@@ -725,7 +725,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }))
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('DEBUG endpoint error:', error);
       res.status(500).json({ error: error.message, stack: error.stack });
     }
@@ -786,7 +786,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         test_message: `Invoice ${latestInvoice.id} for representative ${repName} sent via direct Telegram API`
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Direct invoice test error:', error);
       res.status(500).json({ 
         error: 'Direct invoice test failed', 

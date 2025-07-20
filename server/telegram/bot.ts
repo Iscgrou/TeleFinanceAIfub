@@ -2,6 +2,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import { storage } from '../storage';
 import { handleMessage, handleCallbackQuery, handleDocument } from './handlers';
 import { TelegramIntegration } from '../services/telegram-integration';
+import { botManager } from './bot-manager';
 
 let bot: TelegramBot | null = null;
 let isInitializing = false;
@@ -65,12 +66,12 @@ export async function initializeBot(): Promise<void> {
     bot.on('polling_error', async (error) => {
       console.error('Telegram polling error:', error);
       
-      // Handle conflict errors with smart recovery
+      // Handle conflict errors with enterprise-grade recovery
       if ((error as any).code === 'EFATAL' || error.message.includes('409')) {
-        console.log('🔄 Bot conflict detected. Implementing recovery strategy...');
+        console.log('🔄 Enterprise conflict detected. Activating stability mode...');
         
-        // Force stop current instance
-        await stopBot();
+        // Use advanced bot manager for conflict resolution
+        await botManager.enableStabilityMode();
         isInitializing = false;
         
         // Wait longer delay to clear conflicts
