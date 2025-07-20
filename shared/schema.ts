@@ -328,3 +328,51 @@ export type BankTransaction = typeof bankTransactions.$inferSelect;
 export type InsertBankTransaction = z.infer<typeof insertBankTransactionSchema>;
 export type SecurityAuditLog = typeof securityAuditLog.$inferSelect;
 export type InsertSecurityAuditLog = z.infer<typeof insertSecurityAuditLogSchema>;
+
+// Messages sent to representatives in the portal
+export const representativeMessages = pgTable('representative_messages', {
+  id: serial('id').primaryKey(),
+  representativeId: integer('representative_id').references(() => representatives.id).notNull(),
+  senderType: text('sender_type', { enum: ['admin', 'system'] }).notNull().default('admin'),
+  senderName: varchar('sender_name', { length: 100 }).notNull().default('مدیریت سیستم'),
+  subject: varchar('subject', { length: 200 }),
+  message: text('message').notNull(),
+  messageType: text('message_type', { enum: ['info', 'warning', 'urgent', 'payment_reminder'] }).notNull().default('info'),
+  isRead: boolean('is_read').default(false),
+  readAt: timestamp('read_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Persian calendar support for invoices
+export const invoiceDetails = pgTable('invoice_details', {
+  id: serial('id').primaryKey(),
+  invoiceId: integer('invoice_id').references(() => invoices.id).notNull(),
+  persianDate: varchar('persian_date', { length: 20 }).notNull(), // e.g., "1403/04/30"
+  persianMonth: varchar('persian_month', { length: 20 }).notNull(), // e.g., "مهر"
+  persianYear: varchar('persian_year', { length: 10 }).notNull(), // e.g., "1403"
+  detailedDescription: text('detailed_description'),
+  lineItems: jsonb('line_items'), // Detailed breakdown of services
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Insert schemas for new Phase 4 tables
+export const insertRepresentativeMessageSchema = createInsertSchema(representativeMessages).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true,
+  isRead: true,
+  readAt: true 
+});
+
+export const insertInvoiceDetailSchema = createInsertSchema(invoiceDetails).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+// Types for new Phase 4 tables
+export type RepresentativeMessage = typeof representativeMessages.$inferSelect;
+export type InsertRepresentativeMessage = z.infer<typeof insertRepresentativeMessageSchema>;
+export type InvoiceDetail = typeof invoiceDetails.$inferSelect;
+export type InsertInvoiceDetail = z.infer<typeof insertInvoiceDetailSchema>;

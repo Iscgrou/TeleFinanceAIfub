@@ -57,9 +57,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(404).json({ error: 'Invoice generation failed - Image generator returned null' });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Invoice generation test error:', error);
-      res.status(500).json({ error: 'Invoice generation failed', details: error.message });
+      res.status(500).json({ error: 'Invoice generation failed', details: error?.message || 'Unknown error' });
     }
   });
 
@@ -68,7 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const stats = await storage.getDashboardStats();
       res.json(stats);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ message: "Error fetching dashboard stats" });
     }
   });
@@ -147,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : 0;
       
       const lastPaymentDate = payments.length > 0 
-        ? payments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0].createdAt
+        ? payments.sort((a, b) => (b.paymentDate ? new Date(b.paymentDate).getTime() : 0) - (a.paymentDate ? new Date(a.paymentDate).getTime() : 0))[0].paymentDate
         : null;
       
       // Simple credit rating based on payment history
@@ -162,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paidInvoices,
         totalPayments,
         averageInvoiceAmount,
-        lastPaymentDate,
+        lastPaymentDate: lastPaymentDate || null,
         creditRating
       };
       
@@ -171,9 +171,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         data: statsData
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error fetching representative stats:', error);
-      res.status(500).json({ message: "Error fetching representative stats", error: error.message });
+      res.status(500).json({ message: "Error fetching representative stats", error: error?.message });
     }
   });
 
@@ -188,14 +188,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get commission records for this colleague
       const commissions = await storage.getCommissionsByColleague(id);
-      const totalCommissions = commissions.reduce((sum, comm) => sum + parseFloat(comm.amount), 0);
+      const totalCommissions = commissions.reduce((sum, comm) => sum + parseFloat(comm.commissionAmount), 0);
       
       // Calculate this month's commissions
       const thisMonth = new Date();
       thisMonth.setDate(1);
       const thisMonthCommissions = commissions
-        .filter(comm => new Date(comm.createdAt) >= thisMonth)
-        .reduce((sum, comm) => sum + parseFloat(comm.amount), 0);
+        .filter(comm => comm.createdAt && new Date(comm.createdAt) >= thisMonth)
+        .reduce((sum, comm) => sum + parseFloat(comm.commissionAmount), 0);
       
       const averageCommissionPerRep = totalRepresentatives > 0 ? totalCommissions / totalRepresentatives : 0;
       
@@ -213,13 +213,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           thisMonthCommissions,
           averageCommissionPerRep,
           topRepresentative: topRepresentative ? {
-            name: topRepresentative.storeName,
-            totalDebt: parseFloat(topRepresentative.totalDebt)
+            name: topRepresentative.storeName || '',
+            totalDebt: parseFloat(topRepresentative.totalDebt || '0')
           } : null,
           recentActivity: [] // Can be expanded later
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ message: "Error fetching colleague stats" });
     }
   });
@@ -822,8 +822,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.json(settings);
-    } catch (error) {
-      if (error.name === 'ZodError') {
+    } catch (error: any) {
+      if (error?.name === 'ZodError') {
         res.status(400).json({ message: "داده‌های تنظیمات نامعتبر است" });
       } else {
         res.status(500).json({ message: "خطا در ذخیره تنظیمات" });
@@ -927,5 +927,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/security', securityRouter);
 
   const httpServer = createServer(app);
+  // Representative Messages API Routes
+  app.post('/api/representatives/:id/messages', async (req, res) => {
+    try {
+      const representativeId = parseInt(req.params.id);
+      const messageData = {
+        representativeId,
+        ...req.body
+      };
+      
+      const message = await storage.sendMessageToRepresentative(messageData);
+      res.json(message);
+    } catch (error: any) {
+      res.status(500).json({ message: "خطا در ارسال پیام", error: error?.message });
+    }
+  });
+
+  app.get('/api/representatives/:id/messages', async (req, res) => {
+    try {
+      const representativeId = parseInt(req.params.id);
+      const messages = await storage.getRepresentativeMessages(representativeId);
+      res.json({ data: messages });
+    } catch (error: any) {
+      res.status(500).json({ message: "خطا در دریافت پیام‌ها", error: error?.message });
+    }
+  });
+
+  app.post('/api/messages/:id/read', async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.id);
+      const message = await storage.markMessageAsRead(messageId);
+      res.json(message);
+    } catch (error: any) {
+      res.status(500).json({ message: "خطا در علامت‌گذاری پیام", error: error?.message });
+    }
+  });
+
+  app.get('/api/representatives/:id/unread-messages-count', async (req, res) => {
+    try {
+      const representativeId = parseInt(req.params.id);
+      const count = await storage.getUnreadMessagesCount(representativeId);
+      res.json({ count });
+    } catch (error: any) {
+      res.status(500).json({ message: "خطا در شمارش پیام‌ها", error: error?.message });
+    }
+  });
+
+  // Enhanced Invoice Details API Routes
+  app.post('/api/invoices/:id/details', async (req, res) => {
+    try {
+      const invoiceId = parseInt(req.params.id);
+      const persianDateInfo = storage.generatePersianDate(new Date());
+      
+      const detailData = {
+        invoiceId,
+        ...persianDateInfo,
+        ...req.body
+      };
+      
+      const detail = await storage.createInvoiceDetail(detailData);
+      res.json(detail);
+    } catch (error: any) {
+      res.status(500).json({ message: "خطا در ایجاد جزئیات فاکتور", error: error?.message });
+    }
+  });
+
+  app.get('/api/invoices/:id/details', async (req, res) => {
+    try {
+      const invoiceId = parseInt(req.params.id);
+      const details = await storage.getInvoiceDetails(invoiceId);
+      res.json(details);
+    } catch (error: any) {
+      res.status(500).json({ message: "خطا در دریافت جزئیات فاکتور", error: error?.message });
+    }
+  });
+
   return httpServer;
 }

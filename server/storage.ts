@@ -1,6 +1,6 @@
 import { 
   admins, salesColleagues, representatives, invoices, payments, 
-  commissionRecords, systemSettings, invoiceTemplates,
+  commissionRecords, systemSettings, invoiceTemplates, representativeMessages, invoiceDetails,
   type Admin, type InsertAdmin,
   type SalesColleague, type InsertSalesColleague,
   type Representative, type InsertRepresentative,
@@ -8,7 +8,9 @@ import {
   type Payment, type InsertPayment,
   type CommissionRecord, type InsertCommissionRecord,
   type SystemSettings, type InsertSystemSettings,
-  type InvoiceTemplate, type InsertInvoiceTemplate
+  type InvoiceTemplate, type InsertInvoiceTemplate,
+  type RepresentativeMessage, type InsertRepresentativeMessage,
+  type InvoiceDetail, type InsertInvoiceDetail
 } from "@shared/schema";
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
@@ -397,6 +399,76 @@ export class DatabaseStorage implements IStorage {
       }).returning();
       return result[0];
     }
+  }
+
+  async updateSystemSettings(insertSettings: Partial<InsertSystemSettings>): Promise<SystemSettings> {
+    return this.createOrUpdateSystemSettings(insertSettings);
+  }
+
+  // Representative Messages Management
+  async sendMessageToRepresentative(insertMessage: InsertRepresentativeMessage): Promise<RepresentativeMessage> {
+    const result = await db.insert(representativeMessages).values(insertMessage).returning();
+    return result[0];
+  }
+
+  async getRepresentativeMessages(representativeId: number): Promise<RepresentativeMessage[]> {
+    return await db.select()
+      .from(representativeMessages)
+      .where(eq(representativeMessages.representativeId, representativeId))
+      .orderBy(desc(representativeMessages.createdAt));
+  }
+
+  async markMessageAsRead(messageId: number): Promise<RepresentativeMessage | undefined> {
+    const result = await db.update(representativeMessages)
+      .set({ 
+        isRead: true, 
+        readAt: new Date() 
+      })
+      .where(eq(representativeMessages.id, messageId))
+      .returning();
+    return result[0];
+  }
+
+  async getUnreadMessagesCount(representativeId: number): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)` })
+      .from(representativeMessages)
+      .where(and(
+        eq(representativeMessages.representativeId, representativeId),
+        eq(representativeMessages.isRead, false)
+      ));
+    return result[0]?.count || 0;
+  }
+
+  // Invoice Details Management with Persian Calendar
+  async createInvoiceDetail(insertDetail: InsertInvoiceDetail): Promise<InvoiceDetail> {
+    const result = await db.insert(invoiceDetails).values(insertDetail).returning();
+    return result[0];
+  }
+
+  async getInvoiceDetails(invoiceId: number): Promise<InvoiceDetail | undefined> {
+    const result = await db.select()
+      .from(invoiceDetails)
+      .where(eq(invoiceDetails.invoiceId, invoiceId))
+      .limit(1);
+    return result[0];
+  }
+
+  // Helper method to generate Persian date
+  generatePersianDate(date: Date = new Date()): { persianDate: string, persianMonth: string, persianYear: string } {
+    const persianMonths = [
+      'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+      'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+    ];
+    
+    // Simple Persian date conversion (approximate)
+    const persianYear = (date.getFullYear() - 621).toString();
+    const persianMonthIndex = Math.floor(date.getMonth() * 12 / 12); // Simplified
+    const persianMonth = persianMonths[persianMonthIndex] || 'مهر';
+    const persianDay = date.getDate().toString().padStart(2, '0');
+    const persianMonthNum = (persianMonthIndex + 1).toString().padStart(2, '0');
+    const persianDate = `${persianYear}/${persianMonthNum}/${persianDay}`;
+    
+    return { persianDate, persianMonth, persianYear };
   }
 
   async getDashboardStats(): Promise<{
