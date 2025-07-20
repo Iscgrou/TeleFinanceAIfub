@@ -2,24 +2,26 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { 
   Menu, 
   X, 
   BarChart3, 
   Users, 
   FileText, 
-  CreditCard, 
   Settings, 
   UserCheck,
-  TrendingUp,
-  DollarSign,
-  Banknote,
-  Shield,
+  Activity,
+  Search,
   MessageSquare,
   Bot,
   ChevronLeft,
   ChevronRight,
-  Home
+  Home,
+  Sun,
+  Moon,
+  History,
+  MessageCircle
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 
@@ -41,88 +43,71 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Close mobile sidebar when route changes
   useEffect(() => {
     setSidebarOpen(false);
   }, [location]);
 
+  // Toggle theme
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    document.documentElement.classList.toggle('dark');
+  };
+
   const navigationItems: NavigationItem[] = [
     {
       id: 'dashboard',
-      title: 'داشبورد اصلی',
-      icon: BarChart3,
+      title: 'داشبورد',
+      icon: Home,
       href: '/dashboard',
-      description: 'نمای کلی سیستم و آمار'
+      description: 'نمای کلی سیستم'
     },
     {
       id: 'representatives',
-      title: 'مدیریت نمایندگان',
+      title: 'نمایندگان',
       icon: Users,
       href: '/admin/representatives',
-      description: 'مدیریت کامل نمایندگان',
-      badge: 'جدید'
+      description: 'مدیریت نمایندگان'
     },
     {
       id: 'colleagues',
       title: 'همکاران فروش',
       icon: UserCheck,
       href: '/admin/colleagues',
-      description: 'مدیریت همکاران و کمیسیون'
+      description: 'مدیریت همکاران'
     },
     {
       id: 'invoices',
-      title: 'مدیریت فاکتورها',
+      title: 'فاکتورها',
       icon: FileText,
       href: '/admin/invoices',
-      description: 'ایجاد و مدیریت فاکتورها'
+      description: 'مدیریت فاکتورها'
     },
     {
-      id: 'financial',
-      title: 'تحلیل‌های مالی',
-      icon: DollarSign,
-      href: '/financial',
-      description: 'تحلیل‌ها و گزارشات مالی',
-      children: [
-        {
-          id: 'credit',
-          title: 'مدیریت اعتبار',
-          icon: CreditCard,
-          href: '/financial/credit'
-        },
-        {
-          id: 'cashflow',
-          title: 'جریان نقدی',
-          icon: TrendingUp,
-          href: '/financial/cashflow'
-        },
-        {
-          id: 'profitability',
-          title: 'سودآوری',
-          icon: DollarSign,
-          href: '/financial/profitability'
-        },
-        {
-          id: 'reconciliation',
-          title: 'تطبیق بانکی',
-          icon: Banknote,
-          href: '/financial/reconciliation'
-        }
-      ]
+      id: 'reports',
+      title: 'گزارش‌ها',
+      icon: BarChart3,
+      href: '/reports',
+      description: 'گزارشات مالی'
     },
     {
-      id: 'security',
-      title: 'امنیت سیستم',
-      icon: Shield,
-      href: '/security',
-      description: 'نظارت و امنیت'
+      id: 'activity',
+      title: 'ردگیری تغییرات',
+      icon: History,
+      href: '/activity',
+      description: 'تاریخچه فعالیت‌ها'
     },
     {
       id: 'settings',
       title: 'تنظیمات',
       icon: Settings,
       href: '/settings',
-      description: 'تنظیمات کلی سیستم'
+      description: 'تنظیمات سیستم'
     }
   ];
 
@@ -134,25 +119,40 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className={`flex items-center gap-3 p-4 border-b ${sidebarCollapsed && !isMobile ? 'justify-center' : ''}`}>
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-          💰
-        </div>
-        {(!sidebarCollapsed || isMobile) && (
-          <div className="flex-1">
-            <h1 className="font-bold text-lg text-gray-900">سیستم مالی</h1>
-            <p className="text-xs text-gray-600">مدیریت جامع</p>
+      <div className={`p-4 border-b ${sidebarCollapsed && !isMobile ? 'px-2' : ''}`}>
+        <div className={`flex items-center gap-3 ${sidebarCollapsed && !isMobile ? 'justify-center' : ''}`}>
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+            💰
           </div>
-        )}
-        {!isMobile && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="p-2"
-          >
-            {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
+          {(!sidebarCollapsed || isMobile) && (
+            <div className="flex-1">
+              <h1 className="font-bold text-lg text-gray-900">پنل مدیریت</h1>
+            </div>
+          )}
+          {!isMobile && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-2"
+            >
+              {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            </Button>
+          )}
+        </div>
+        
+        {/* Search Box */}
+        {(!sidebarCollapsed || isMobile) && (
+          <div className="mt-4 relative">
+            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="جستجوی سریع..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pr-10 pl-3 text-sm"
+            />
+          </div>
         )}
       </div>
 
@@ -225,23 +225,25 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
       {/* Footer */}
       <div className={`p-4 border-t space-y-3 ${sidebarCollapsed && !isMobile ? 'px-2' : ''}`}>
-        <div className={`flex items-center gap-2 text-xs ${sidebarCollapsed && !isMobile ? 'justify-center' : ''}`}>
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          {(!sidebarCollapsed || isMobile) && <span className="text-gray-600">سیستم آنلاین</span>}
-        </div>
-        
-        {(!sidebarCollapsed || isMobile) && (
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <Bot className="h-3 w-3" />
-              <span>بوت تلگرام فعال</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <MessageSquare className="h-3 w-3" />
-              <span>همگام‌سازی کامل</span>
-            </div>
-          </div>
-        )}
+        {/* Theme Toggle */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={toggleTheme}
+          className={`w-full ${sidebarCollapsed && !isMobile ? 'justify-center px-2' : ''}`}
+        >
+          {theme === 'light' ? (
+            <>
+              <Moon className="h-4 w-4 flex-shrink-0" />
+              {(!sidebarCollapsed || isMobile) && <span className="mr-2">پوسته تاریک</span>}
+            </>
+          ) : (
+            <>
+              <Sun className="h-4 w-4 flex-shrink-0" />
+              {(!sidebarCollapsed || isMobile) && <span className="mr-2">پوسته روشن</span>}
+            </>
+          )}
+        </Button>
       </div>
     </div>
   );
@@ -292,6 +294,53 @@ export default function MainLayout({ children }: MainLayoutProps) {
           {children}
         </main>
       </div>
+      
+      {/* Floating Chat Button */}
+      <div className="fixed bottom-6 left-6 z-50">
+        <Button
+          size="lg"
+          className="rounded-full shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+          onClick={() => setChatOpen(!chatOpen)}
+        >
+          <MessageCircle className="h-6 w-6" />
+        </Button>
+      </div>
+
+      {/* Chat Window */}
+      {chatOpen && (
+        <div className="fixed bottom-24 left-6 w-96 h-[500px] bg-white rounded-lg shadow-2xl z-50 flex flex-col">
+          <div className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg flex items-center justify-between">
+            <h3 className="font-semibold">دستیار هوش مصنوعی</h3>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setChatOpen(false)}
+              className="text-white hover:bg-white/20"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex-1 p-4 overflow-y-auto">
+            <div className="text-center text-gray-500 text-sm">
+              <Bot className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+              <p>سلام! من دستیار هوش مصنوعی شما هستم.</p>
+              <p className="mt-2">چطور می‌تونم کمکتون کنم؟</p>
+            </div>
+          </div>
+          <div className="p-4 border-t">
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="سوال خود را بپرسید..."
+                className="flex-1"
+              />
+              <Button size="sm">
+                ارسال
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
