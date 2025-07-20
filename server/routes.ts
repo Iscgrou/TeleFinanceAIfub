@@ -922,6 +922,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/profitability', profitabilityRouter);
   app.use('/api/bank-reconciliation', bankReconciliationRouter);
   app.use('/api/security', securityRouter);
+  
+  // Phase 5.1 - AI Analytics Routes
+  const { default: aiAnalyticsRouter } = await import('./routes/ai-analytics.js');
+  app.use('/api/ai-analytics', aiAnalyticsRouter);
 
   const httpServer = createServer(app);
   // Representative Messages API Routes

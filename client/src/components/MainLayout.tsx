@@ -21,7 +21,8 @@ import {
   Sun,
   Moon,
   History,
-  MessageCircle
+  MessageCircle,
+  Brain
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 
@@ -101,6 +102,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
       icon: BarChart3,
       href: '/reports',
       description: 'گزارشات مالی'
+    },
+    {
+      id: 'ai-analytics',
+      title: 'تحلیل‌های هوشمند',
+      icon: Brain,
+      href: '/ai-analytics',
+      description: 'تحلیل AI برای بدهی‌ها',
+      badge: 'جدید'
     },
     {
       id: 'activity',

@@ -95,7 +95,13 @@ export default function App() {
                   <Route path="/settings" component={SettingsPage} />
                   
                   {/* Invoice History Route */}
-                  <Route path="/invoices/history" component={() => import('./pages/InvoiceHistoryV2')} />
+                  <Route path="/invoices/history" component={InvoiceHistoryPage} />
+                  
+                  {/* AI Analytics Route - Phase 5.1 */}
+                  <Route path="/ai-analytics" component={() => {
+                    const AIAnalytics = require('./pages/AIAnalytics').default;
+                    return <AIAnalytics />;
+                  }} />
                   
                   {/* Legacy Route Redirects */}
                   <Route path="/admin/advanced">
