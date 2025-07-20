@@ -67,7 +67,7 @@ export default function App() {
             }
             return (
               <ErrorBoundary>
-                <RepresentativePortal username={params.username} />
+                <RepresentativePortal />
               </ErrorBoundary>
             );
           }} />
