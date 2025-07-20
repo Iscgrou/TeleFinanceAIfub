@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پورتال نماینده - Dream</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+            direction: rtl;
+            background: linear-gradient(to bottom right, #f8fafc, #e0f2fe);
+            min-height: 100vh;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            margin: 2rem auto;
+        }
+        
+        .error-icon {
+            font-size: 3rem;
+            color: #ef4444;
+            margin-bottom: 1rem;
+        }
+        
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .container {
+            max-width: 1024px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo {
+            width: 64px;
+            height: 64px;
+            background: #3b82f6;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        
+        .store-info h1 {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #111827;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .content {
+            padding: 2rem 0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #111827;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #111827;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            background: #f9fafb;
+            padding: 0.75rem;
+            text-align: right;
+            font-weight: 500;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .badge-paid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .retry-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .retry-button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="loading">
+        <div class="spinner"></div>
+        <p style="margin-top: 1rem; color: #6b7280;">در حال بارگذاری پورتال...</p>
+    </div>
+
+    <script>
+        const username = 'dream';
+        const apiBase = window.location.origin;
+        
+        async function loadPortalData() {
+            const app = document.getElementById('app');
+            
+            try {
+                // Fetch representative data
+                const repResponse = await fetch(`${apiBase}/api/representatives/by-username/${username}`);
+                if (!repResponse.ok) {
+                    throw new Error(`خطا: ${repResponse.status} - ${await repResponse.text()}`);
+                }
+                const representative = await repResponse.json();
+                
+                // Fetch additional data
+                const [invoicesRes, paymentsRes, statsRes] = await Promise.all([
+                    fetch(`${apiBase}/api/representatives/${representative.id}/invoices`),
+                    fetch(`${apiBase}/api/representatives/${representative.id}/payments`),
+                    fetch(`${apiBase}/api/representatives/${representative.id}/stats`)
+                ]);
+                
+                const invoices = invoicesRes.ok ? (await invoicesRes.json()).data || [] : [];
+                const payments = paymentsRes.ok ? (await paymentsRes.json()).data || [] : [];
+                const stats = statsRes.ok ? (await statsRes.json()).data || {} : {};
+                
+                // Render the portal
+                renderPortal(representative, invoices, payments, stats);
+                
+            } catch (error) {
+                console.error('Error loading portal:', error);
+                app.className = '';
+                app.innerHTML = `
+                    <div class="error">
+                        <div class="error-icon">❌</div>
+                        <h2 style="margin-bottom: 0.5rem;">خطا در بارگذاری پورتال</h2>
+                        <p style="color: #6b7280; margin-bottom: 0.5rem;">${error.message}</p>
+                        <p style="font-size: 0.875rem; color: #9ca3af;">نام کاربری: ${username}</p>
+                        <button class="retry-button" onclick="location.reload()">تلاش مجدد</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderPortal(representative, invoices, payments, stats) {
+            const app = document.getElementById('app');
+            app.className = '';
+            
+            const totalDebt = parseFloat(representative.totalDebt || 0);
+            const unpaidInvoices = invoices.filter(inv => inv.status !== 'paid');
+            const lastPayment = payments[0];
+            
+            app.innerHTML = `
+                <header class="header">
+                    <div class="container">
+                        <div class="header-content">
+                            <div class="logo">🏪</div>
+                            <div class="store-info">
+                                <h1>${representative.storeName}</h1>
+                                <p style="color: #6b7280;">خوش آمدید ${representative.storeName}</p>
+                                <span class="status-badge ${representative.isActive ? 'status-active' : ''}">${representative.isActive ? 'فعال' : 'غیرفعال'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                
+                <main class="content">
+                    <div class="container">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">مجموع بدهی</div>
+                                <div class="stat-value">${totalDebt.toLocaleString('fa-IR')} تومان</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">فاکتورهای معوق</div>
+                                <div class="stat-value">${unpaidInvoices.length.toLocaleString('fa-IR')}</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">آخرین پرداخت</div>
+                                <div class="stat-value">${lastPayment ? new Date(lastPayment.paymentDate).toLocaleDateString('fa-IR') : 'ندارد'}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="section">
+                            <h2 class="section-title">فاکتورهای اخیر</h2>
+                            ${unpaidInvoices.length > 0 ? `
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>شماره فاکتور</th>
+                                            <th>تاریخ</th>
+                                            <th>مبلغ</th>
+                                            <th>وضعیت</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${unpaidInvoices.slice(0, 5).map(invoice => `
+                                            <tr>
+                                                <td>${invoice.invoiceNumber || '-'}</td>
+                                                <td>${new Date(invoice.issueDate).toLocaleDateString('fa-IR')}</td>
+                                                <td>${parseFloat(invoice.totalAmount).toLocaleString('fa-IR')} تومان</td>
+                                                <td><span class="badge badge-${invoice.status === 'paid' ? 'paid' : 'pending'}">${invoice.status === 'paid' ? 'پرداخت شده' : 'در انتظار پرداخت'}</span></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            ` : '<div class="empty-state">فاکتوری یافت نشد</div>'}
+                        </div>
+                        
+                        <div class="section">
+                            <h2 class="section-title">پرداخت‌های اخیر</h2>
+                            ${payments.length > 0 ? `
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>تاریخ</th>
+                                            <th>مبلغ</th>
+                                            <th>روش پرداخت</th>
+                                            <th>توضیحات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${payments.slice(0, 5).map(payment => `
+                                            <tr>
+                                                <td>${new Date(payment.paymentDate).toLocaleDateString('fa-IR')}</td>
+                                                <td>${parseFloat(payment.amount).toLocaleString('fa-IR')} تومان</td>
+                                                <td>${payment.paymentMethod || 'نقدی'}</td>
+                                                <td>${payment.description || '-'}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            ` : '<div class="empty-state">پرداختی ثبت نشده است</div>'}
+                        </div>
+                    </div>
+                </main>
+            `;
+        }
+        
+        // Load portal data on page load
+        loadPortalData();
+    </script>
+</body>
+</html>

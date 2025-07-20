@@ -67,6 +67,7 @@ An advanced AI-powered financial management platform specifically designed for p
 - **Fixed invoice creation** by removing incompatible description field
 - **Updated 199 legacy representatives** with proper owner names, phone numbers, and sales colleague assignments
 - **Set default sales colleague** (سارا احمدی - ID: 2) for usage file processing
+- **Added CORS support** for cross-browser compatibility (Safari, Chrome, Firefox)
 
 ### ✅ **Data Structure Improvements:**
 - All 200 representatives now have complete profiles
@@ -74,11 +75,19 @@ An advanced AI-powered financial management platform specifically designed for p
 - System settings configured for usage processing
 - Database schema fully aligned with frontend validation
 
-### Next Priority Actions
-→ Fix public portal accessibility in all browsers (Safari, Chrome, Firefox)
-→ Implement comprehensive settings page with visual editors
-→ Add representative messaging system in portal
-→ Enable invoice detail breakdown with Shamsi date support
+### Next Priority Actions (بر اساس درخواست کاربر - 20 جولای 2025)
+🚨 **اولویت بحرانی:**
+→ رفع مشکل دسترسی پورتال عمومی در تمام مرورگرها (Safari, Chrome, Firefox)
+→ خطاهای گزارش شده: "صفحه در دسترس نیست"، "نماینده یافت نشد"
+→ CORS اضافه شده ولی نیاز به تست و رفع کامل دارد
+
+🔥 **اولویت‌های فوری:**
+→ صفحه تنظیمات کامل با ویرایشگرهای گرافیکی:
+  - تنظیمات قالب فاکتور (بدون کدنویسی)
+  - تنظیمات ظاهر پورتال عمومی نماینده
+  - بازنشانی انتخابی داده‌ها
+→ سیستم پیام‌رسانی به نماینده در پورتال
+→ نمایش ریز جزئیات فاکتور با تاریخ شمسی
 
 ## Development Guidelines
 

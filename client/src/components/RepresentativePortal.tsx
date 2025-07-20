@@ -105,8 +105,15 @@ export default function RepresentativePortal({ username }: RepresentativePortalP
       setLoading(true);
       setError(null);
 
+      console.log('Loading portal data for username:', username);
+      console.log('Current URL:', window.location.href);
+      console.log('API base URL:', window.location.origin);
+
       // Load representative info
-      const repResponse = await apiRequest(`/api/representatives/by-username/${username}`);
+      const apiUrl = `/api/representatives/by-username/${username}`;
+      console.log('Making API request to:', apiUrl);
+      const repResponse = await apiRequest(apiUrl);
+      console.log('Representative response:', repResponse);
       setRepresentative(repResponse);
 
       // Load invoices
@@ -140,7 +147,14 @@ export default function RepresentativePortal({ username }: RepresentativePortalP
       }
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'خطا در بارگذاری اطلاعات');
+      console.error('Portal loading error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'خطا در بارگذاری اطلاعات';
+      console.error('Error details:', {
+        type: err instanceof Error ? err.constructor.name : typeof err,
+        message: errorMessage,
+        stack: err instanceof Error ? err.stack : undefined
+      });
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -174,8 +188,24 @@ export default function RepresentativePortal({ username }: RepresentativePortalP
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4 text-center">
           <div className="text-red-500 text-6xl mb-4">❌</div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">نماینده یافت نشد</h2>
-          <p className="text-gray-600 mb-4">نماینده‌ای با این نام کاربری وجود ندارد</p>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">
+            {error?.includes('404') || error?.includes('یافت نشد') 
+              ? 'نماینده یافت نشد' 
+              : 'خطا در دسترسی به پورتال'}
+          </h2>
+          <p className="text-gray-600 mb-4">
+            {error || 'نماینده‌ای با این نام کاربری وجود ندارد'}
+          </p>
+          <div className="mt-4 text-sm text-gray-500">
+            <p>نام کاربری: {username}</p>
+            <p>آدرس: {window.location.href}</p>
+          </div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            تلاش مجدد
+          </button>
         </div>
       </div>
     );

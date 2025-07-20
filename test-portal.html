@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تست پورتال نماینده - dream</title>
+    <style>
+        body {
+            font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+            direction: rtl;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .result {
+            margin-top: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .portal-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 10px 5px;
+        }
+        .portal-link:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>تست دسترسی پورتال نماینده</h1>
+        
+        <div class="section">
+            <h2>1. اطلاعات محیط</h2>
+            <div id="envInfo" class="result"></div>
+        </div>
+        
+        <div class="section">
+            <h2>2. تست API با نام کاربری: dream</h2>
+            <button onclick="testAPI()">تست API</button>
+            <div id="apiResult" class="result"></div>
+        </div>
+        
+        <div class="section">
+            <h2>3. لینک‌های مستقیم پورتال</h2>
+            <p>لینک‌های زیر را در مرورگرهای مختلف تست کنید:</p>
+            <a href="/portal/dream" class="portal-link" target="_blank">
+                پورتال Dream (مسیر نسبی)
+            </a>
+            <a href="#" onclick="openFullPortal(); return false;" class="portal-link">
+                پورتال Dream (آدرس کامل)
+            </a>
+        </div>
+        
+        <div class="section">
+            <h2>4. تست CORS و Headers</h2>
+            <button onclick="testCORS()">تست CORS</button>
+            <div id="corsResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Show environment info on load
+        window.onload = function() {
+            const envDiv = document.getElementById('envInfo');
+            const info = {
+                'آدرس کامل': window.location.href,
+                'دامنه': window.location.hostname,
+                'پروتکل': window.location.protocol,
+                'Origin': window.location.origin,
+                'مرورگر': navigator.userAgent.includes('Safari') ? 'Safari' : 
+                          navigator.userAgent.includes('Chrome') ? 'Chrome' : 
+                          navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Other',
+                'زبان': navigator.language
+            };
+            
+            envDiv.innerHTML = Object.entries(info)
+                .map(([key, value]) => `${key}: <span class="info">${value}</span>`)
+                .join('\n');
+        };
+
+        async function testAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = 'در حال تست API...\n';
+            
+            try {
+                const apiUrl = `${window.location.origin}/api/representatives/by-username/dream`;
+                resultDiv.innerHTML += `\nدرخواست به: ${apiUrl}\n`;
+                
+                const startTime = Date.now();
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+                const endTime = Date.now();
+                
+                resultDiv.innerHTML += `\nزمان پاسخ: ${endTime - startTime}ms\n`;
+                resultDiv.innerHTML += `وضعیت: ${response.status} ${response.statusText}\n`;
+                
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+                resultDiv.innerHTML += `\nHeaders دریافتی:\n${JSON.stringify(headers, null, 2)}\n`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML += `\n<span class="success">✓ API با موفقیت پاسخ داد!</span>\n`;
+                    resultDiv.innerHTML += `\nاطلاعات نماینده:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML += `\n<span class="error">✗ خطا در API</span>\n`;
+                    resultDiv.innerHTML += `پاسخ خطا: ${errorText}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `\n<span class="error">✗ خطای شبکه:</span>\n`;
+                resultDiv.innerHTML += `نوع خطا: ${error.name}\n`;
+                resultDiv.innerHTML += `پیام: ${error.message}\n`;
+                resultDiv.innerHTML += `Stack:\n${error.stack}`;
+            }
+        }
+        
+        function openFullPortal() {
+            const fullURL = `${window.location.origin}/portal/dream`;
+            alert(`در حال باز کردن: ${fullURL}`);
+            window.open(fullURL, '_blank');
+        }
+        
+        async function testCORS() {
+            const resultDiv = document.getElementById('corsResult');
+            resultDiv.innerHTML = 'در حال بررسی CORS...\n';
+            
+            try {
+                // Test with different origins
+                const tests = [
+                    { mode: 'cors', credentials: 'same-origin' },
+                    { mode: 'cors', credentials: 'include' },
+                    { mode: 'no-cors' }
+                ];
+                
+                for (const test of tests) {
+                    resultDiv.innerHTML += `\nتست با mode: ${test.mode}, credentials: ${test.credentials || 'none'}\n`;
+                    
+                    try {
+                        const response = await fetch(`${window.location.origin}/api/representatives/by-username/dream`, {
+                            method: 'GET',
+                            mode: test.mode,
+                            credentials: test.credentials,
+                            headers: test.mode !== 'no-cors' ? {
+                                'Content-Type': 'application/json'
+                            } : {}
+                        });
+                        
+                        if (test.mode !== 'no-cors') {
+                            const corsHeaders = {
+                                'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
+                                'access-control-allow-credentials': response.headers.get('access-control-allow-credentials'),
+                                'access-control-allow-methods': response.headers.get('access-control-allow-methods'),
+                                'access-control-allow-headers': response.headers.get('access-control-allow-headers')
+                            };
+                            
+                            resultDiv.innerHTML += `<span class="success">✓ موفق - Headers:</span>\n${JSON.stringify(corsHeaders, null, 2)}\n`;
+                        } else {
+                            resultDiv.innerHTML += `<span class="success">✓ درخواست no-cors موفق بود</span>\n`;
+                        }
+                    } catch (error) {
+                        resultDiv.innerHTML += `<span class="error">✗ خطا: ${error.message}</span>\n`;
+                    }
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `<span class="error">✗ خطای کلی: ${error.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
