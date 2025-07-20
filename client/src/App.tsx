@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Router, Route, Switch, useRoute } from 'wouter'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/toaster'
-import { api } from './utils/api'
+import { apiRequest } from './utils/api'
 import RepresentativePortal from './components/RepresentativePortal'
 import AdminDashboard from './components/AdminDashboard'
 
@@ -79,8 +79,8 @@ function InvoicesTab() {
   const loadInvoices = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/api/invoices');
-      setInvoices(response || []);
+      const invoices = await apiRequest('/api/invoices');
+      setInvoices(Array.isArray(invoices) ? invoices : []);
     } catch (error) {
       console.error('Error loading invoices:', error);
     } finally {
@@ -196,8 +196,8 @@ function PaymentsTab() {
   const loadPayments = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/api/payments');
-      setPayments(response || []);
+      const payments = await apiRequest('/api/payments');
+      setPayments(Array.isArray(payments) ? payments : []);
     } catch (error) {
       console.error('Error loading payments:', error);
     } finally {
@@ -322,23 +322,23 @@ function LegacyAdminDashboard() {
       setError(null);
       
       console.log('🚀 Starting data load...');
-      const response = await api.get<ApiResponse>('/api/representatives');
+      const representatives = await apiRequest('/api/representatives');
       
-      if (response && response.data) {
-        setRepresentatives(response.data);
+      if (Array.isArray(representatives)) {
+        setRepresentatives(representatives);
         
         // Calculate stats
-        const totalDebt = response.data.reduce((sum, rep) => sum + parseFloat(rep.totalDebt || '0'), 0);
-        const activeCount = response.data.filter(rep => rep.isActive).length;
+        const totalDebt = representatives.reduce((sum, rep) => sum + parseFloat(rep.totalDebt || '0'), 0);
+        const activeCount = representatives.filter(rep => rep.isActive).length;
         
         setStats({
-          totalRepresentatives: response.data.length,
+          totalRepresentatives: representatives.length,
           totalDebt,
           activeRepresentatives: activeCount
         });
         
         console.log('✅ Data loaded successfully:', {
-          count: response.data.length,
+          count: representatives.length,
           totalDebt,
           activeCount
         });
@@ -355,7 +355,7 @@ function LegacyAdminDashboard() {
 
   const loadSettings = async () => {
     try {
-      const response = await api.get<Settings>('/api/settings');
+      const response = await apiRequest('/api/settings');
       const defaultTemplate = `<!DOCTYPE html>
 <html dir="rtl" lang="fa">
 <head>
@@ -426,7 +426,7 @@ function LegacyAdminDashboard() {
 
   const saveSettings = async () => {
     try {
-      await api.post('/api/settings', settings);
+      await apiRequest('/api/settings', { method: 'POST', body: JSON.stringify(settings) });
       alert('✅ تنظیمات با موفقیت ذخیره شد و برای همه فعال شد');
     } catch (err) {
       alert('❌ خطا در ذخیره تنظیمات');
@@ -436,7 +436,7 @@ function LegacyAdminDashboard() {
   const clearFinancialData = async () => {
     if (confirm('⚠️ آیا مطمئن هستید؟ تمام فاکتورها، پرداخت‌ها و بدهی‌ها حذف خواهند شد!')) {
       try {
-        await api.delete('/api/clear-financial-data');
+        await apiRequest('/api/clear-financial-data', { method: 'DELETE' });
         alert('✅ اطلاعات مالی با موفقیت پاکسازی شد');
         loadData(); // Reload data
       } catch (err) {
@@ -449,7 +449,7 @@ function LegacyAdminDashboard() {
     if (confirm('🚨 خطر! آیا مطمئن هستید؟ تمام اطلاعات سیستم حذف خواهند شد!')) {
       if (confirm('🚨 تأیید نهایی: این عمل غیرقابل بازگشت است!')) {
         try {
-          await api.delete('/api/clear-all-data');
+          await apiRequest('/api/clear-all-data', { method: 'DELETE' });
           alert('✅ تمام اطلاعات با موفقیت پاکسازی شد');
           loadData(); // Reload data
         } catch (err) {

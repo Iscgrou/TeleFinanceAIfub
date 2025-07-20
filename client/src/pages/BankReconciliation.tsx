@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/utils/api';
-import { FileUpload, CheckCircle, XCircle, AlertTriangle, DollarSign, Clock } from 'lucide-react';
+import { Upload, CheckCircle, XCircle, AlertTriangle, DollarSign, Clock } from 'lucide-react';
 
 export default function BankReconciliation() {
   const { toast } = useToast();
@@ -248,7 +248,7 @@ export default function BankReconciliation() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <FileUpload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <div className="space-y-2">
                   <h3 className="text-lg font-medium">فایل صورتحساب بانکی را انتخاب کنید</h3>
                   <p className="text-sm text-gray-600">CSV, XLSX, یا PDF تا حداکثر 10 مگابایت</p>

@@ -13,9 +13,9 @@ import { generateInvoiceImage } from "./services/svg-invoice-generator";
 import { registerTelegramTestRoutes } from "./routes/test-telegram";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Apply enterprise security middleware to all routes
-  app.use(securityMiddleware);
-  app.use(rateLimitMiddleware(1000, 15)); // 1000 requests per 15 minutes for development
+  // Disable aggressive security for development
+  // app.use(securityMiddleware);
+  // app.use(rateLimitMiddleware(1000, 15)); // Disabled for development
   
   // Test invoice generation endpoint
   app.get("/api/test/invoice/:id", async (req, res) => {

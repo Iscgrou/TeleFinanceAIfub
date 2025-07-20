@@ -8,7 +8,7 @@ export interface ApiResponse<T = any> {
 export async function apiRequest<T = any>(
   url: string, 
   options: RequestInit = {}
-): Promise<ApiResponse<T>> {
+): Promise<T> {
   const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -21,5 +21,6 @@ export async function apiRequest<T = any>(
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  return data.data || data; // Support both wrapped and direct responses
 }

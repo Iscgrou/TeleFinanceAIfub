@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../utils/api'
+import { apiRequest } from '../utils/api'
 
 interface Representative {
   id: number;
@@ -92,7 +92,7 @@ export default function RepresentativePortal({ username }: RepresentativePortalP
 
   const loadInvoiceDetails = async (invoiceId: number) => {
     try {
-      const response = await api.get<InvoiceDetail>(`/api/invoices/${invoiceId}/detail`);
+      const response = await apiRequest(`/api/invoices/${invoiceId}/detail`);
       setSelectedInvoice(response);
       setShowInvoiceModal(true);
     } catch (error) {
@@ -106,20 +106,20 @@ export default function RepresentativePortal({ username }: RepresentativePortalP
       setError(null);
 
       // Load representative info
-      const repResponse = await api.get<Representative>(`/api/representatives/by-username/${username}`);
+      const repResponse = await apiRequest(`/api/representatives/by-username/${username}`);
       setRepresentative(repResponse);
 
       // Load invoices
-      const invoicesResponse = await api.get<Invoice[]>(`/api/representatives/${repResponse.id}/invoices`);
+      const invoicesResponse = await apiRequest(`/api/representatives/${repResponse.id}/invoices`);
       setInvoices(invoicesResponse);
 
       // Load payments
-      const paymentsResponse = await api.get<Payment[]>(`/api/representatives/${repResponse.id}/payments`);
+      const paymentsResponse = await apiRequest(`/api/representatives/${repResponse.id}/payments`);
       setPayments(paymentsResponse);
 
       // Load portal texts
       try {
-        const settingsResponse = await api.get<any>('/api/settings');
+        const settingsResponse = await apiRequest('/api/settings');
         if (settingsResponse?.representativePortalTexts) {
           const texts = JSON.parse(settingsResponse.representativePortalTexts);
           setPortalTexts({
@@ -133,7 +133,7 @@ export default function RepresentativePortal({ username }: RepresentativePortalP
 
       // Load invoice template
       try {
-        const templateResponse = await api.get<{template: InvoiceTemplate}>('/api/invoice-templates/active');
+        const templateResponse = await apiRequest('/api/invoice-templates/active');
         setInvoiceTemplate(templateResponse.template);
       } catch (err) {
         console.log('No active invoice template found, using defaults');
