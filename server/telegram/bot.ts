@@ -65,16 +65,24 @@ export async function initializeBot(): Promise<void> {
     bot.on('polling_error', async (error) => {
       console.error('Telegram polling error:', error);
       
-      // Handle conflict errors - disable auto-restart to prevent infinite loops
+      // Handle conflict errors with smart recovery
       if ((error as any).code === 'EFATAL' || error.message.includes('409')) {
-        console.error('Telegram bot conflict detected (409). Auto-restart disabled to prevent loops.');
-        console.log('This usually means another bot instance is running elsewhere.');
-        console.log('Solutions:');
-        console.log('1. Wait a few minutes and manually restart via /api/test/telegram/restart-bot');
-        console.log('2. Use direct messaging via /api/test/telegram/send-message for immediate functionality');
-        console.log('3. Check for other running instances of this application');
+        console.log('🔄 Bot conflict detected. Implementing recovery strategy...');
+        
+        // Force stop current instance
+        await stopBot();
         isInitializing = false;
-        await stopBot(); // Force cleanup
+        
+        // Wait longer delay to clear conflicts
+        setTimeout(async () => {
+          console.log('🔄 Attempting smart bot restart after conflict resolution...');
+          try {
+            await initializeBot();
+            console.log('✅ Bot restarted successfully');
+          } catch (err) {
+            console.error('❌ Smart restart failed:', err);
+          }
+        }, 60000); // 60 second delay for full cleanup
       }
     });
 

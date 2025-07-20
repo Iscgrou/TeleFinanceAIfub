@@ -50,6 +50,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [chatOpen, setChatOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Close mobile sidebar when route changes
   useEffect(() => {
@@ -294,7 +307,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="right" className="w-80 p-0">
+        <SheetContent side="right" className="w-[320px] p-0 max-w-[85vw]">
           <SidebarContent isMobile={true} />
         </SheetContent>
       </Sheet>
@@ -325,8 +338,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto">
-          {children}
+        <main className="flex-1 overflow-auto bg-gray-50 min-h-0">
+          <div className="p-4 md:p-6 max-w-full">
+            {children}
+          </div>
         </main>
       </div>
       
@@ -341,9 +356,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </Button>
       </div>
 
-      {/* Chat Window */}
+      {/* Chat Window - Mobile Responsive */}
       {chatOpen && (
-        <div className="fixed bottom-24 left-6 w-96 h-[500px] bg-white rounded-lg shadow-2xl z-50 flex flex-col">
+        <div className={`fixed bg-white shadow-2xl z-50 flex flex-col ${
+          isMobile 
+            ? 'inset-x-4 bottom-4 top-24 rounded-lg' 
+            : 'bottom-24 left-6 w-96 h-[500px] rounded-lg'
+        }`}>
           <div className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg flex items-center justify-between">
             <h3 className="font-semibold">دستیار هوش مصنوعی</h3>
             <Button
@@ -367,9 +386,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
               <Input
                 type="text"
                 placeholder="سوال خود را بپرسید..."
-                className="flex-1"
+                className="flex-1 text-sm"
               />
-              <Button size="sm">
+              <Button size="sm" className="px-3">
                 ارسال
               </Button>
             </div>

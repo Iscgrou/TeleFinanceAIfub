@@ -96,17 +96,17 @@ export default function UnifiedDashboard() {
     .slice(0, 3);
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      {/* Header - Mobile Responsive */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">داشبورد مدیریت مالی</h1>
-          <p className="text-gray-600">نمای جامع سیستم مدیریت نمایندگان و امور مالی</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">داشبورد مدیریت مالی</h1>
+          <p className="text-sm md:text-base text-gray-600">نمای جامع سیستم مدیریت نمایندگان و امور مالی</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <button
             onClick={refreshData}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
           >
             <RefreshCw className="h-4 w-4" />
             بروزرسانی
@@ -118,59 +118,68 @@ export default function UnifiedDashboard() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 bg-white border">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            نمای کلی
-          </TabsTrigger>
-          <TabsTrigger value="credit" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            مدیریت اعتبار
-          </TabsTrigger>
-          <TabsTrigger value="cashflow" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            جریان نقدی
-          </TabsTrigger>
-          <TabsTrigger value="profitability" className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4" />
-            سودآوری
-          </TabsTrigger>
-          <TabsTrigger value="reconciliation" className="flex items-center gap-2">
-            <Banknote className="h-4 w-4" />
-            تطبیق بانکی
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            امنیت
-          </TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
+        {/* Mobile: Scrollable tabs */}
+        <div className="w-full overflow-x-auto pb-2">
+          <TabsList className="grid grid-cols-6 bg-white border w-max min-w-full">
+            <TabsTrigger value="overview" className="flex items-center gap-1 md:gap-2 px-2 md:px-4 text-xs md:text-sm">
+              <BarChart3 className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">نمای کلی</span>
+              <span className="sm:hidden">کلی</span>
+            </TabsTrigger>
+            <TabsTrigger value="credit" className="flex items-center gap-1 md:gap-2 px-2 md:px-4 text-xs md:text-sm">
+              <CreditCard className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">مدیریت اعتبار</span>
+              <span className="sm:hidden">اعتبار</span>
+            </TabsTrigger>
+            <TabsTrigger value="cashflow" className="flex items-center gap-1 md:gap-2 px-2 md:px-4 text-xs md:text-sm">
+              <TrendingUp className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">جریان نقدی</span>
+              <span className="sm:hidden">نقدی</span>
+            </TabsTrigger>
+            <TabsTrigger value="profitability" className="flex items-center gap-1 md:gap-2 px-2 md:px-4 text-xs md:text-sm">
+              <DollarSign className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">سودآوری</span>
+              <span className="sm:hidden">سود</span>
+            </TabsTrigger>
+            <TabsTrigger value="reconciliation" className="flex items-center gap-1 md:gap-2 px-2 md:px-4 text-xs md:text-sm">
+              <Banknote className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">تطبیق بانکی</span>
+              <span className="sm:hidden">تطبیق</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center gap-1 md:gap-2 px-2 md:px-4 text-xs md:text-sm">
+              <Shield className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">امنیت</span>
+              <span className="sm:hidden">امنیت</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        <TabsContent value="overview" className="space-y-6">
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-r-4 border-r-blue-500">
+        <TabsContent value="overview" className="space-y-4 md:space-y-6">
+          {/* Key Metrics - Mobile Responsive */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <Card className="border-r-4 border-r-blue-500 hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">کل نمایندگان</CardTitle>
-                <Users className="h-5 w-5 text-blue-600" />
+                <CardTitle className="text-xs md:text-sm font-medium text-gray-600">کل نمایندگان</CardTitle>
+                <Users className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-gray-900">
+                <div className="text-xl md:text-3xl font-bold text-gray-900">
                   {dashboardStats ? dashboardStats.totalRepresentatives.toLocaleString('fa-IR') : '---'}
                 </div>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-xs md:text-sm text-gray-600 mt-1">
                   {dashboardStats ? `${dashboardStats.activeRepresentatives.toLocaleString('fa-IR')} فعال` : '---'}
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border-r-4 border-r-red-500">
+            <Card className="border-r-4 border-r-red-500 hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">کل بدهی</CardTitle>
-                <DollarSign className="h-5 w-5 text-red-600" />
+                <CardTitle className="text-xs md:text-sm font-medium text-gray-600">کل بدهی</CardTitle>
+                <DollarSign className="h-4 w-4 md:h-5 md:w-5 text-red-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-gray-900">
+                <div className="text-xl md:text-3xl font-bold text-red-600">
                   {dashboardStats ? formatCurrency(dashboardStats.totalDebt) : '---'}
                 </div>
                 <p className="text-sm text-gray-600 mt-1">
