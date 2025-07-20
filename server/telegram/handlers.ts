@@ -247,7 +247,7 @@ async function handleListColleagues(chatId: string): Promise<void> {
       
       message += `${i + 1}. **${colleague.name}**\n`;
       message += `   💰 نرخ کمیسیون: ${commissionRate}%\n`;
-      message += `   📅 تاریخ عضویت: ${new Date(colleague.createdAt).toLocaleDateString('fa-IR')}\n\n`;
+      message += `   📅 تاریخ عضویت: ${colleague.createdAt ? new Date(colleague.createdAt).toLocaleDateString('fa-IR') : 'نامشخص'}\n\n`;
     }
     
     message += `💡 برای محاسبه کمیسیون، از دکمه "💰 محاسبه کمیسیون" استفاده کنید.`;
@@ -460,8 +460,8 @@ async function processAICommand(chatId: string, command: string): Promise<void> 
       await sendMessage(chatId, result.response);
       
       // Check if this was an invoice generation command
-      if (result.toolResults && result.toolResults.length > 0) {
-        for (const toolResult of result.toolResults) {
+      if ((result as any).toolResults && (result as any).toolResults.length > 0) {
+        for (const toolResult of (result as any).toolResults) {
           if (toolResult.toolName === 'generate_representative_invoice' && 
               toolResult.result.status === 'success' && 
               toolResult.result.image_generated) {
@@ -470,9 +470,13 @@ async function processAICommand(chatId: string, command: string): Promise<void> 
               const { generateInvoiceImage } = await import('../services/svg-invoice-generator');
               const imageBuffer = await generateInvoiceImage(toolResult.result.invoice_id);
               if (imageBuffer) {
-                await bot.sendPhoto(chatId, imageBuffer, {
-                  caption: `فاکتور نماینده: ${toolResult.result.representative_name}`
-                });
+                const { getBot } = await import('./bot');
+                const botInstance = getBot();
+                if (botInstance) {
+                  await botInstance.sendPhoto(chatId, imageBuffer, {
+                    caption: `فاکتور نماینده: ${toolResult.result.representative_name}`
+                  });
+                }
               }
             } catch (error) {
               console.error('Failed to send invoice image:', error);
@@ -507,7 +511,7 @@ async function handleStartCommand(chatId: string, msg: TelegramBot.Message): Pro
         await sendMessage(chatId, '🚫 دسترسی مجاز نیست\n\nشما مجاز به استفاده از این سیستم نیستید. لطفا با مدیر سیستم تماس بگیرید.\n\nAccess Denied: You are not authorized to use this system.');
       }
     } else {
-      await sendWelcomeMessage(chatId, admin.isSuperAdmin);
+      await sendWelcomeMessage(chatId, admin.isSuperAdmin || false);
     }
   }
 }
@@ -608,9 +612,13 @@ async function handleActionConfirmation(chatId: string, callbackData: string): P
             const imageBuffer = await generateInvoiceImage(invoiceId);
             if (imageBuffer) {
               // Send image to admin
-              await bot.sendPhoto(chatId, imageBuffer, {
-                caption: `فاکتور شماره #${invoiceId}`
-              });
+              const { getBot } = await import('./bot');
+              const botInstance = getBot();
+              if (botInstance) {
+                await botInstance.sendPhoto(chatId, imageBuffer, {
+                  caption: `فاکتور شماره #${invoiceId}`
+                });
+              }
               
               // Small delay between images
               await new Promise(resolve => setTimeout(resolve, 500));
@@ -631,9 +639,13 @@ async function handleActionConfirmation(chatId: string, callbackData: string): P
           const imageBuffer = await generateInvoiceImage(result.invoice_id);
           if (imageBuffer) {
             // Send image to admin
-            await bot.sendPhoto(chatId, imageBuffer, {
-              caption: `فاکتور نماینده: ${result.representative_name}`
-            });
+            const { getBot } = await import('./bot');
+            const botInstance = getBot();
+            if (botInstance) {
+              await botInstance.sendPhoto(chatId, imageBuffer, {
+                caption: `فاکتور نماینده: ${result.representative_name}`
+              });
+            }
           }
         } catch (error) {
           console.error(`Failed to send invoice image:`, error);

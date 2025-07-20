@@ -57,7 +57,7 @@ export async function initializeBot(): Promise<void> {
       console.error('Telegram polling error:', error);
       
       // Handle conflict errors - disable auto-restart to prevent infinite loops
-      if (error.code === 'EFATAL' || error.message.includes('409')) {
+      if ((error as any).code === 'EFATAL' || error.message.includes('409')) {
         console.error('Telegram bot conflict detected (409). Auto-restart disabled to prevent loops.');
         console.log('This usually means another bot instance is running elsewhere.');
         console.log('Solutions:');
@@ -89,7 +89,7 @@ async function stopBot(): Promise<void> {
       // Give extra time for cleanup
       await new Promise(resolve => setTimeout(resolve, 2000));
     } catch (e) {
-      console.log('Error stopping polling:', e.message);
+      console.log('Error stopping polling:', (e as Error).message);
     }
     bot = null;
   }

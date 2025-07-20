@@ -9,9 +9,7 @@ import {
   insertPaymentSchema,
   insertSalesColleagueSchema
 } from "@shared/schema";
-import { initializeBot } from "./telegram/bot";
 import { generateInvoiceImage } from "./services/svg-invoice-generator";
-import { registerTelegramTestRoutes } from "./routes/test-telegram";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Security middleware disabled - iOS Safari compatibility
@@ -910,8 +908,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Register telegram test routes
-  registerTelegramTestRoutes(app);
+  // Telegram test routes removed for clean integration
 
   // Register new advanced feature routes (imported at top)
   const { default: creditManagementRouter } = await import('./routes/credit-management.js');
@@ -1167,6 +1164,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error generating invoice preview:", error);
       res.status(500).json({ error: "Failed to generate preview" });
+    }
+  });
+
+  // Telegram API Routes  
+  app.post('/api/telegram/restart-bot', async (req, res) => {
+    try {
+      const { initializeBot } = await import('./telegram/bot');
+      await initializeBot();
+      res.json({ success: true, message: 'Telegram bot restarted successfully' });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to restart bot', 
+        error: (error as Error).message 
+      });
+    }
+  });
+
+  app.post('/api/telegram/send-message', async (req, res) => {
+    try {
+      const { chatId, message } = req.body;
+      const { sendMessage } = await import('./telegram/bot');
+      await sendMessage(chatId, message);
+      res.json({ success: true, message: 'Message sent successfully' });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to send message', 
+        error: (error as Error).message 
+      });
+    }
+  });
+
+  app.get('/api/telegram/status', async (req, res) => {
+    try {
+      const { getBot } = await import('./telegram/bot');
+      const bot = getBot();
+      res.json({ 
+        success: true, 
+        status: bot ? 'active' : 'inactive',
+        message: bot ? 'Bot is running' : 'Bot is not initialized'
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to check bot status', 
+        error: (error as Error).message 
+      });
     }
   });
 

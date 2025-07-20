@@ -116,9 +116,15 @@ app.use((req, res, next) => {
     }
   }, 3000);
 
-  // Telegram bot initialization is disabled to prevent 409 conflicts
-  // Use /api/test/telegram/restart-bot endpoint to manually start the bot when needed
-  console.log('Telegram bot auto-initialization disabled. Use /api/test/telegram/restart-bot to start manually.');
+  // Initialize Telegram Bot if token is configured
+  setTimeout(async () => {
+    try {
+      const { initializeBot } = await import('./telegram/bot');
+      await initializeBot();
+    } catch (error) {
+      console.log('Telegram bot initialization skipped:', (error as Error).message);
+    }
+  }, 5000); // Give server time to start
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -206,7 +212,7 @@ app.use((req, res, next) => {
   // Login-protected portal route
   app.get('/portal/:username', safariPortalMiddleware, (req, res) => {
     // Check if authenticated (simple session check)
-    const isAuthenticated = req.session?.authenticated === true;
+    const isAuthenticated = (req.session as any)?.authenticated === true;
     const username = req.params.username;
     
     if (!isAuthenticated) {
@@ -260,8 +266,8 @@ app.use((req, res, next) => {
     const { username, password } = req.body;
     
     if (username === '1' && password === '2') {
-      req.session.authenticated = true;
-      req.session.username = username;
+      (req.session as any).authenticated = true;
+      (req.session as any).username = username;
       res.json({ success: true, message: 'Login successful' });
     } else {
       res.status(401).json({ success: false, message: 'Invalid credentials' });
