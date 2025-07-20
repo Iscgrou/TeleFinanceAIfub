@@ -75,10 +75,10 @@ An advanced AI-powered financial management platform specifically designed for p
 - Database schema fully aligned with frontend validation
 
 ### Next Priority Actions
-→ Test complete CRUD operations across all modules
-→ Implement settings page UI
-→ Clean up sidebar navigation structure  
-→ Enhance invoice template management
+→ Fix public portal accessibility in all browsers (Safari, Chrome, Firefox)
+→ Implement comprehensive settings page with visual editors
+→ Add representative messaging system in portal
+→ Enable invoice detail breakdown with Shamsi date support
 
 ## Development Guidelines
 
