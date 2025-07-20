@@ -1,6 +1,7 @@
 import { 
   admins, salesColleagues, representatives, invoices, payments, 
   commissionRecords, systemSettings, invoiceTemplates, representativeMessages, invoiceDetails,
+  alertRules, alertHistory, notificationLog,
   type Admin, type InsertAdmin,
   type SalesColleague, type InsertSalesColleague,
   type Representative, type InsertRepresentative,
@@ -10,7 +11,10 @@ import {
   type SystemSettings, type InsertSystemSettings,
   type InvoiceTemplate, type InsertInvoiceTemplate,
   type RepresentativeMessage, type InsertRepresentativeMessage,
-  type InvoiceDetail, type InsertInvoiceDetail
+  type InvoiceDetail, type InsertInvoiceDetail,
+  type AlertRule, type InsertAlertRule,
+  type AlertHistoryRecord, type InsertAlertHistory,
+  type NotificationLogEntry, type InsertNotificationLog
 } from "@shared/schema";
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
@@ -85,6 +89,29 @@ export interface IStorage {
   updateInvoiceTemplate(id: number, template: Partial<InsertInvoiceTemplate>): Promise<InvoiceTemplate | null>;
   deleteInvoiceTemplate(id: number): Promise<boolean>;
   setActiveInvoiceTemplate(id: number): Promise<boolean>;
+
+  // PHASE 5.2: Alert System Methods
+  // Alert Rules Management
+  getAlertRules(): Promise<AlertRule[]>;
+  getActiveAlertRules(): Promise<AlertRule[]>;
+  getAlertRuleById(id: number): Promise<AlertRule | null>;
+  createAlertRule(rule: InsertAlertRule): Promise<AlertRule>;
+  updateAlertRule(id: number, rule: Partial<InsertAlertRule>): Promise<AlertRule | null>;
+  deleteAlertRule(id: number): Promise<boolean>;
+  updateAlertRuleTriggerCount(id: number): Promise<boolean>;
+
+  // Alert History Management
+  getAlertHistory(params?: { limit?: number; offset?: number; status?: string }): Promise<AlertHistoryRecord[]>;
+  getAlertHistoryForRepresentative(representativeId: number): Promise<AlertHistoryRecord[]>;
+  createAlertHistory(alert: InsertAlertHistory): Promise<AlertHistoryRecord>;
+  updateAlertStatus(id: number, status: string, resolvedBy?: string): Promise<boolean>;
+  acknowledgeAlert(id: number, acknowledgedBy: string): Promise<boolean>;
+
+  // Notification Log Management
+  getNotificationLogs(alertId?: number): Promise<NotificationLogEntry[]>;
+  createNotificationLog(notification: InsertNotificationLog): Promise<NotificationLogEntry>;
+  updateNotificationStatus(id: number, status: string, errorMessage?: string): Promise<boolean>;
+  getNotificationStats(): Promise<{ total: number; sent: number; failed: number }>;
 }
 
 // Configure WebSocket for Node.js environment
@@ -1021,6 +1048,179 @@ export class DatabaseStorage implements IStorage {
     await db.delete(salesColleagues);
     await db.delete(admins);
     await db.delete(invoiceTemplates);
+    await db.delete(notificationLog);
+    await db.delete(alertHistory);
+    await db.delete(alertRules);
+  }
+
+  // PHASE 5.2: Alert System Implementation
+  // Alert Rules Management
+  async getAlertRules(): Promise<AlertRule[]> {
+    return await db.select().from(alertRules).orderBy(desc(alertRules.createdAt));
+  }
+
+  async getActiveAlertRules(): Promise<AlertRule[]> {
+    return await db.select().from(alertRules).where(eq(alertRules.isActive, true)).orderBy(desc(alertRules.priority));
+  }
+
+  async getAlertRuleById(id: number): Promise<AlertRule | null> {
+    const result = await db.select().from(alertRules).where(eq(alertRules.id, id)).limit(1);
+    return result[0] || null;
+  }
+
+  async createAlertRule(rule: InsertAlertRule): Promise<AlertRule> {
+    const result = await db.insert(alertRules).values({
+      ...rule,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }).returning();
+    return result[0];
+  }
+
+  async updateAlertRule(id: number, rule: Partial<InsertAlertRule>): Promise<AlertRule | null> {
+    const result = await db.update(alertRules)
+      .set({ ...rule, updatedAt: new Date() })
+      .where(eq(alertRules.id, id))
+      .returning();
+    return result[0] || null;
+  }
+
+  async deleteAlertRule(id: number): Promise<boolean> {
+    const result = await db.delete(alertRules).where(eq(alertRules.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async updateAlertRuleTriggerCount(id: number): Promise<boolean> {
+    try {
+      await db.update(alertRules)
+        .set({ 
+          triggerCount: sql`${alertRules.triggerCount} + 1`,
+          lastTriggered: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(alertRules.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error updating alert rule trigger count:', error);
+      return false;
+    }
+  }
+
+  // Alert History Management
+  async getAlertHistory(params: { limit?: number; offset?: number; status?: string } = {}): Promise<AlertHistoryRecord[]> {
+    let query = db.select().from(alertHistory);
+    
+    if (params.status) {
+      query = query.where(eq(alertHistory.status, params.status)) as any;
+    }
+    
+    query = query.orderBy(desc(alertHistory.createdAt)) as any;
+    
+    if (params.limit) {
+      query = query.limit(params.limit) as any;
+    }
+    
+    if (params.offset) {
+      query = query.offset(params.offset) as any;
+    }
+    
+    return await query;
+  }
+
+  async getAlertHistoryForRepresentative(representativeId: number): Promise<AlertHistoryRecord[]> {
+    return await db.select().from(alertHistory)
+      .where(eq(alertHistory.representativeId, representativeId))
+      .orderBy(desc(alertHistory.createdAt));
+  }
+
+  async createAlertHistory(alert: InsertAlertHistory): Promise<AlertHistoryRecord> {
+    const result = await db.insert(alertHistory).values({
+      ...alert,
+      createdAt: new Date()
+    }).returning();
+    return result[0];
+  }
+
+  async updateAlertStatus(id: number, status: string, resolvedBy?: string): Promise<boolean> {
+    try {
+      const updateData: any = { status };
+      
+      if (status === 'resolved' && resolvedBy) {
+        updateData.resolvedBy = resolvedBy;
+        updateData.resolvedAt = new Date();
+      } else if (status === 'acknowledged' && resolvedBy) {
+        updateData.acknowledgedBy = resolvedBy;
+        updateData.acknowledgedAt = new Date();
+      }
+
+      await db.update(alertHistory)
+        .set(updateData)
+        .where(eq(alertHistory.id, id));
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating alert status:', error);
+      return false;
+    }
+  }
+
+  async acknowledgeAlert(id: number, acknowledgedBy: string): Promise<boolean> {
+    return await this.updateAlertStatus(id, 'acknowledged', acknowledgedBy);
+  }
+
+  // Notification Log Management
+  async getNotificationLogs(alertId?: number): Promise<NotificationLogEntry[]> {
+    let query = db.select().from(notificationLog);
+    
+    if (alertId) {
+      query = query.where(eq(notificationLog.alertId, alertId)) as any;
+    }
+    
+    return await (query.orderBy(desc(notificationLog.createdAt)) as any);
+  }
+
+  async createNotificationLog(notification: InsertNotificationLog): Promise<NotificationLogEntry> {
+    const result = await db.insert(notificationLog).values({
+      ...notification,
+      createdAt: new Date()
+    }).returning();
+    return result[0];
+  }
+
+  async updateNotificationStatus(id: number, status: string, errorMessage?: string): Promise<boolean> {
+    try {
+      const updateData: any = { status };
+      
+      if (status === 'sent') {
+        updateData.sentAt = new Date();
+      } else if (status === 'delivered') {
+        updateData.deliveredAt = new Date();
+      } else if (status === 'failed' && errorMessage) {
+        updateData.errorMessage = errorMessage;
+        updateData.retryCount = sql`${notificationLog.retryCount} + 1`;
+      }
+
+      await db.update(notificationLog)
+        .set(updateData)
+        .where(eq(notificationLog.id, id));
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating notification status:', error);
+      return false;
+    }
+  }
+
+  async getNotificationStats(): Promise<{ total: number; sent: number; failed: number }> {
+    const total = await db.select({ count: sql<number>`count(*)` }).from(notificationLog);
+    const sent = await db.select({ count: sql<number>`count(*)` }).from(notificationLog).where(eq(notificationLog.status, 'sent'));
+    const failed = await db.select({ count: sql<number>`count(*)` }).from(notificationLog).where(eq(notificationLog.status, 'failed'));
+    
+    return {
+      total: total[0]?.count || 0,
+      sent: sent[0]?.count || 0,
+      failed: failed[0]?.count || 0
+    };
   }
 }
 

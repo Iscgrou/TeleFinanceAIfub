@@ -73,6 +73,62 @@ export const systemSettings = pgTable("system_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// PHASE 5.2: Alert System Tables
+export const alertRules = pgTable("alert_rules", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  conditions: jsonb("conditions").notNull(), // Flexible rule conditions
+  actions: jsonb("actions").notNull(), // Actions to take when triggered
+  priority: integer("priority").default(1), // 1-5, higher is more urgent
+  isActive: boolean("is_active").default(true),
+  createdBy: text("created_by"),
+  triggerCount: integer("trigger_count").default(0),
+  lastTriggered: timestamp("last_triggered"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const alertHistory = pgTable("alert_history", {
+  id: serial("id").primaryKey(),
+  ruleId: integer("rule_id").references(() => alertRules.id),
+  representativeId: integer("representative_id").references(() => representatives.id),
+  alertType: varchar("alert_type", { length: 50 }).notNull(),
+  severity: integer("severity").notNull(), // 1-5 scale
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  metadata: jsonb("metadata"), // Additional context data
+  status: varchar("status", { length: 20 }).default("pending"), // pending, acknowledged, resolved
+  acknowledgedBy: text("acknowledged_by"),
+  resolvedBy: text("resolved_by"),
+  createdAt: timestamp("created_at").defaultNow(),
+  acknowledgedAt: timestamp("acknowledged_at"),
+  resolvedAt: timestamp("resolved_at"),
+});
+
+export const notificationLog = pgTable("notification_log", {
+  id: serial("id").primaryKey(),
+  alertId: integer("alert_id").references(() => alertHistory.id),
+  channel: varchar("channel", { length: 50 }).notNull(), // telegram, sms, email, in-app
+  recipient: varchar("recipient", { length: 255 }).notNull(),
+  subject: varchar("subject", { length: 255 }),
+  content: text("content").notNull(),
+  status: varchar("status", { length: 20 }).default("pending"), // pending, sent, failed, delivered
+  sentAt: timestamp("sent_at"),
+  deliveredAt: timestamp("delivered_at"),
+  errorMessage: text("error_message"),
+  retryCount: integer("retry_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const alertDashboardSettings = pgTable("alert_dashboard_settings", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  notificationPreferences: jsonb("notification_preferences"),
+  dashboardConfig: jsonb("dashboard_config"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 
 
 // Invoice templates for customizable invoice layouts
@@ -376,3 +432,31 @@ export type RepresentativeMessage = typeof representativeMessages.$inferSelect;
 export type InsertRepresentativeMessage = z.infer<typeof insertRepresentativeMessageSchema>;
 export type InvoiceDetail = typeof invoiceDetails.$inferSelect;
 export type InsertInvoiceDetail = z.infer<typeof insertInvoiceDetailSchema>;
+
+// PHASE 5.2: Alert System Types
+export const insertAlertRuleSchema = createInsertSchema(alertRules).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true, 
+  triggerCount: true, 
+  lastTriggered: true 
+});
+export const insertAlertHistorySchema = createInsertSchema(alertHistory).omit({ 
+  id: true, 
+  createdAt: true, 
+  acknowledgedAt: true, 
+  resolvedAt: true 
+});
+export const insertNotificationLogSchema = createInsertSchema(notificationLog).omit({ 
+  id: true, 
+  createdAt: true, 
+  sentAt: true, 
+  deliveredAt: true 
+});
+
+export type AlertRule = typeof alertRules.$inferSelect;
+export type InsertAlertRule = z.infer<typeof insertAlertRuleSchema>;
+export type AlertHistoryRecord = typeof alertHistory.$inferSelect;
+export type InsertAlertHistory = z.infer<typeof insertAlertHistorySchema>;
+export type NotificationLogEntry = typeof notificationLog.$inferSelect;
+export type InsertNotificationLog = z.infer<typeof insertNotificationLogSchema>;

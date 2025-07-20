@@ -927,6 +927,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { default: aiAnalyticsRouter } = await import('./routes/ai-analytics.js');
   app.use('/api/ai-analytics', aiAnalyticsRouter);
 
+  // Phase 5.2 - Alert System Routes
+  const { default: alertRouter } = await import('./routes/alert-routes.js');
+  app.use('/api/alerts', alertRouter);
+
   const httpServer = createServer(app);
   // Representative Messages API Routes
   app.post('/api/representatives/:id/messages', async (req, res) => {
