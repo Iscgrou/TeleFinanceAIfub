@@ -592,15 +592,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register telegram test routes
   registerTelegramTestRoutes(app);
 
-  // Initialize Telegram bot on startup
-  setTimeout(async () => {
-    try {
-      await initializeBot();
-    } catch (error) {
-      console.error('Failed to initialize bot on startup:', error);
-    }
-  }, 1000);
-
   const httpServer = createServer(app);
   return httpServer;
 }

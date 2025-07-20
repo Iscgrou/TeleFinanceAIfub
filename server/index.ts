@@ -50,6 +50,10 @@ app.use((req, res, next) => {
     }
   }, 3000);
 
+  // Telegram bot initialization is disabled to prevent 409 conflicts
+  // Use /api/test/telegram/restart-bot endpoint to manually start the bot when needed
+  console.log('Telegram bot auto-initialization disabled. Use /api/test/telegram/restart-bot to start manually.');
+
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";

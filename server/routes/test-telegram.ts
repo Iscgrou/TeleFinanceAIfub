@@ -88,4 +88,49 @@ export function registerTelegramTestRoutes(app: Express): void {
       res.status(500).json({ error: error.message });
     }
   });
+
+  // Add bot management endpoints
+  app.post('/api/test/telegram/restart-bot', async (req, res) => {
+    try {
+      const { stopBotInstance, initializeBot } = await import('../telegram/bot');
+      
+      // Force stop any existing bot instances
+      await stopBotInstance();
+      
+      // Wait longer before restarting
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      // Initialize fresh bot instance
+      await initializeBot();
+      
+      res.json({ 
+        success: true, 
+        message: 'Bot restarted successfully' 
+      });
+    } catch (error) {
+      console.error('Error restarting bot:', error);
+      res.status(500).json({ 
+        error: 'Failed to restart bot', 
+        details: error.message 
+      });
+    }
+  });
+
+  app.post('/api/test/telegram/stop-bot', async (req, res) => {
+    try {
+      const { stopBotInstance } = await import('../telegram/bot');
+      await stopBotInstance();
+      
+      res.json({ 
+        success: true, 
+        message: 'Bot stopped successfully' 
+      });
+    } catch (error) {
+      console.error('Error stopping bot:', error);
+      res.status(500).json({ 
+        error: 'Failed to stop bot', 
+        details: error.message 
+      });
+    }
+  });
 }

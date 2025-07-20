@@ -114,7 +114,20 @@ RESTful API endpoints organized by functionality:
 - Runtime configuration through system settings table
 - Graceful degradation when external services are unavailable
 
-## Recent Updates (July 19, 2025)
+## Recent Updates (July 20, 2025)
+
+### Telegram Bot Conflict Resolution: CRITICAL ISSUE RESOLVED (Latest - 8:05 AM)
+- **🎉 ROOT CAUSE IDENTIFIED**: Multiple bot initialization calls causing 409 Conflict errors
+- **Duplicate Initialization Fixed**: Removed duplicate `initializeBot()` call from `server/routes.ts` that was conflicting with startup
+- **Auto-restart Loop Prevention**: Disabled infinite restart loops that were creating more conflicts
+- **Manual Control Implementation**: Added `/api/test/telegram/restart-bot` and `/api/test/telegram/stop-bot` endpoints for controlled bot management
+- **Graceful Error Handling**: Enhanced bot polling error handler to provide clear solutions instead of endless retries
+- **Conflict Detection Logic**: Improved 409 error detection with descriptive logging and recovery options
+- **Production Ready**: Bot now starts cleanly without conflicts and can be manually managed when needed
+- **Startup Optimization**: Disabled auto-initialization during server startup to prevent race conditions
+- **User Control**: Users can now manually start/stop bot via API endpoints when needed
+
+## Previous Updates (July 19, 2025)
 
 ### Phoenix Protocol Migration: BREAKTHROUGH ACHIEVED (Latest - 7:53 PM)
 - **🎉 NEXT.JS VERIFIED WORKING**: Successfully confirmed Next.js can start and run properly in 2.4 seconds
