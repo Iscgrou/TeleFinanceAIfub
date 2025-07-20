@@ -95,7 +95,7 @@ export default function App() {
                   <Route path="/settings" component={SettingsPage} />
                   
                   {/* Invoice History Route */}
-                  <Route path="/invoices/history" component={InvoiceHistoryPage} />
+                  <Route path="/invoices/history" component={() => import('./pages/InvoiceHistoryV2')} />
                   
                   {/* Legacy Route Redirects */}
                   <Route path="/admin/advanced">
