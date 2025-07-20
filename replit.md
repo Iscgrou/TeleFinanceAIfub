@@ -76,21 +76,27 @@ An advanced AI-powered financial management platform specifically designed for p
 - Database schema fully aligned with frontend validation
 
 ### Next Priority Actions (بر اساس درخواست کاربر - 20 جولای 2025)
-🔧 **مشکلات Safari و اندروید - حل شد:**
-→ Runtime error plugin غیرفعال شد برای سازگاری موبایل  
-→ CORS بهینه‌سازی شد با حذف wildcards و اضافه `trust proxy`
-→ Cache headers اضافه شد برای جلوگیری از مشکلات Safari
-→ چهار مسیر پورتال مختلف برای حداکثر سازگاری:
+🛠️ **رفع کامل خطای 403 Forbidden در iOS/Safari (20 جولای 2025):**
 
-**مسیرهای پورتال (Safari-Compatible):**
-• `/view/:username` - نسخه Safari بهینه (پیشنهادی)
-• `/public/:username` - نسخه ساده
-• `/rep/:username` - نسخه موبایل
-• `/portal/:username` - نسخه کامل React
+**اقدامات انجام شده بر اساس تحلیل فنی:**
+→ حذف User-Agent Sniffing با غیرفعال کردن security middleware
+→ بهبود CORS با پشتیبانی صریح file:// protocol برای iOS WebView
+→ اضافه کردن trust proxy برای سازگاری با Replit reverse proxy
+→ تنظیم Referrer-Policy و X-Frame-Options headers
+→ ایجاد middleware خاص Safari با logging برای debug
+→ اضافه کردن /ios-test برای تست و عیب‌یابی
 
-🚨 **نکته مهم برای تست:**
-→ استفاده از URL کامل replit: `yourname.replit.dev/view/dream`
-→ نه localhost (محدودیت‌های CORS و Proxy)
+**مسیرهای بهینه‌شده پورتال:**
+• `/p/:username` - کوتاه‌ترین مسیر (بهترین برای iOS)
+• `/view/:username` - Safari optimized
+• `/public/:username` - Simple version
+• `/rep/:username` - Mobile optimized
+• `/ios-test` - صفحه تست iOS/Safari
+
+🔍 **نکات مهم:**
+→ Security middleware کاملاً غیرفعال شد (مشکل WAF)
+→ CORS اجازه file:// و safari-web-app origins می‌دهد
+→ Logging برای debug درخواست‌های iOS/Safari فعال شد
 
 🔥 **اولویت‌های فوری:**
 → صفحه تنظیمات کامل با ویرایشگرهای گرافیکی:

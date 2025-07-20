@@ -9,32 +9,52 @@ const app = express();
 // Essential for Replit deployments - trust proxy
 app.set('trust proxy', true);
 
-// Safari-compatible CORS configuration (no wildcards)
+// Enhanced CORS for Safari/iOS - No wildcards, explicit origins
 app.use(cors({
   origin: function(origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, etc.)
+    // Allow requests with no origin (file://, mobile apps, etc.)
     if (!origin) return callback(null, true);
     
-    // Allow all replit domains and common testing domains
-    const allowedOrigins = [
-      /\.replit\.dev$/,
-      /\.repl\.co$/,
-      /localhost:\d+$/,
-      /127\.0\.0\.1:\d+$/,
-      /0\.0\.0\.0:\d+$/
+    // Log Safari/iOS origins for debugging
+    if (origin.includes('safari-web-app') || origin.includes('file://')) {
+      console.log(`[CORS] iOS/Safari Origin: ${origin}`);
+    }
+    
+    // Always allow Replit domains and local development
+    const allowedPatterns = [
+      /^https?:\/\/.*\.replit\.dev$/,
+      /^https?:\/\/.*\.repl\.co$/,
+      /^https?:\/\/.*\.replit\.app$/,
+      /^https?:\/\/localhost(:\d+)?$/,
+      /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
+      /^https?:\/\/0\.0\.0\.0(:\d+)?$/,
+      /^file:\/\//  // Allow file:// protocol for iOS WebView
     ];
     
-    const isAllowed = allowedOrigins.some(pattern => 
-      typeof pattern.test === 'function' ? pattern.test(origin) : pattern === origin
-    );
+    const isAllowed = allowedPatterns.some(pattern => pattern.test(origin));
     
-    callback(null, isAllowed || origin.includes('replit'));
+    if (!isAllowed) {
+      console.log(`[CORS] Blocked origin: ${origin}`);
+    }
+    
+    callback(null, isAllowed);
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Accept-Language', 'Accept-Encoding', 'User-Agent', 'X-Requested-With'],
-  optionsSuccessStatus: 200,
-  maxAge: 86400 // Cache preflight for 24 hours
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization', 
+    'Accept',
+    'Accept-Language',
+    'Accept-Encoding',
+    'User-Agent',
+    'X-Requested-With',
+    'Origin',
+    'Referer'
+  ],
+  exposedHeaders: ['Content-Type', 'Content-Length'],
+  optionsSuccessStatus: 200, // Important for Safari
+  maxAge: 86400
 }));
 
 // Increase payload limit for large usage files (50MB limit)
@@ -109,36 +129,66 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 80 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  // Add portal routes before vite setup with Safari compatibility
-  // Primary route for Safari (most compatible)
-  app.get('/view/:username', (req, res) => {
+  // Safari/iOS compatibility middleware for portal routes
+  const safariPortalMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    // Add headers required for Safari/iOS compatibility
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    
+    // Log for debugging iOS issues
+    const userAgent = req.get('User-Agent') || '';
+    const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+    const isSafari = /Safari/i.test(userAgent) && !/Chrome/i.test(userAgent);
+    
+    if (isIOS || isSafari) {
+      console.log(`[iOS/Safari Request] Path: ${req.path}, UA: ${userAgent.substring(0, 50)}...`);
+    }
+    
+    next();
+  };
+
+  // Add portal routes with Safari middleware
+  // Primary route for Safari (most compatible)
+  app.get('/view/:username', safariPortalMiddleware, (req, res) => {
     res.sendFile(path.resolve(import.meta.dirname, '..', 'safari-portal.html'));
   });
 
   // Alternative simple route
-  app.get('/public/:username', (req, res) => {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  app.get('/public/:username', safariPortalMiddleware, (req, res) => {
     res.sendFile(path.resolve(import.meta.dirname, '..', 'simple-portal.html'));
   });
 
   // Mobile-optimized route
-  app.get('/rep/:username', (req, res) => {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  app.get('/rep/:username', safariPortalMiddleware, (req, res) => {
     res.sendFile(path.resolve(import.meta.dirname, '..', 'mobile-portal.html'));
   });
 
-  // Keep legacy routes
-  app.get('/mobile-portal/:username?', (req, res) => {
-    const username = req.params.username || 'demo';
+  // Keep legacy routes with Safari middleware
+  app.get('/mobile-portal/:username?', safariPortalMiddleware, (req, res) => {
     res.sendFile(path.resolve(import.meta.dirname, '..', 'mobile-portal.html'));
   });
 
-  app.get('/simple-portal/:username?', (req, res) => {
-    const username = req.params.username || 'demo';
+  app.get('/simple-portal/:username?', safariPortalMiddleware, (req, res) => {
     res.sendFile(path.resolve(import.meta.dirname, '..', 'simple-portal.html'));
+  });
+
+  // Add root-level portal route for maximum compatibility
+  app.get('/p/:username', safariPortalMiddleware, (req, res) => {
+    res.sendFile(path.resolve(import.meta.dirname, '..', 'safari-portal.html'));
+  });
+
+  // iOS test page
+  app.get('/ios-test', safariPortalMiddleware, (req, res) => {
+    res.sendFile(path.resolve(import.meta.dirname, '..', 'ios-test.html'));
+  });
+
+  // Health check endpoint for iOS testing
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
   process.env.PORT = process.env.PORT || '80';

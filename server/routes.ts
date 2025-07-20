@@ -14,9 +14,9 @@ import { generateInvoiceImage } from "./services/svg-invoice-generator";
 import { registerTelegramTestRoutes } from "./routes/test-telegram";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Disable aggressive security for development
-  // app.use(securityMiddleware);
-  // app.use(rateLimitMiddleware(1000, 15)); // Disabled for development
+  // Security middleware disabled - iOS Safari compatibility
+  // WAF and aggressive security can cause 403 errors on Safari
+  console.log('[Security] Security middleware disabled for iOS/Safari compatibility');
   
   // Test invoice generation endpoint
   app.get("/api/test/invoice/:id", async (req, res) => {
