@@ -21,7 +21,6 @@ import { useToast } from '@/hooks/use-toast';
 const invoiceSchema = z.object({
   representativeId: z.string().min(1, 'انتخاب نماینده الزامی است'),
   amount: z.string().min(1, 'مبلغ الزامی است'),
-  description: z.string().min(1, 'توضیحات الزامی است'),
   status: z.enum(['unpaid', 'partially_paid', 'paid']).default('unpaid')
 });
 
@@ -126,7 +125,6 @@ export default function InvoicesManagement() {
     defaultValues: {
       representativeId: '',
       amount: '',
-      description: '',
       status: 'unpaid' as const
     }
   });
@@ -439,19 +437,6 @@ export default function InvoicesManagement() {
                     <FormLabel>مبلغ (تومان)</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={createForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>توضیحات</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -54,10 +54,17 @@ export default function SalesColleaguesManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sales-colleagues'] });
       setIsAddDialogOpen(false);
+      addForm.reset();
       toast({ title: '✅ همکار فروش با موفقیت اضافه شد' });
     },
-    onError: () => {
-      toast({ title: '❌ خطا در اضافه کردن همکار فروش', variant: 'destructive' });
+    onError: (error: any) => {
+      console.error('Add sales colleague error:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'خطا در اضافه کردن همکار فروش';
+      toast({ 
+        title: '❌ خطا در اضافه کردن همکار فروش', 
+        description: errorMessage,
+        variant: 'destructive' 
+      });
     }
   });
 
@@ -69,10 +76,17 @@ export default function SalesColleaguesManagement() {
       queryClient.invalidateQueries({ queryKey: ['/api/sales-colleagues'] });
       setIsEditDialogOpen(false);
       setSelectedColleague(null);
+      editForm.reset();
       toast({ title: '✅ اطلاعات همکار فروش بروزرسانی شد' });
     },
-    onError: () => {
-      toast({ title: '❌ خطا در بروزرسانی اطلاعات', variant: 'destructive' });
+    onError: (error: any) => {
+      console.error('Update sales colleague error:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'خطا در بروزرسانی اطلاعات';
+      toast({ 
+        title: '❌ خطا در بروزرسانی اطلاعات', 
+        description: errorMessage,
+        variant: 'destructive' 
+      });
     }
   });
 

@@ -88,10 +88,17 @@ export default function RepresentativesManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/representatives'] });
       setIsAddDialogOpen(false);
+      addForm.reset();
       toast({ title: '✅ نماینده با موفقیت اضافه شد' });
     },
-    onError: () => {
-      toast({ title: '❌ خطا در اضافه کردن نماینده', variant: 'destructive' });
+    onError: (error: any) => {
+      console.error('Add representative error:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'خطا در اضافه کردن نماینده';
+      toast({ 
+        title: '❌ خطا در اضافه کردن نماینده', 
+        description: errorMessage,
+        variant: 'destructive' 
+      });
     }
   });
 
@@ -103,10 +110,17 @@ export default function RepresentativesManagement() {
       queryClient.invalidateQueries({ queryKey: ['/api/representatives'] });
       setIsEditDialogOpen(false);
       setSelectedRep(null);
+      editForm.reset();
       toast({ title: '✅ اطلاعات نماینده بروزرسانی شد' });
     },
-    onError: () => {
-      toast({ title: '❌ خطا در بروزرسانی اطلاعات', variant: 'destructive' });
+    onError: (error: any) => {
+      console.error('Update representative error:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'خطا در بروزرسانی اطلاعات';
+      toast({ 
+        title: '❌ خطا در بروزرسانی اطلاعات', 
+        description: errorMessage,
+        variant: 'destructive' 
+      });
     }
   });
 
@@ -134,10 +148,17 @@ export default function RepresentativesManagement() {
       queryClient.invalidateQueries({ queryKey: ['/api/representatives'] });
       setIsDebtDialogOpen(false);
       setSelectedRep(null);
+      debtForm.reset();
       toast({ title: '✅ بدهی بروزرسانی شد' });
     },
-    onError: () => {
-      toast({ title: '❌ خطا در بروزرسانی بدهی', variant: 'destructive' });
+    onError: (error: any) => {
+      console.error('Debt adjustment error:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'خطا در بروزرسانی بدهی';
+      toast({ 
+        title: '❌ خطا در بروزرسانی بدهی', 
+        description: errorMessage,
+        variant: 'destructive' 
+      });
     }
   });
 
@@ -199,6 +220,7 @@ export default function RepresentativesManagement() {
   };
 
   const onAddSubmit = (data: any) => {
+    console.log('Submitting representative data:', data);
     addMutation.mutate(data);
   };
 
