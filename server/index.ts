@@ -6,13 +6,35 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// Configure CORS to allow all origins with enhanced mobile support
+// Essential for Replit deployments - trust proxy
+app.set('trust proxy', true);
+
+// Safari-compatible CORS configuration (no wildcards)
 app.use(cors({
-  origin: true, // Allow all origins
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Allow all replit domains and common testing domains
+    const allowedOrigins = [
+      /\.replit\.dev$/,
+      /\.repl\.co$/,
+      /localhost:\d+$/,
+      /127\.0\.0\.1:\d+$/,
+      /0\.0\.0\.0:\d+$/
+    ];
+    
+    const isAllowed = allowedOrigins.some(pattern => 
+      typeof pattern.test === 'function' ? pattern.test(origin) : pattern === origin
+    );
+    
+    callback(null, isAllowed || origin.includes('replit'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Accept-Language', 'Accept-Encoding', 'User-Agent'],
-  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Accept-Language', 'Accept-Encoding', 'User-Agent', 'X-Requested-With'],
+  optionsSuccessStatus: 200,
+  maxAge: 86400 // Cache preflight for 24 hours
 }));
 
 // Increase payload limit for large usage files (50MB limit)
@@ -87,7 +109,28 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 80 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  // Add mobile portal routes before vite setup
+  // Add portal routes before vite setup with Safari compatibility
+  // Primary route for Safari (most compatible)
+  app.get('/view/:username', (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.sendFile(path.resolve(import.meta.dirname, '..', 'safari-portal.html'));
+  });
+
+  // Alternative simple route
+  app.get('/public/:username', (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.sendFile(path.resolve(import.meta.dirname, '..', 'simple-portal.html'));
+  });
+
+  // Mobile-optimized route
+  app.get('/rep/:username', (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.sendFile(path.resolve(import.meta.dirname, '..', 'mobile-portal.html'));
+  });
+
+  // Keep legacy routes
   app.get('/mobile-portal/:username?', (req, res) => {
     const username = req.params.username || 'demo';
     res.sendFile(path.resolve(import.meta.dirname, '..', 'mobile-portal.html'));
@@ -106,6 +149,10 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
-    log(`Mobile portal available at: /mobile-portal/dream`);
+    log(`Portal routes available:`);
+    log(`  - /view/dream (Safari optimized)`);
+    log(`  - /public/dream (Simple version)`);
+    log(`  - /rep/dream (Mobile optimized)`);
+    log(`  - /portal/dream (Full React version)`);
   });
 })();

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پورتال نماینده</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Tahoma', sans-serif;
+            direction: rtl;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 100%;
+            padding: 16px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 24px 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .store-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .welcome {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 16px;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1e293b;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+        
+        .info-value {
+            color: #1e293b;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .error h3 {
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+        
+        .error p {
+            margin-bottom: 8px;
+        }
+        
+        .retry-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            font-family: inherit;
+        }
+        
+        .retry-btn:hover {
+            background: #2563eb;
+        }
+        
+        .success-message {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 16px 0;
+        }
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="app">
+            <div class="card">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>در حال بارگذاری پورتال...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced Safari compatibility
+        console.log('Safari Portal v2.0 - Loading...');
+        
+        // Get username from URL path
+        function getUsername() {
+            const path = window.location.pathname;
+            const segments = path.split('/').filter(Boolean);
+            
+            // Support multiple URL patterns
+            if (segments.length >= 2) {
+                return segments[1]; // /view/username or /public/username
+            }
+            return 'dream'; // fallback
+        }
+        
+        const username = getUsername();
+        const baseUrl = window.location.origin;
+        
+        console.log('Username:', username);
+        console.log('Base URL:', baseUrl);
+        
+        // Safari-optimized fetch with retries
+        async function safeFetch(url, options = {}, retries = 3) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    console.log(`Attempt ${i + 1}: Fetching ${url}`);
+                    
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        mode: 'cors',
+                        cache: 'no-cache',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        ...options
+                    });
+                    
+                    console.log(`Response status: ${response.status}`);
+                    
+                    if (response.ok) {
+                        return await response.json();
+                    } else {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error(`Attempt ${i + 1} failed:`, error);
+                    
+                    if (i === retries - 1) {
+                        throw error;
+                    }
+                    
+                    // Wait before retry
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+                }
+            }
+        }
+        
+        async function loadPortalData() {
+            const app = document.getElementById('app');
+            
+            try {
+                // Show loading
+                showLoading();
+                
+                console.log('Loading representative data...');
+                const representative = await safeFetch(`${baseUrl}/api/representatives/by-username/${username}`);
+                
+                console.log('Representative loaded:', representative.storeName);
+                
+                // Render portal
+                renderPortal(representative);
+                
+            } catch (error) {
+                console.error('Portal loading failed:', error);
+                showError(error.message);
+            }
+        }
+        
+        function showLoading() {
+            const app = document.getElementById('app');
+            app.innerHTML = `
+                <div class="card">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>در حال بارگذاری پورتال ${username}...</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function showError(message) {
+            const app = document.getElementById('app');
+            app.innerHTML = `
+                <div class="card">
+                    <div class="error">
+                        <h3>⚠️ خطا در بارگذاری</h3>
+                        <p><strong>پیام خطا:</strong> ${message}</p>
+                        <p><strong>نام کاربری:</strong> ${username}</p>
+                        <p><strong>آدرس:</strong> ${window.location.href}</p>
+                        <p style="font-size: 12px; margin-top: 12px;">
+                            در صورت ادامه مشکل، لطفاً با پشتیبانی تماس بگیرید
+                        </p>
+                        <button class="retry-btn" onclick="location.reload()">تلاش مجدد</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderPortal(rep) {
+            const app = document.getElementById('app');
+            const totalDebt = parseFloat(rep.totalDebt || 0);
+            
+            app.innerHTML = `
+                <div class="header">
+                    <div class="store-name">${rep.storeName}</div>
+                    <div class="welcome">پورتال نماینده - Safari سازگار</div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="card stat-card">
+                        <div class="stat-value">${totalDebt.toLocaleString('fa-IR')}</div>
+                        <div class="stat-label">بدهی کل (تومان)</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-value">${rep.isActive ? 'فعال' : 'غیرفعال'}</div>
+                        <div class="stat-label">وضعیت حساب</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="section-title">📋 اطلاعات نماینده</div>
+                    <div class="info-row">
+                        <span class="info-label">نام فروشگاه:</span>
+                        <span class="info-value">${rep.storeName}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">نام مالک:</span>
+                        <span class="info-value">${rep.ownerName || 'نامشخص'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">شماره تماس:</span>
+                        <span class="info-value">${rep.phoneNumber || rep.phone || 'نامشخص'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">وضعیت:</span>
+                        <span class="status-badge ${rep.isActive ? 'status-active' : 'status-inactive'}">
+                            ${rep.isActive ? 'فعال' : 'غیرفعال'}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="success-message">
+                    ✅ پورتال با موفقیت در Safari بارگذاری شد!<br>
+                    <small>نسخه Safari-Compatible v2.0</small>
+                </div>
+                
+                <div class="card">
+                    <div class="section-title">📞 پشتیبانی</div>
+                    <p style="text-align: center; color: #64748b;">
+                        برای مشاوره و پشتیبانی با مدیریت سیستم تماس بگیرید
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Error handling for Safari
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript Error:', e.error);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Promise Rejection:', e.reason);
+        });
+        
+        // Start loading when ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadPortalData);
+        } else {
+            loadPortalData();
+        }
+    </script>
+</body>
+</html>

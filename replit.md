@@ -76,17 +76,21 @@ An advanced AI-powered financial management platform specifically designed for p
 - Database schema fully aligned with frontend validation
 
 ### Next Priority Actions (بر اساس درخواست کاربر - 20 جولای 2025)
-✅ **مشکل بحرانی حل شد:**
-→ مشکل runtime error در اندروید رفع شد با ErrorBoundary
-→ مشکل دسترسی سرور در iPhone/Safari رفع شد با بهبود CORS
-→ سه نسخه پورتال نماینده اکنون در دسترس است:
-  • `/portal/:username` - پورتال کامل React
-  • `/mobile-portal/:username` - نسخه موبایل بهینه HTML 
-  • `/simple-portal/:username` - نسخه ساده سازگار با همه مرورگرها
+🔧 **مشکلات Safari و اندروید - حل شد:**
+→ Runtime error plugin غیرفعال شد برای سازگاری موبایل  
+→ CORS بهینه‌سازی شد با حذف wildcards و اضافه `trust proxy`
+→ Cache headers اضافه شد برای جلوگیری از مشکلات Safari
+→ چهار مسیر پورتال مختلف برای حداکثر سازگاری:
+
+**مسیرهای پورتال (Safari-Compatible):**
+• `/view/:username` - نسخه Safari بهینه (پیشنهادی)
+• `/public/:username` - نسخه ساده
+• `/rep/:username` - نسخه موبایل
+• `/portal/:username` - نسخه کامل React
 
 🚨 **نکته مهم برای تست:**
-→ پورتال‌ها باید در URL replit.dev تست شوند، نه localhost
-→ برای تست: `your-repl.replit.dev/simple-portal/dream`
+→ استفاده از URL کامل replit: `yourname.replit.dev/view/dream`
+→ نه localhost (محدودیت‌های CORS و Proxy)
 
 🔥 **اولویت‌های فوری:**
 → صفحه تنظیمات کامل با ویرایشگرهای گرافیکی:
