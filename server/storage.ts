@@ -14,7 +14,7 @@ import {
 } from "@shared/schema";
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import { eq, desc, sql, or, and, asc } from 'drizzle-orm';
+import { eq, desc, sql, or, and, asc, gte, lte, ilike } from 'drizzle-orm';
 import ws from 'ws';
 
 export interface IStorage {
@@ -529,9 +529,11 @@ export class DatabaseStorage implements IStorage {
 
   // Enhanced Invoice Generation with Template Support (مرحله 5.2)
   async generateInvoicePNG(invoice: any, template: any = null): Promise<Buffer> {
-    const puppeteer = require('puppeteer');
+    console.log('[PNG] Starting invoice PNG generation for invoice:', invoice.id);
+    console.log('[PNG] Template provided:', template ? 'Yes' : 'No');
     
     try {
+      const puppeteer = await import('puppeteer');
       // Default template if none provided
       const invoiceTemplate = template || {
         companyName: 'شرکت نمونه',
@@ -732,7 +734,8 @@ export class DatabaseStorage implements IStorage {
         </html>
       `;
 
-      const browser = await puppeteer.launch({
+      console.log('[PNG] Launching puppeteer...');
+      const browser = await puppeteer.default.launch({
         headless: true,
         args: [
           '--no-sandbox',
@@ -745,23 +748,210 @@ export class DatabaseStorage implements IStorage {
           '--disable-gpu'
         ]
       });
+      
+      console.log('[PNG] Browser launched successfully');
 
       const page = await browser.newPage();
       await page.setViewport({ width: 800, height: 1200 });
+      console.log('[PNG] Setting HTML content...');
       await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
       
+      console.log('[PNG] Taking screenshot...');
       const pngBuffer = await page.screenshot({
         type: 'png',
-        fullPage: true,
-        quality: 100
+        fullPage: true
       });
 
+      console.log('[PNG] Screenshot taken, buffer size:', pngBuffer.length);
       await browser.close();
+      console.log('[PNG] Browser closed, returning buffer');
       return pngBuffer;
       
     } catch (error) {
       console.error('Error generating invoice PNG:', error);
       throw new Error('Failed to generate invoice PNG');
+    }
+  }
+
+  // Invoice History & Stats (مرحله 5.3)
+  async getInvoiceHistory(params: {
+    page: number;
+    limit: number;
+    dateFrom?: string;
+    dateTo?: string;
+    minAmount?: number;
+    maxAmount?: number;
+    representative?: string;
+    status?: 'paid' | 'unpaid' | 'all';
+    search?: string;
+  }) {
+    try {
+      console.log('[Storage] Getting invoice history with params:', params);
+      
+      let query = db.select({
+        id: invoices.id,
+        representativeId: invoices.representativeId,
+        amount: invoices.amount,
+        description: invoices.description,
+        createdAt: invoices.createdAt,
+        isPaid: invoices.isPaid,
+        representativeName: representatives.storeName,
+        persianDate: invoiceDetails.persianDate
+      })
+      .from(invoices)
+      .leftJoin(representatives, eq(invoices.representativeId, representatives.id))
+      .leftJoin(invoiceDetails, eq(invoices.id, invoiceDetails.invoiceId));
+
+      // Apply filters
+      const conditions = [];
+
+      if (params.status && params.status !== 'all') {
+        conditions.push(eq(invoices.isPaid, params.status === 'paid'));
+      }
+
+      if (params.minAmount !== undefined) {
+        conditions.push(gte(invoices.amount, params.minAmount.toString()));
+      }
+
+      if (params.maxAmount !== undefined) {
+        conditions.push(lte(invoices.amount, params.maxAmount.toString()));
+      }
+
+      if (params.representative) {
+        conditions.push(ilike(representatives.storeName, `%${params.representative}%`));
+      }
+
+      if (params.search) {
+        conditions.push(
+          or(
+            ilike(invoices.description, `%${params.search}%`),
+            ilike(representatives.storeName, `%${params.search}%`),
+            eq(invoices.id, isNaN(parseInt(params.search)) ? -1 : parseInt(params.search))
+          )
+        );
+      }
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+
+      // Get total count
+      const totalQuery = db.select({ count: sql<number>`count(*)` }).from(invoices);
+      if (conditions.length > 0) {
+        totalQuery.leftJoin(representatives, eq(invoices.representativeId, representatives.id));
+        totalQuery.where(and(...conditions));
+      }
+      
+      const [{ count: total }] = await totalQuery;
+
+      // Get paginated results
+      const results = await query
+        .orderBy(desc(invoices.createdAt))
+        .limit(params.limit)
+        .offset((params.page - 1) * params.limit);
+
+      console.log(`[Storage] Found ${results.length} invoices, total: ${total}`);
+
+      return {
+        invoices: results,
+        total,
+        page: params.page,
+        totalPages: Math.ceil(total / params.limit)
+      };
+    } catch (error) {
+      console.error('[Storage] Error in getInvoiceHistory:', error);
+      throw error;
+    }
+  }
+
+  async getInvoiceStats() {
+    try {
+      const allInvoices = await db.select().from(invoices);
+      const allReps = await db.select().from(representatives);
+      
+      const totalInvoices = allInvoices.length;
+      const totalAmount = allInvoices.reduce((sum, inv) => sum + parseFloat(inv.amount || '0'), 0).toString();
+      const activeRepresentatives = allReps.filter(rep => rep.isActive).length;
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayInvoices = allInvoices.filter(inv => 
+        inv.createdAt && new Date(inv.createdAt) >= today
+      ).length;
+
+      return {
+        totalInvoices,
+        totalAmount,
+        activeRepresentatives,
+        todayInvoices
+      };
+    } catch (error) {
+      console.error('[Storage] Error in getInvoiceStats:', error);
+      throw error;
+    }
+  }
+
+  async exportInvoices(invoiceIds: number[], format: 'excel' | 'pdf'): Promise<Buffer> {
+    try {
+      console.log(`[Storage] Exporting ${invoiceIds.length} invoices as ${format}`);
+      
+      const invoiceList = await db.select().from(invoices)
+        .where(sql`${invoices.id} IN (${invoiceIds.join(',')})`)
+        .orderBy(desc(invoices.createdAt));
+
+      if (format === 'excel') {
+        // Simple Excel export (would use a library like xlsx in production)
+        const csvContent = [
+          'Invoice ID,Representative,Amount,Date,Status,Description',
+          ...invoiceList.map(inv => [
+            inv.id,
+            inv.representativeId,
+            inv.amount,
+            inv.createdAt?.toISOString().split('T')[0],
+            inv.isPaid ? 'Paid' : 'Unpaid',
+            inv.description?.replace(/,/g, ';') || ''
+          ].join(','))
+        ].join('\n');
+
+        return Buffer.from(csvContent, 'utf-8');
+      } else {
+        // Simple PDF export (would use a library like puppeteer in production)
+        const htmlContent = `
+          <!DOCTYPE html>
+          <html dir="rtl">
+          <head>
+            <meta charset="UTF-8">
+            <title>Invoice Export</title>
+            <style>
+              body { font-family: Arial, sans-serif; }
+              table { width: 100%; border-collapse: collapse; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+              th { background-color: #f2f2f2; }
+            </style>
+          </head>
+          <body>
+            <h1>گزارش فاکتورها</h1>
+            <table>
+              <tr><th>شماره</th><th>نماینده</th><th>مبلغ</th><th>تاریخ</th><th>وضعیت</th></tr>
+              ${invoiceList.map(inv => `
+                <tr>
+                  <td>${inv.id}</td>
+                  <td>${inv.representativeId}</td>
+                  <td>${parseInt(inv.amount || '0').toLocaleString('fa-IR')} تومان</td>
+                  <td>${inv.createdAt?.toISOString().split('T')[0]}</td>
+                  <td>${inv.isPaid ? 'پرداخت شده' : 'معلق'}</td>
+                </tr>
+              `).join('')}
+            </table>
+          </body>
+          </html>
+        `;
+
+        return Buffer.from(htmlContent, 'utf-8');
+      }
+    } catch (error) {
+      console.error('[Storage] Error in exportInvoices:', error);
+      throw error;
     }
   }
 

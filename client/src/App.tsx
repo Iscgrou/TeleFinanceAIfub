@@ -12,6 +12,7 @@ import InvoicesManagement from './pages/InvoicesManagement'
 import Reports from './pages/Reports'
 import ActivityLog from './pages/ActivityLog'
 import SettingsPage from './pages/SettingsPage'
+import InvoiceHistoryPage from './pages/InvoiceHistoryPage'
 
 // Create QueryClient instance
 const queryClient = new QueryClient({
@@ -92,6 +93,9 @@ export default function App() {
                   
                   {/* Settings Route */}
                   <Route path="/settings" component={SettingsPage} />
+                  
+                  {/* Invoice History Route */}
+                  <Route path="/invoices/history" component={InvoiceHistoryPage} />
                   
                   {/* Legacy Route Redirects */}
                   <Route path="/admin/advanced">

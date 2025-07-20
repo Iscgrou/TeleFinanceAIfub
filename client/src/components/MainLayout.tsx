@@ -89,6 +89,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
       description: 'مدیریت فاکتورها'
     },
     {
+      id: 'invoice-history',
+      title: 'تاریخچه فاکتورها',
+      icon: FileText,
+      href: '/invoices/history',
+      description: 'مشاهده تاریخچه فاکتورها'
+    },
+    {
       id: 'reports',
       title: 'گزارش‌ها',
       icon: BarChart3,

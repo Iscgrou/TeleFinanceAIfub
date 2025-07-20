@@ -1002,19 +1002,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Invoice History API Routes (مرحله 5.3)
+  app.get('/api/invoices/history', async (req, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 12;
+      const dateFrom = req.query.dateFrom as string;
+      const dateTo = req.query.dateTo as string;
+      const minAmount = req.query.minAmount ? parseFloat(req.query.minAmount as string) : undefined;
+      const maxAmount = req.query.maxAmount ? parseFloat(req.query.maxAmount as string) : undefined;
+      const representative = req.query.representative as string;
+      const status = req.query.status as string;
+      const search = req.query.search as string;
+
+      console.log('[Invoice History] Query params:', { page, limit, dateFrom, dateTo, status, search });
+
+      const result = await storage.getInvoiceHistory({
+        page,
+        limit,
+        dateFrom,
+        dateTo,
+        minAmount,
+        maxAmount,
+        representative,
+        status: status as 'paid' | 'unpaid' | 'all',
+        search
+      });
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error fetching invoice history:", error);
+      res.status(500).json({ error: "Failed to fetch invoice history" });
+    }
+  });
+
+  app.get('/api/invoices/stats', async (req, res) => {
+    try {
+      const stats = await storage.getInvoiceStats();
+      res.json(stats);
+    } catch (error: any) {
+      console.error("Error fetching invoice stats:", error);
+      res.status(500).json({ error: "Failed to fetch invoice stats" });
+    }
+  });
+
+  app.get('/api/invoices/export', async (req, res) => {
+    try {
+      const ids = req.query.ids as string;
+      const format = req.query.format as string;
+      
+      if (!ids) {
+        return res.status(400).json({ error: "No invoice IDs provided" });
+      }
+
+      const invoiceIds = ids.split(',').map(id => parseInt(id));
+      const result = await storage.exportInvoices(invoiceIds, format as 'excel' | 'pdf');
+
+      if (format === 'excel') {
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename="invoices.xlsx"');
+      } else {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename="invoices.pdf"');
+      }
+
+      res.send(result);
+    } catch (error: any) {
+      console.error("Error exporting invoices:", error);
+      res.status(500).json({ error: "Failed to export invoices" });
+    }
+  });
+
   // Invoice Template Settings API Routes (مرحله 5.2)
   app.get('/api/settings/invoice-template', async (req, res) => {
     try {
       const settings = await storage.getSystemSettings();
-      const invoiceTemplate = settings?.invoiceTemplate || {
-        companyName: 'شرکت نمونه',
-        companyAddress: 'آدرس شرکت',
-        companyPhone: '021-12345678',
-        logoUrl: '',
-        primaryColor: '#2563eb',
-        secondaryColor: '#f3f4f6',
-        fontFamily: 'iranYekan'
-      };
+      let invoiceTemplate;
+      
+      if (settings?.invoiceTemplate) {
+        try {
+          // Try to parse if it's a JSON string
+          invoiceTemplate = typeof settings.invoiceTemplate === 'string' 
+            ? JSON.parse(settings.invoiceTemplate) 
+            : settings.invoiceTemplate;
+        } catch (parseError) {
+          console.error("Error parsing invoice template:", parseError);
+          invoiceTemplate = {
+            companyName: 'شرکت نمونه',
+            companyAddress: 'آدرس شرکت',
+            companyPhone: '021-12345678',
+            logoUrl: '',
+            primaryColor: '#2563eb',
+            secondaryColor: '#f3f4f6',
+            fontFamily: 'iranYekan'
+          };
+        }
+      } else {
+        invoiceTemplate = {
+          companyName: 'شرکت نمونه',
+          companyAddress: 'آدرس شرکت',
+          companyPhone: '021-12345678',
+          logoUrl: '',
+          primaryColor: '#2563eb',
+          secondaryColor: '#f3f4f6',
+          fontFamily: 'iranYekan'
+        };
+      }
+      
       res.json({ invoiceTemplate });
     } catch (error: any) {
       console.error("Error fetching invoice template:", error);
@@ -1049,7 +1143,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const settings = await storage.getSystemSettings();
-      const template = settings?.invoiceTemplate ? JSON.parse(settings.invoiceTemplate) : null;
+      let template = null;
+      
+      if (settings?.invoiceTemplate) {
+        try {
+          template = typeof settings.invoiceTemplate === 'string' 
+            ? JSON.parse(settings.invoiceTemplate) 
+            : settings.invoiceTemplate;
+        } catch (parseError) {
+          console.error("Error parsing template for preview:", parseError);
+          template = null;
+        }
+      }
       
       // Generate preview with template
       const pngBuffer = await storage.generateInvoicePNG(invoice, template);
