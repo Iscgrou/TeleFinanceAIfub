@@ -26,18 +26,11 @@ export default function AdminNavigation() {
       color: 'purple'
     },
     {
-      title: 'داشبورد پیشرفته',
-      description: 'تحلیل‌های مالی پیشرفته و گزارش‌گیری',
+      title: 'داشبورد یکپارچه',
+      description: 'داشبورد مدرن با تمام قابلیت‌ها',
       icon: BarChart3,
-      href: '/admin/advanced',
+      href: '/dashboard',
       color: 'orange'
-    },
-    {
-      title: 'داشبورد کلاسیک',
-      description: 'نمای کلی سیستم و آمار اصلی',
-      icon: Settings,
-      href: '/',
-      color: 'gray'
     }
   ];
 

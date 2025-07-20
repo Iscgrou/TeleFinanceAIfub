@@ -27,7 +27,7 @@ export class NotificationService {
         this.twilioClient = twilio(twilioSid, twilioToken);
         console.log('✅ Twilio SMS service initialized');
       } else {
-        console.warn('⚠️ Twilio credentials not found - SMS disabled');
+        console.log('ℹ️ Twilio credentials not configured - SMS service optional');
       }
 
       // Initialize SendGrid (Email)
@@ -36,7 +36,7 @@ export class NotificationService {
         sgMail.setApiKey(sendGridKey);
         console.log('✅ SendGrid email service initialized');
       } else {
-        console.warn('⚠️ SendGrid API key not found - Email disabled');
+        console.log('ℹ️ SendGrid API key not configured - Email service optional');
       }
 
       this.isInitialized = true;
