@@ -142,19 +142,7 @@ export function RealTimeAlerts() {
     }
   };
 
-  const formatRelativeTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffMins < 1) return 'اکنون';
-    if (diffMins < 60) return `${diffMins} دقیقه پیش`;
-    if (diffHours < 24) return `${diffHours} ساعت پیش`;
-    return `${diffDays} روز پیش`;
-  };
+  // formatRelativeTime function moved to bottom of file to avoid duplicates
 
   return (
     <div className="space-y-6">

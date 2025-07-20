@@ -15,16 +15,18 @@ import SettingsPage from './pages/SettingsPage'
 import InvoiceHistoryPage from './pages/InvoiceHistoryPage'
 import AIAnalytics from './pages/AIAnalytics'
 import AlertManagement from './pages/dashboard/AlertManagement'
+import { LazyLoadWrapper } from './components/performance/LazyLoadWrapper'
+import { PerformanceMonitor } from './components/performance/PerformanceMonitor'
+import { optimizedQueryClient, setupBackgroundCacheManagement, logQueryPerformance } from './lib/optimizedQueryClient'
 
-// Create QueryClient instance
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+// Use optimized query client from Phase 7.2
+const queryClient = optimizedQueryClient;
+
+// Setup performance monitoring and cache management
+if (typeof window !== 'undefined') {
+  setupBackgroundCacheManagement();
+  logQueryPerformance();
+}
 
 
 
@@ -99,12 +101,24 @@ export default function App() {
                   {/* Invoice History Route */}
                   <Route path="/invoices/history" component={InvoiceHistoryPage} />
                   
-                  {/* AI Analytics Route - Phase 5.1 */}
-                  <Route path="/ai-analytics" component={AIAnalytics} />
+                  {/* AI Analytics Route - Phase 5.1 with Lazy Loading */}
+                  <Route path="/ai-analytics" component={() => (
+                    <LazyLoadWrapper>
+                      <AIAnalytics />
+                    </LazyLoadWrapper>
+                  )} />
                   
-                  {/* Alert Management Route - Phase 6 Dashboard */}
-                  <Route path="/alerts" component={AlertManagement} />
-                  <Route path="/dashboard/alerts" component={AlertManagement} />
+                  {/* Alert Management Route - Phase 6 Dashboard with Lazy Loading */}
+                  <Route path="/alerts" component={() => (
+                    <LazyLoadWrapper>
+                      <AlertManagement />
+                    </LazyLoadWrapper>
+                  )} />
+                  <Route path="/dashboard/alerts" component={() => (
+                    <LazyLoadWrapper>
+                      <AlertManagement />
+                    </LazyLoadWrapper>
+                  )} />
                   
                   {/* Legacy Route Redirects */}
                   <Route path="/admin/advanced">
@@ -124,6 +138,7 @@ export default function App() {
         </Switch>
       </Router>
       <Toaster />
+      <PerformanceMonitor />
       </QueryClientProvider>
     </ErrorBoundary>
   );
