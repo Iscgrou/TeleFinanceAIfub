@@ -200,7 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Find top representative by debt
       const topRepresentative = representatives.length > 0 
         ? representatives.reduce((top, rep) => 
-            parseFloat(rep.totalDebt) > parseFloat(top.totalDebt) ? rep : top
+            parseFloat(rep.totalDebt || '0') > parseFloat(top.totalDebt || '0') ? rep : top
           )
         : null;
       
@@ -240,7 +240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Sort by creation date descending and limit
       const sortedCommissions = commissions
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
         .slice(0, limit);
       
       res.json({ data: sortedCommissions });
@@ -271,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         total: representatives.length,
         success: true
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("🚨 [CRITICAL ERROR] Representatives fetch failed:", error);
       res.status(500).json({ message: "Error fetching representatives" });
     }
@@ -424,7 +424,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Parse usage details to line items
-      let lineItems = [];
+      let lineItems: any[] = [];
       if (invoice.usageJsonDetails) {
         try {
           const details = invoice.usageJsonDetails;
@@ -444,7 +444,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         invoice,
         lineItems
       });
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ message: "خطا در دریافت جزئیات فاکتور" });
     }
   });
@@ -455,7 +455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const invoices = await storage.getInvoices();
       res.json(invoices);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ message: "Error fetching invoices" });
     }
   });
@@ -807,7 +807,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         invoiceTemplate: '',
         representativePortalTexts: ''
       });
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ message: "خطا در دریافت تنظیمات" });
     }
   });
@@ -817,10 +817,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertSystemSettingsSchema.parse(req.body);
       const settings = await storage.updateSystemSettings(validatedData);
       
-      // Reinitialize bot with new token if provided
-      if (validatedData.telegramBotToken) {
-        await initializeBot();
-      }
+      // Note: Bot reinitialization handled by bot service
+      console.log('Settings updated - bot will restart automatically');
       
       res.json(settings);
     } catch (error: any) {
