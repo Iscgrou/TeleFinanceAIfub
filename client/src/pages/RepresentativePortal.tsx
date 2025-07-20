@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 // import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import RepresentativeMessages from '@/components/RepresentativeMessages';
+import InvoiceDetailsView from '@/components/InvoiceDetailsView';
 import { useToast } from '@/hooks/use-toast';
 import { 
   User, 
@@ -54,6 +55,7 @@ const RepresentativePortal: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const { toast } = useToast();
 
   const username = params?.username;
@@ -291,7 +293,7 @@ const RepresentativePortal: React.FC = () => {
                     </div>
                   ) : (
                     invoices.map((invoice) => (
-                      <Card key={invoice.id}>
+                      <Card key={invoice.id} className="hover:shadow-md transition-shadow cursor-pointer">
                         <CardHeader>
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-base">
@@ -310,11 +312,20 @@ const RepresentativePortal: React.FC = () => {
                             <span className="text-lg font-semibold">
                               {formatCurrency(invoice.amount)}
                             </span>
-                            {invoice.description && (
-                              <span className="text-gray-600 text-sm">
-                                {invoice.description}
-                              </span>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {invoice.description && (
+                                <span className="text-gray-600 text-sm">
+                                  {invoice.description}
+                                </span>
+                              )}
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => setSelectedInvoice(invoice)}
+                              >
+                                جزئیات
+                              </Button>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -368,6 +379,19 @@ const RepresentativePortal: React.FC = () => {
             </Tabs>
           </CardContent>
         </Card>
+
+        {/* Modal نمایش جزئیات فاکتور */}
+        {selectedInvoice && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+              <InvoiceDetailsView 
+                invoice={selectedInvoice}
+                representativeName={representative?.storeName}
+                onClose={() => setSelectedInvoice(null)}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -460,11 +460,24 @@ export class DatabaseStorage implements IStorage {
       'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
     ];
     
-    // Simple Persian date conversion (approximate)
-    const persianYear = (date.getFullYear() - 621).toString();
-    const persianMonthIndex = Math.floor(date.getMonth() * 12 / 12); // Simplified
+    // Improved Persian date conversion
+    const gregorianYear = date.getFullYear();
+    const gregorianMonth = date.getMonth(); // 0-11
+    const gregorianDay = date.getDate();
+    
+    // Approximate Persian calendar conversion (simplified)
+    const persianYear = (gregorianYear - 621).toString();
+    
+    // Map Gregorian months to Persian months (approximate)
+    let persianMonthIndex = gregorianMonth;
+    if (gregorianMonth >= 2) { // March onwards
+      persianMonthIndex = Math.min(gregorianMonth - 2, 11);
+    } else { // January, February
+      persianMonthIndex = gregorianMonth + 10;
+    }
+    
     const persianMonth = persianMonths[persianMonthIndex] || 'مهر';
-    const persianDay = date.getDate().toString().padStart(2, '0');
+    const persianDay = gregorianDay.toString().padStart(2, '0');
     const persianMonthNum = (persianMonthIndex + 1).toString().padStart(2, '0');
     const persianDate = `${persianYear}/${persianMonthNum}/${persianDay}`;
     
@@ -476,11 +489,16 @@ export class DatabaseStorage implements IStorage {
     pendingCommissions: string;
     todayPayments: string;
     activeRepresentatives: number;
+    totalRepresentatives: number;
+    totalInvoices: number;
   }> {
     const reps = await db.select().from(representatives);
     const totalDebt = reps
       .reduce((sum, rep) => sum + parseFloat(rep.totalDebt || '0'), 0)
       .toString();
+
+    const allInvoices = await db.select().from(invoices);
+    const totalInvoices = allInvoices.length;
 
     const commissions = await db.select().from(commissionRecords);
     const pendingCommissions = commissions
@@ -496,14 +514,255 @@ export class DatabaseStorage implements IStorage {
       .reduce((sum, p) => sum + parseFloat(p.amount), 0)
       .toString();
 
+    const totalRepresentatives = reps.length;
     const activeRepresentatives = reps.filter(r => r.isActive).length;
 
     return {
       totalDebt,
       pendingCommissions,
       todayPayments,
-      activeRepresentatives
+      activeRepresentatives,
+      totalRepresentatives,
+      totalInvoices
     };
+  }
+
+  // Enhanced Invoice Generation with Template Support (مرحله 5.2)
+  async generateInvoicePNG(invoice: any, template: any = null): Promise<Buffer> {
+    const puppeteer = require('puppeteer');
+    
+    try {
+      // Default template if none provided
+      const invoiceTemplate = template || {
+        companyName: 'شرکت نمونه',
+        companyAddress: 'آدرس شرکت',
+        companyPhone: '021-12345678',
+        primaryColor: '#2563eb',
+        secondaryColor: '#f3f4f6',
+        fontFamily: 'iranYekan'
+      };
+
+      // Get Persian date for invoice
+      const persianDate = this.generatePersianDate(new Date(invoice.createdAt));
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html dir="rtl" lang="fa">
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700&display=swap');
+            
+            body {
+              font-family: 'Vazirmatn', sans-serif;
+              margin: 0;
+              padding: 20px;
+              background: white;
+              color: #333;
+              line-height: 1.6;
+            }
+            
+            .invoice-container {
+              max-width: 800px;
+              margin: 0 auto;
+              background: white;
+              border: 2px solid ${invoiceTemplate.primaryColor};
+              border-radius: 12px;
+              padding: 30px;
+            }
+            
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              border-bottom: 3px solid ${invoiceTemplate.primaryColor};
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+            }
+            
+            .company-info {
+              flex: 1;
+            }
+            
+            .company-name {
+              font-size: 28px;
+              font-weight: 700;
+              color: ${invoiceTemplate.primaryColor};
+              margin-bottom: 8px;
+            }
+            
+            .company-details {
+              font-size: 14px;
+              color: #666;
+              line-height: 1.8;
+            }
+            
+            .invoice-info {
+              text-align: left;
+              background: ${invoiceTemplate.secondaryColor};
+              padding: 20px;
+              border-radius: 8px;
+              min-width: 250px;
+            }
+            
+            .invoice-number {
+              font-size: 24px;
+              font-weight: 600;
+              color: ${invoiceTemplate.primaryColor};
+              margin-bottom: 10px;
+            }
+            
+            .invoice-date {
+              font-size: 14px;
+              color: #666;
+            }
+            
+            .invoice-details {
+              margin: 30px 0;
+            }
+            
+            .details-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 20px 0;
+            }
+            
+            .details-table th,
+            .details-table td {
+              padding: 15px;
+              text-align: right;
+              border-bottom: 1px solid #eee;
+            }
+            
+            .details-table th {
+              background: ${invoiceTemplate.secondaryColor};
+              font-weight: 600;
+              color: ${invoiceTemplate.primaryColor};
+            }
+            
+            .amount-section {
+              background: linear-gradient(135deg, ${invoiceTemplate.primaryColor}, ${invoiceTemplate.primaryColor}dd);
+              color: white;
+              padding: 25px;
+              border-radius: 10px;
+              text-align: center;
+              margin: 30px 0;
+            }
+            
+            .amount-label {
+              font-size: 16px;
+              opacity: 0.9;
+              margin-bottom: 10px;
+            }
+            
+            .amount-value {
+              font-size: 36px;
+              font-weight: 700;
+            }
+            
+            .footer {
+              margin-top: 40px;
+              text-align: center;
+              color: #666;
+              font-size: 14px;
+              border-top: 1px solid #eee;
+              padding-top: 20px;
+            }
+            
+            .persian-date {
+              background: linear-gradient(135deg, #10b981, #059669);
+              color: white;
+              padding: 15px;
+              border-radius: 8px;
+              margin: 20px 0;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-container">
+            <div class="header">
+              <div class="company-info">
+                <div class="company-name">${invoiceTemplate.companyName}</div>
+                <div class="company-details">
+                  📍 ${invoiceTemplate.companyAddress}<br>
+                  📞 ${invoiceTemplate.companyPhone}
+                </div>
+              </div>
+              <div class="invoice-info">
+                <div class="invoice-number">فاکتور #${invoice.id}</div>
+                <div class="invoice-date">تاریخ صدور: ${new Date(invoice.createdAt).toLocaleDateString('fa-IR')}</div>
+              </div>
+            </div>
+
+            <div class="persian-date">
+              <strong>تاریخ شمسی:</strong> ${persianDate.persianDate} - ${persianDate.persianMonth} ${persianDate.persianYear}
+            </div>
+            
+            <div class="invoice-details">
+              <table class="details-table">
+                <thead>
+                  <tr>
+                    <th>شرح خدمات</th>
+                    <th>مبلغ</th>
+                    <th>وضعیت</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>${invoice.description || 'خدمات ارائه شده'}</td>
+                    <td>${new Intl.NumberFormat('fa-IR').format(Number(invoice.amount))} تومان</td>
+                    <td>${invoice.status === 'paid' ? '✅ پرداخت شده' : '⏳ در انتظار پرداخت'}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="amount-section">
+              <div class="amount-label">مبلغ قابل پرداخت:</div>
+              <div class="amount-value">${new Intl.NumberFormat('fa-IR').format(Number(invoice.amount))} تومان</div>
+            </div>
+            
+            <div class="footer">
+              <p>این فاکتور با سیستم مدیریت مالی هوشمند تولید شده است</p>
+              <p>تاریخ تولید: ${new Date().toLocaleDateString('fa-IR')} - ${new Date().toLocaleTimeString('fa-IR')}</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--no-zygote',
+          '--single-process',
+          '--disable-gpu'
+        ]
+      });
+
+      const page = await browser.newPage();
+      await page.setViewport({ width: 800, height: 1200 });
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+      
+      const pngBuffer = await page.screenshot({
+        type: 'png',
+        fullPage: true,
+        quality: 100
+      });
+
+      await browser.close();
+      return pngBuffer;
+      
+    } catch (error) {
+      console.error('Error generating invoice PNG:', error);
+      throw new Error('Failed to generate invoice PNG');
+    }
   }
 
   // Invoice template management

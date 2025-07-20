@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import InvoicePreview from "@/components/InvoicePreview";
 import { Settings, Palette, FileText, RefreshCw, MessageCircle, Wand2 } from "lucide-react";
 
 interface SystemSettings {
@@ -406,6 +407,26 @@ export default function SettingsPage() {
                   پیش‌نمایش
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* پیش‌نمایش فاکتور */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wand2 className="h-5 w-5 text-purple-600" />
+                پیش‌نمایش فاکتور
+              </CardTitle>
+              <CardDescription>
+                مشاهده نمونه فاکتور با تنظیمات قالب فعلی
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <InvoicePreview 
+                invoiceId={1211} 
+                templateData={invoiceTemplate}
+                showDownloadButton={true}
+              />
             </CardContent>
           </Card>
         </TabsContent>

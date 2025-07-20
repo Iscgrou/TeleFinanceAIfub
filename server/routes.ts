@@ -1002,5 +1002,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Invoice Template Settings API Routes (مرحله 5.2)
+  app.get('/api/settings/invoice-template', async (req, res) => {
+    try {
+      const settings = await storage.getSystemSettings();
+      const invoiceTemplate = settings?.invoiceTemplate || {
+        companyName: 'شرکت نمونه',
+        companyAddress: 'آدرس شرکت',
+        companyPhone: '021-12345678',
+        logoUrl: '',
+        primaryColor: '#2563eb',
+        secondaryColor: '#f3f4f6',
+        fontFamily: 'iranYekan'
+      };
+      res.json({ invoiceTemplate });
+    } catch (error: any) {
+      console.error("Error fetching invoice template:", error);
+      res.status(500).json({ error: "Failed to fetch invoice template" });
+    }
+  });
+
+  app.post('/api/settings/invoice-template', async (req, res) => {
+    try {
+      const { invoiceTemplate } = req.body;
+      const currentSettings = await storage.getSystemSettings();
+      const updatedSettings = {
+        ...currentSettings,
+        invoiceTemplate: JSON.stringify(invoiceTemplate)
+      };
+      const settings = await storage.updateSystemSettings(updatedSettings);
+      res.json({ success: true, invoiceTemplate: settings.invoiceTemplate });
+    } catch (error: any) {
+      console.error("Error saving invoice template:", error);
+      res.status(500).json({ error: "Failed to save invoice template" });
+    }
+  });
+
+  // Invoice Preview API Route (مرحله 5.3)
+  app.post('/api/invoices/:id/preview', async (req, res) => {
+    try {
+      const invoiceId = parseInt(req.params.id);
+      const invoice = await storage.getInvoiceById(invoiceId);
+      
+      if (!invoice) {
+        return res.status(404).json({ message: "فاکتور یافت نشد" });
+      }
+
+      const settings = await storage.getSystemSettings();
+      const template = settings?.invoiceTemplate ? JSON.parse(settings.invoiceTemplate) : null;
+      
+      // Generate preview with template
+      const pngBuffer = await storage.generateInvoicePNG(invoice, template);
+      
+      res.set({
+        'Content-Type': 'image/png',
+        'Content-Disposition': `inline; filename="invoice-${invoiceId}-preview.png"`
+      });
+      res.send(pngBuffer);
+    } catch (error: any) {
+      console.error("Error generating invoice preview:", error);
+      res.status(500).json({ error: "Failed to generate preview" });
+    }
+  });
+
   return httpServer;
 }
