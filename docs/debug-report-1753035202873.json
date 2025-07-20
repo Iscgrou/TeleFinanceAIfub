@@ -1,0 +1,3572 @@
+{
+  "timestamp": "2025-07-20T18:13:22.873Z",
+  "summary": {
+    "totalBlocks": 100,
+    "testedBlocks": 100,
+    "criticalIssues": 0,
+    "highIssues": 0,
+    "mediumIssues": 26,
+    "lowIssues": 74,
+    "healthyBlocks": 63,
+    "categoryBreakdown": {
+      "Telegram Bot": {
+        "total": 10,
+        "healthy": 0,
+        "issues": []
+      },
+      "Authentication": {
+        "total": 10,
+        "healthy": 10,
+        "issues": []
+      },
+      "Web App": {
+        "total": 10,
+        "healthy": 10,
+        "issues": []
+      },
+      "Portal": {
+        "total": 10,
+        "healthy": 1,
+        "issues": []
+      },
+      "Invoice": {
+        "total": 10,
+        "healthy": 2,
+        "issues": []
+      },
+      "Payment": {
+        "total": 10,
+        "healthy": 10,
+        "issues": []
+      },
+      "AI": {
+        "total": 10,
+        "healthy": 10,
+        "issues": []
+      },
+      "Database": {
+        "total": 10,
+        "healthy": 9,
+        "issues": [
+          "Pagination برای لیست‌های بزرگ پیاده‌سازی نشده"
+        ]
+      },
+      "Notification": {
+        "total": 10,
+        "healthy": 10,
+        "issues": []
+      },
+      "API": {
+        "total": 10,
+        "healthy": 1,
+        "issues": []
+      }
+    }
+  },
+  "detailedResults": [
+    {
+      "blockId": "2.1",
+      "blockName": "Bot Initialization",
+      "category": "Telegram Bot",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "Bot token معتبر است"
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": "خطا در ارتباط: Not Found"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ارتباط با دیتابیس برقرار است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد در بار عادی مناسب است"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردهای فنی رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت مناسب است"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.127Z"
+    },
+    {
+      "blockId": "1.1",
+      "blockName": "Session Management",
+      "category": "Authentication",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.126Z"
+    },
+    {
+      "blockId": "1.2",
+      "blockName": "RBAC",
+      "category": "Authentication",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.127Z"
+    },
+    {
+      "blockId": "1.3",
+      "blockName": "JWT Token Management",
+      "category": "Authentication",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.127Z"
+    },
+    {
+      "blockId": "1.4",
+      "blockName": "API Key Management",
+      "category": "Authentication",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.127Z"
+    },
+    {
+      "blockId": "1.5",
+      "blockName": "CORS & Security Headers",
+      "category": "Authentication",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.127Z"
+    },
+    {
+      "blockId": "1.6",
+      "blockName": "Rate Limiting",
+      "category": "Authentication",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.127Z"
+    },
+    {
+      "blockId": "1.7",
+      "blockName": "Login/Logout Flow",
+      "category": "Authentication",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.127Z"
+    },
+    {
+      "blockId": "1.8",
+      "blockName": "Password Management",
+      "category": "Authentication",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.127Z"
+    },
+    {
+      "blockId": "1.9",
+      "blockName": "Two-Factor Auth",
+      "category": "Authentication",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.127Z"
+    },
+    {
+      "blockId": "1.10",
+      "blockName": "Audit Logging",
+      "category": "Authentication",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.127Z"
+    },
+    {
+      "blockId": "2.2",
+      "blockName": "Command Handlers",
+      "category": "Telegram Bot",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ارتباط با دیتابیس برقرار است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد در بار عادی مناسب است"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردهای فنی رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت مناسب است"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "2.3",
+      "blockName": "JSON Upload Processing",
+      "category": "Telegram Bot",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ارتباط با دیتابیس برقرار است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد در بار عادی مناسب است"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردهای فنی رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت مناسب است"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "2.4",
+      "blockName": "Invoice Generation from JSON",
+      "category": "Telegram Bot",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ارتباط با دیتابیس برقرار است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد در بار عادی مناسب است"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردهای فنی رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت مناسب است"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "2.5",
+      "blockName": "Message Template System",
+      "category": "Telegram Bot",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ارتباط با دیتابیس برقرار است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد در بار عادی مناسب است"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردهای فنی رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت مناسب است"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "2.6",
+      "blockName": "Bulk Operations",
+      "category": "Telegram Bot",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ارتباط با دیتابیس برقرار است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد در بار عادی مناسب است"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردهای فنی رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت مناسب است"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "2.7",
+      "blockName": "Error Handling",
+      "category": "Telegram Bot",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ارتباط با دیتابیس برقرار است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد در بار عادی مناسب است"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردهای فنی رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت مناسب است"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "2.8",
+      "blockName": "State Management",
+      "category": "Telegram Bot",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ارتباط با دیتابیس برقرار است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد در بار عادی مناسب است"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردهای فنی رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت مناسب است"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "2.9",
+      "blockName": "Callback Query Processing",
+      "category": "Telegram Bot",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ارتباط با دیتابیس برقرار است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد در بار عادی مناسب است"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردهای فنی رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت مناسب است"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "2.10",
+      "blockName": "Bot-Database Sync",
+      "category": "Telegram Bot",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ارتباط با دیتابیس برقرار است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد در بار عادی مناسب است"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردهای فنی رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت مناسب است"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "3.1",
+      "blockName": "Dashboard Components",
+      "category": "Web App",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "3.2",
+      "blockName": "React Router",
+      "category": "Web App",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "3.3",
+      "blockName": "State Management",
+      "category": "Web App",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "3.4",
+      "blockName": "Form Handling",
+      "category": "Web App",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "3.5",
+      "blockName": "WebSocket Updates",
+      "category": "Web App",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "3.6",
+      "blockName": "Charts & Analytics",
+      "category": "Web App",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.630Z"
+    },
+    {
+      "blockId": "3.7",
+      "blockName": "Settings UI",
+      "category": "Web App",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "3.8",
+      "blockName": "Performance Optimization",
+      "category": "Web App",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "3.9",
+      "blockName": "Error Boundaries",
+      "category": "Web App",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "3.10",
+      "blockName": "Responsive Design",
+      "category": "Web App",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "4.1",
+      "blockName": "Static HTML Generation",
+      "category": "Portal",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌های نماینده"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "صفحات استاتیک سریع بارگذاری می‌شوند"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "تمام فایل‌های portal موجود است"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "View-only access تضمین شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "4.2",
+      "blockName": "Representative Auth",
+      "category": "Portal",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌های نماینده"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "صفحات استاتیک سریع بارگذاری می‌شوند"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "تمام فایل‌های portal موجود است"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "View-only access تضمین شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "4.3",
+      "blockName": "Invoice Display",
+      "category": "Portal",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌های نماینده"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "صفحات استاتیک سریع بارگذاری می‌شوند"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "تمام فایل‌های portal موجود است"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "View-only access تضمین شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "4.4",
+      "blockName": "Payment History",
+      "category": "Portal",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌های نماینده"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "صفحات استاتیک سریع بارگذاری می‌شوند"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "تمام فایل‌های portal موجود است"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "View-only access تضمین شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "4.5",
+      "blockName": "Transaction Details",
+      "category": "Portal",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌های نماینده"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "صفحات استاتیک سریع بارگذاری می‌شوند"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "تمام فایل‌های portal موجود است"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "View-only access تضمین شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "4.6",
+      "blockName": "Mobile Optimization",
+      "category": "Portal",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌های نماینده"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "صفحات استاتیک سریع بارگذاری می‌شوند"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "تمام فایل‌های portal موجود است"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "View-only access تضمین شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "4.7",
+      "blockName": "Browser Compatibility",
+      "category": "Portal",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "مشکل 403 Forbidden حل شده"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "Portal routes قبل از Vite تعریف شده"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌های نماینده"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "صفحات استاتیک سریع بارگذاری می‌شوند"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "تمام فایل‌های portal موجود است"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "View-only access تضمین شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "4.8",
+      "blockName": "Print-Friendly Views",
+      "category": "Portal",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌های نماینده"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "صفحات استاتیک سریع بارگذاری می‌شوند"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "تمام فایل‌های portal موجود است"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "View-only access تضمین شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "4.9",
+      "blockName": "Download Capabilities",
+      "category": "Portal",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌های نماینده"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "صفحات استاتیک سریع بارگذاری می‌شوند"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "تمام فایل‌های portal موجود است"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "View-only access تضمین شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "4.10",
+      "blockName": "Multi-language Support",
+      "category": "Portal",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": false,
+          "message": ""
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌های نماینده"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "صفحات استاتیک سریع بارگذاری می‌شوند"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "تمام فایل‌های portal موجود است"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "View-only access تضمین شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "5.1",
+      "blockName": "JSON Parser",
+      "category": "Invoice",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباط با سیستم پرداخت"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ذخیره‌سازی فاکتورها صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "پردازش batch عملیاتی"
+        },
+        "technicalTest": {
+          "passed": false,
+          "message": ""
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "محاسبات مالی ایمن"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.631Z"
+    },
+    {
+      "blockId": "5.2",
+      "blockName": "Invoice Generation Engine",
+      "category": "Invoice",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "موتور تولید فاکتور فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباط با سیستم پرداخت"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ذخیره‌سازی فاکتورها صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "پردازش batch عملیاتی"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "تولید PNG فاکتور عملیاتی است"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "محاسبات مالی ایمن"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.632Z"
+    },
+    {
+      "blockId": "5.3",
+      "blockName": "Invoice Templates",
+      "category": "Invoice",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباط با سیستم پرداخت"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ذخیره‌سازی فاکتورها صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "پردازش batch عملیاتی"
+        },
+        "technicalTest": {
+          "passed": false,
+          "message": ""
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "محاسبات مالی ایمن"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.662Z"
+    },
+    {
+      "blockId": "5.4",
+      "blockName": "Invoice Image Generator",
+      "category": "Invoice",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "موتور تولید فاکتور فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباط با سیستم پرداخت"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ذخیره‌سازی فاکتورها صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "پردازش batch عملیاتی"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "تولید PNG فاکتور عملیاتی است"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "محاسبات مالی ایمن"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.662Z"
+    },
+    {
+      "blockId": "5.5",
+      "blockName": "Batch Processing",
+      "category": "Invoice",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباط با سیستم پرداخت"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ذخیره‌سازی فاکتورها صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "پردازش batch عملیاتی"
+        },
+        "technicalTest": {
+          "passed": false,
+          "message": ""
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "محاسبات مالی ایمن"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "5.6",
+      "blockName": "Status Tracking",
+      "category": "Invoice",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباط با سیستم پرداخت"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ذخیره‌سازی فاکتورها صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "پردازش batch عملیاتی"
+        },
+        "technicalTest": {
+          "passed": false,
+          "message": ""
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "محاسبات مالی ایمن"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "5.7",
+      "blockName": "History Management",
+      "category": "Invoice",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباط با سیستم پرداخت"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ذخیره‌سازی فاکتورها صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "پردازش batch عملیاتی"
+        },
+        "technicalTest": {
+          "passed": false,
+          "message": ""
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "محاسبات مالی ایمن"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "5.8",
+      "blockName": "Commission Calculation",
+      "category": "Invoice",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباط با سیستم پرداخت"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ذخیره‌سازی فاکتورها صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "پردازش batch عملیاتی"
+        },
+        "technicalTest": {
+          "passed": false,
+          "message": ""
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "محاسبات مالی ایمن"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "5.9",
+      "blockName": "Tax Management",
+      "category": "Invoice",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباط با سیستم پرداخت"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ذخیره‌سازی فاکتورها صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "پردازش batch عملیاتی"
+        },
+        "technicalTest": {
+          "passed": false,
+          "message": ""
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "محاسبات مالی ایمن"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "5.10",
+      "blockName": "Export/Import",
+      "category": "Invoice",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباط با سیستم پرداخت"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "ذخیره‌سازی فاکتورها صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "پردازش batch عملیاتی"
+        },
+        "technicalTest": {
+          "passed": false,
+          "message": ""
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "محاسبات مالی ایمن"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "medium",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "6.1",
+      "blockName": "Payment Recording",
+      "category": "Payment",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "6.2",
+      "blockName": "Payment Verification",
+      "category": "Payment",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "6.3",
+      "blockName": "Debt Calculation",
+      "category": "Payment",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "6.4",
+      "blockName": "Payment History",
+      "category": "Payment",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "6.5",
+      "blockName": "Receipt Generation",
+      "category": "Payment",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "6.6",
+      "blockName": "Payment Reminders",
+      "category": "Payment",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "6.7",
+      "blockName": "Overdue Management",
+      "category": "Payment",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "6.8",
+      "blockName": "Payment Analytics",
+      "category": "Payment",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "6.9",
+      "blockName": "Reconciliation",
+      "category": "Payment",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "6.10",
+      "blockName": "Export Reports",
+      "category": "Payment",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "7.1",
+      "blockName": "AI Agent Core",
+      "category": "AI",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "7.2",
+      "blockName": "Debt Prediction",
+      "category": "AI",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "7.3",
+      "blockName": "Risk Assessment",
+      "category": "AI",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "7.4",
+      "blockName": "Trend Analysis",
+      "category": "AI",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "7.5",
+      "blockName": "Anomaly Detection",
+      "category": "AI",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "7.6",
+      "blockName": "NLP Processing",
+      "category": "AI",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "7.7",
+      "blockName": "Report Generation",
+      "category": "AI",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "7.8",
+      "blockName": "Decision Support",
+      "category": "AI",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "7.9",
+      "blockName": "Performance Analytics",
+      "category": "AI",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "7.10",
+      "blockName": "Model Training",
+      "category": "AI",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "8.1",
+      "blockName": "Connection Pool",
+      "category": "Database",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "دیتابیس فعال - 200 نماینده"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "Connection pool فعال"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "عملیات CRUD صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد تحت بار مناسب"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "بهینه‌سازی مناسب"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "SQL injection محافظت شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.677Z"
+    },
+    {
+      "blockId": "8.2",
+      "blockName": "Drizzle ORM",
+      "category": "Database",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "دیتابیس فعال - 200 نماینده"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "Connection pool فعال"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "عملیات CRUD صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد تحت بار مناسب"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "بهینه‌سازی مناسب"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "SQL injection محافظت شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.709Z"
+    },
+    {
+      "blockId": "8.3",
+      "blockName": "Migrations",
+      "category": "Database",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "دیتابیس فعال - 200 نماینده"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "Connection pool فعال"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "عملیات CRUD صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد تحت بار مناسب"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "بهینه‌سازی مناسب"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "SQL injection محافظت شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.729Z"
+    },
+    {
+      "blockId": "8.4",
+      "blockName": "Transactions",
+      "category": "Database",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "دیتابیس فعال - 200 نماینده"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "Connection pool فعال"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "عملیات CRUD صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد تحت بار مناسب"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "بهینه‌سازی مناسب"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "SQL injection محافظت شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.747Z"
+    },
+    {
+      "blockId": "8.5",
+      "blockName": "Query Optimization",
+      "category": "Database",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "دیتابیس فعال - 200 نماینده"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "Connection pool فعال"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "عملیات CRUD صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد تحت بار مناسب"
+        },
+        "technicalTest": {
+          "passed": false,
+          "message": "عدم وجود pagination در queries"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "SQL injection محافظت شده"
+        }
+      },
+      "issues": [
+        "Pagination برای لیست‌های بزرگ پیاده‌سازی نشده"
+      ],
+      "recommendations": [
+        "اضافه کردن limit و offset به queries"
+      ],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.764Z"
+    },
+    {
+      "blockId": "8.6",
+      "blockName": "Index Management",
+      "category": "Database",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "دیتابیس فعال - 200 نماینده"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "Connection pool فعال"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "عملیات CRUD صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد تحت بار مناسب"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "بهینه‌سازی مناسب"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "SQL injection محافظت شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.781Z"
+    },
+    {
+      "blockId": "8.7",
+      "blockName": "Backup & Recovery",
+      "category": "Database",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "دیتابیس فعال - 200 نماینده"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "Connection pool فعال"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "عملیات CRUD صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد تحت بار مناسب"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "بهینه‌سازی مناسب"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "SQL injection محافظت شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.799Z"
+    },
+    {
+      "blockId": "8.8",
+      "blockName": "Data Integrity",
+      "category": "Database",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "دیتابیس فعال - 200 نماینده"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "Connection pool فعال"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "عملیات CRUD صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد تحت بار مناسب"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "بهینه‌سازی مناسب"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "SQL injection محافظت شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.816Z"
+    },
+    {
+      "blockId": "8.9",
+      "blockName": "Monitoring",
+      "category": "Database",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "دیتابیس فعال - 200 نماینده"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "Connection pool فعال"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "عملیات CRUD صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد تحت بار مناسب"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "بهینه‌سازی مناسب"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "SQL injection محافظت شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.834Z"
+    },
+    {
+      "blockId": "8.10",
+      "blockName": "Archive Management",
+      "category": "Database",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "دیتابیس فعال - 200 نماینده"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "Connection pool فعال"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "عملیات CRUD صحیح"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد تحت بار مناسب"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "بهینه‌سازی مناسب"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "SQL injection محافظت شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.851Z"
+    },
+    {
+      "blockId": "9.1",
+      "blockName": "Notification Engine",
+      "category": "Notification",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "9.2",
+      "blockName": "Telegram Notifications",
+      "category": "Notification",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "9.3",
+      "blockName": "SMS Integration",
+      "category": "Notification",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "9.4",
+      "blockName": "Email Integration",
+      "category": "Notification",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "9.5",
+      "blockName": "In-App Notifications",
+      "category": "Notification",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "9.6",
+      "blockName": "Templates",
+      "category": "Notification",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "9.7",
+      "blockName": "Delivery Tracking",
+      "category": "Notification",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "9.8",
+      "blockName": "Retry Mechanism",
+      "category": "Notification",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "9.9",
+      "blockName": "Preferences",
+      "category": "Notification",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "9.10",
+      "blockName": "Analytics",
+      "category": "Notification",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "بلوک فعال است"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "ارتباطات داخلی برقرار"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "دسترسی به داده‌ها"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "عملکرد قابل قبول"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "استانداردها رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "امنیت کافی"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "10.1",
+      "blockName": "REST Endpoints",
+      "category": "API",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "CORS پیکربندی صحیح"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "API به دیتابیس متصل است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "Rate limiting فعال"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "RESTful standards رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "API security headers تنظیم شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "10.2",
+      "blockName": "WebSocket",
+      "category": "API",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "CORS پیکربندی صحیح"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "API به دیتابیس متصل است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "Rate limiting فعال"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "RESTful standards رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "API security headers تنظیم شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "10.3",
+      "blockName": "External APIs",
+      "category": "API",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "CORS پیکربندی صحیح"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "API به دیتابیس متصل است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "Rate limiting فعال"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "RESTful standards رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "API security headers تنظیم شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "10.4",
+      "blockName": "Rate Limiting",
+      "category": "API",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "CORS پیکربندی صحیح"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "API به دیتابیس متصل است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "Rate limiting فعال"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "RESTful standards رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "API security headers تنظیم شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "10.5",
+      "blockName": "Documentation",
+      "category": "API",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "CORS پیکربندی صحیح"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "API به دیتابیس متصل است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "Rate limiting فعال"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "RESTful standards رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "API security headers تنظیم شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "10.6",
+      "blockName": "Versioning",
+      "category": "API",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "CORS پیکربندی صحیح"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "API به دیتابیس متصل است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "Rate limiting فعال"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "RESTful standards رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "API security headers تنظیم شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.868Z"
+    },
+    {
+      "blockId": "10.7",
+      "blockName": "Error Handling",
+      "category": "API",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "CORS پیکربندی صحیح"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "API به دیتابیس متصل است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "Rate limiting فعال"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "RESTful standards رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "API security headers تنظیم شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.869Z"
+    },
+    {
+      "blockId": "10.8",
+      "blockName": "Request Logging",
+      "category": "API",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "CORS پیکربندی صحیح"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "API به دیتابیس متصل است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "Rate limiting فعال"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "RESTful standards رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "API security headers تنظیم شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.869Z"
+    },
+    {
+      "blockId": "10.9",
+      "blockName": "Security",
+      "category": "API",
+      "tests": {
+        "healthCheck": {
+          "passed": false,
+          "message": ""
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "CORS پیکربندی صحیح"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "API به دیتابیس متصل است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "Rate limiting فعال"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "RESTful standards رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "API security headers تنظیم شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.869Z"
+    },
+    {
+      "blockId": "10.10",
+      "blockName": "Health Checks",
+      "category": "API",
+      "tests": {
+        "healthCheck": {
+          "passed": true,
+          "message": "Health check endpoint فعال"
+        },
+        "connectionTest": {
+          "passed": true,
+          "message": "CORS پیکربندی صحیح"
+        },
+        "databaseTest": {
+          "passed": true,
+          "message": "API به دیتابیس متصل است"
+        },
+        "loadTest": {
+          "passed": true,
+          "message": "Rate limiting فعال"
+        },
+        "technicalTest": {
+          "passed": true,
+          "message": "RESTful standards رعایت شده"
+        },
+        "securityTest": {
+          "passed": true,
+          "message": "API security headers تنظیم شده"
+        }
+      },
+      "issues": [],
+      "recommendations": [],
+      "severity": "low",
+      "timestamp": "2025-07-20T18:13:22.869Z"
+    }
+  ]
+}

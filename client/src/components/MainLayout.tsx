@@ -24,7 +24,8 @@ import {
   MessageCircle,
   Brain,
   Shield,
-  AlertTriangle
+  AlertTriangle,
+  Bug
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 
@@ -120,6 +121,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
       href: '/alerts',
       description: 'سیستم هشدارهای هوشمند',
       badge: 'جدید'
+    },
+    {
+      id: 'debug',
+      title: 'CADUCEUS v1.0',
+      icon: Bug,
+      href: '/debug',
+      description: 'سیستم عیب‌یابی 100 بلوکی',
+      badge: 'Beta'
     },
     {
       id: 'activity',

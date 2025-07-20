@@ -15,6 +15,7 @@ import SettingsPage from './pages/SettingsPage'
 import InvoiceHistoryPage from './pages/InvoiceHistoryPage'
 import AIAnalytics from './pages/AIAnalytics'
 import AlertManagement from './pages/dashboard/AlertManagement'
+import DebugDashboard from './pages/DebugDashboard'
 import { LazyLoadWrapper } from './components/performance/LazyLoadWrapper'
 import { PerformanceMonitor } from './components/performance/PerformanceMonitor'
 import { optimizedQueryClient, setupBackgroundCacheManagement, logQueryPerformance } from './lib/optimizedQueryClient'
@@ -117,6 +118,18 @@ export default function App() {
                   <Route path="/dashboard/alerts" component={() => (
                     <LazyLoadWrapper>
                       <AlertManagement />
+                    </LazyLoadWrapper>
+                  )} />
+                  
+                  {/* Debug Dashboard Route - CADUCEUS v1.0 System */}
+                  <Route path="/debug" component={() => (
+                    <LazyLoadWrapper>
+                      <DebugDashboard />
+                    </LazyLoadWrapper>
+                  )} />
+                  <Route path="/caduceus" component={() => (
+                    <LazyLoadWrapper>
+                      <DebugDashboard />
                     </LazyLoadWrapper>
                   )} />
                   
