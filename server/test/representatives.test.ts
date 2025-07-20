@@ -3,7 +3,7 @@ import request from 'supertest';
 import express from 'express';
 import { registerRoutes } from '../routes';
 import { storage } from '../storage';
-import type { Representative } from '@shared/schema';
+import type { Representative } from '../../shared/schema';
 
 // Mock storage
 vi.mock('../storage', () => ({
