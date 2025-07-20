@@ -1,7 +1,20 @@
 import { useState, useEffect } from 'react'
 import { Router, Route, Switch, useRoute } from 'wouter'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from '@/components/ui/toaster'
 import { api } from './utils/api'
 import RepresentativePortal from './components/RepresentativePortal'
+import AdminDashboard from './components/AdminDashboard'
+
+// Create QueryClient instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 interface Representative {
   id: number;
@@ -281,8 +294,8 @@ ${payment.description ? `توضیحات: ${payment.description}` : 'بدون ت�
   );
 }
 
-// Main Admin Dashboard Component  
-function AdminDashboard() {
+// Legacy Admin Dashboard Component  
+function LegacyAdminDashboard() {
   const [representatives, setRepresentatives] = useState<Representative[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -973,10 +986,17 @@ function AdminDashboard() {
 // Main App Component with Routing
 function App() {
   return (
-    <Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
       <Switch>
         <Route path="/portal/:username" component={PortalRoute} />
-        <Route path="/" component={AdminDashboard} />
+        <Route path="/admin/advanced">
+          <QueryClientProvider client={queryClient}>
+            <AdminDashboard />
+            <Toaster />
+          </QueryClientProvider>
+        </Route>
+        <Route path="/" component={LegacyAdminDashboard} />
         <Route>
           <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 flex items-center justify-center">
             <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4 text-center">
@@ -993,7 +1013,9 @@ function App() {
           </div>
         </Route>
       </Switch>
+      <Toaster />
     </Router>
+    </QueryClientProvider>
   );
 }
 

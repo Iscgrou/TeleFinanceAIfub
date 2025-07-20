@@ -1,6 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { storage } from '../storage';
 import { handleMessage, handleCallbackQuery, handleDocument } from './handlers';
+import { TelegramIntegration } from '../services/telegram-integration';
 
 let bot: TelegramBot | null = null;
 let isInitializing = false;
@@ -49,6 +50,9 @@ export async function initializeBot(): Promise<void> {
     bot.on('callback_query', handleCallbackQuery);
     bot.on('document', handleDocument);
     
+    // Initialize advanced feature commands
+    TelegramIntegration.initializeAdvancedCommands();
+    
     bot.on('polling_error', async (error) => {
       console.error('Telegram polling error:', error);
       
@@ -90,6 +94,8 @@ async function stopBot(): Promise<void> {
     bot = null;
   }
 }
+
+export { bot };
 
 export async function stopBotInstance(): Promise<void> {
   await stopBot();

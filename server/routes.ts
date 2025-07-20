@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { securityMiddleware, rateLimitMiddleware } from "./middleware/security";
 import { storage } from "./storage";
 import { 
   insertSystemSettingsSchema,
@@ -12,6 +13,10 @@ import { generateInvoiceImage } from "./services/svg-invoice-generator";
 import { registerTelegramTestRoutes } from "./routes/test-telegram";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Apply enterprise security middleware to all routes
+  app.use(securityMiddleware);
+  app.use(rateLimitMiddleware(1000, 15)); // 1000 requests per 15 minutes for development
+  
   // Test invoice generation endpoint
   app.get("/api/test/invoice/:id", async (req, res) => {
     try {
@@ -591,6 +596,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register telegram test routes
   registerTelegramTestRoutes(app);
+
+  // Register new advanced feature routes (imported at top)
+  const { default: creditManagementRouter } = await import('./routes/credit-management.js');
+  const { default: cashFlowRouter } = await import('./routes/cash-flow.js');
+  const { default: profitabilityRouter } = await import('./routes/profitability.js');
+  const { default: bankReconciliationRouter } = await import('./routes/bank-reconciliation.js');
+  const { default: securityRouter } = await import('./routes/security.js');
+  
+  app.use('/api/credit-management', creditManagementRouter);
+  app.use('/api/cash-flow', cashFlowRouter);
+  app.use('/api/profitability', profitabilityRouter);
+  app.use('/api/bank-reconciliation', bankReconciliationRouter);
+  app.use('/api/security', securityRouter);
 
   const httpServer = createServer(app);
   return httpServer;

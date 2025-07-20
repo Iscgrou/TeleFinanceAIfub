@@ -25,6 +25,8 @@ export const representatives = pgTable("representatives", {
   panelUsername: text("panel_username").notNull().unique(),
   salesColleagueName: text("sales_colleague_name"),
   totalDebt: numeric("total_debt", { precision: 15, scale: 2 }).default('0'),
+  creditLimit: numeric("credit_limit", { precision: 15, scale: 2 }).default('1000000'), // Default 1M Toman credit limit
+  riskLevel: text("risk_level", { enum: ["low", "medium", "high", "critical"] }).default("medium"),
   colleagueId: integer("colleague_id").references(() => salesColleagues.id),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
@@ -218,6 +220,72 @@ export const chatMessages = pgTable('chat_messages', {
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
+// Credit Control System
+export const creditLimits = pgTable('credit_limits', {
+  id: serial('id').primaryKey(),
+  representativeId: integer('representative_id').references(() => representatives.id).notNull(),
+  creditLimit: numeric('credit_limit', { precision: 15, scale: 2 }).notNull(),
+  availableCredit: numeric('available_credit', { precision: 15, scale: 2 }).notNull(),
+  lastReviewDate: timestamp('last_review_date').defaultNow().notNull(),
+  autoAdjust: boolean('auto_adjust').default(true).notNull(),
+  createdBy: text('created_by').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Cash Flow Forecasting
+export const cashFlowForecasts = pgTable('cash_flow_forecasts', {
+  id: serial('id').primaryKey(),
+  forecastDate: timestamp('forecast_date').notNull(),
+  expectedInflows: numeric('expected_inflows', { precision: 15, scale: 2 }).notNull(),
+  expectedOutflows: numeric('expected_outflows', { precision: 15, scale: 2 }).notNull(),
+  netCashFlow: numeric('net_cash_flow', { precision: 15, scale: 2 }).notNull(),
+  confidence: decimal('confidence', { precision: 5, scale: 4 }).notNull(), // 0.0 to 1.0
+  modelVersion: varchar('model_version', { length: 50 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Profitability Analysis
+export const profitabilityReports = pgTable('profitability_reports', {
+  id: serial('id').primaryKey(),
+  representativeId: integer('representative_id').references(() => representatives.id),
+  periodStart: timestamp('period_start').notNull(),
+  periodEnd: timestamp('period_end').notNull(),
+  totalRevenue: numeric('total_revenue', { precision: 15, scale: 2 }).notNull(),
+  totalCosts: numeric('total_costs', { precision: 15, scale: 2 }).notNull(),
+  netProfit: numeric('net_profit', { precision: 15, scale: 2 }).notNull(),
+  profitMargin: decimal('profit_margin', { precision: 5, scale: 4 }).notNull(),
+  roi: decimal('roi', { precision: 5, scale: 4 }).notNull(), // Return on Investment
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Bank Reconciliation
+export const bankTransactions = pgTable('bank_transactions', {
+  id: serial('id').primaryKey(),
+  bankReference: varchar('bank_reference', { length: 100 }).notNull().unique(),
+  transactionDate: timestamp('transaction_date').notNull(),
+  amount: numeric('amount', { precision: 15, scale: 2 }).notNull(),
+  description: text('description'),
+  accountNumber: varchar('account_number', { length: 50 }).notNull(),
+  reconciled: boolean('reconciled').default(false).notNull(),
+  matchedPaymentId: integer('matched_payment_id').references(() => payments.id),
+  importBatch: varchar('import_batch', { length: 100 }),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Security Audit Log
+export const securityAuditLog = pgTable('security_audit_log', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id', { length: 255 }),
+  action: varchar('action', { length: 100 }).notNull(),
+  resource: varchar('resource', { length: 100 }).notNull(),
+  details: jsonb('details'),
+  ipAddress: varchar('ip_address', { length: 45 }),
+  userAgent: text('user_agent'),
+  success: boolean('success').notNull(),
+  timestamp: timestamp('timestamp').defaultNow().notNull()
+});
+
 // Insert schemas for new tables
 export const insertReminderRuleSchema = createInsertSchema(reminderRules).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertMessageTemplateSchema = createInsertSchema(messageTemplates).omit({ id: true, createdAt: true, updatedAt: true });
@@ -239,3 +307,22 @@ export type ChatSession = typeof chatSessions.$inferSelect;
 export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+
+// New schema types for advanced features
+export const insertCreditLimitSchema = createInsertSchema(creditLimits).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertCashFlowForecastSchema = createInsertSchema(cashFlowForecasts).omit({ id: true, createdAt: true });
+export const insertProfitabilityReportSchema = createInsertSchema(profitabilityReports).omit({ id: true, createdAt: true });
+export const insertBankTransactionSchema = createInsertSchema(bankTransactions).omit({ id: true, createdAt: true });
+export const insertSecurityAuditLogSchema = createInsertSchema(securityAuditLog).omit({ id: true, timestamp: true });
+
+// New types for advanced features
+export type CreditLimit = typeof creditLimits.$inferSelect;
+export type InsertCreditLimit = z.infer<typeof insertCreditLimitSchema>;
+export type CashFlowForecast = typeof cashFlowForecasts.$inferSelect;
+export type InsertCashFlowForecast = z.infer<typeof insertCashFlowForecastSchema>;
+export type ProfitabilityReport = typeof profitabilityReports.$inferSelect;
+export type InsertProfitabilityReport = z.infer<typeof insertProfitabilityReportSchema>;
+export type BankTransaction = typeof bankTransactions.$inferSelect;
+export type InsertBankTransaction = z.infer<typeof insertBankTransactionSchema>;
+export type SecurityAuditLog = typeof securityAuditLog.$inferSelect;
+export type InsertSecurityAuditLog = z.infer<typeof insertSecurityAuditLogSchema>;
