@@ -247,6 +247,171 @@ const AVAILABLE_TOOLS: ToolFunction[] = [
       },
       required: []
     }
+  },
+  {
+    name: "create_representative",
+    description: "Creates a new representative/store owner in the system",
+    parameters: {
+      type: "object",
+      properties: {
+        store_name: {
+          type: "string",
+          description: "Name of the store/business"
+        },
+        owner_name: {
+          type: "string",
+          description: "Name of the store owner"
+        },
+        panel_username: {
+          type: "string", 
+          description: "Username for the representative's panel access"
+        },
+        phone: {
+          type: "string",
+          description: "Phone number of the representative"
+        },
+        sales_colleague_name: {
+          type: "string",
+          description: "Name of the sales colleague responsible for this representative"
+        }
+      },
+      required: ["store_name", "panel_username"]
+    }
+  },
+  {
+    name: "update_representative",
+    description: "Updates an existing representative's information",
+    parameters: {
+      type: "object",
+      properties: {
+        representative_name: {
+          type: "string",
+          description: "Current store name of the representative to update"
+        },
+        new_data: {
+          type: "object",
+          description: "Object containing the fields to update"
+        }
+      },
+      required: ["representative_name", "new_data"]
+    }
+  },
+  {
+    name: "delete_representative",
+    description: "Deletes a representative from the system",
+    parameters: {
+      type: "object",
+      properties: {
+        representative_name: {
+          type: "string",
+          description: "Store name of the representative to delete"
+        }
+      },
+      required: ["representative_name"]
+    }
+  },
+  {
+    name: "increase_representative_debt",
+    description: "Increases a representative's debt by a specified amount",
+    parameters: {
+      type: "object",
+      properties: {
+        representative_name: {
+          type: "string",
+          description: "Store name of the representative"
+        },
+        amount: {
+          type: "number",
+          description: "Amount to add to the debt"
+        },
+        reason: {
+          type: "string",
+          description: "Reason for the debt increase"
+        }
+      },
+      required: ["representative_name", "amount"]
+    }
+  },
+  {
+    name: "decrease_representative_debt",
+    description: "Decreases a representative's debt by a specified amount (same as register_payment but more explicit)",
+    parameters: {
+      type: "object",
+      properties: {
+        representative_name: {
+          type: "string",
+          description: "Store name of the representative"
+        },
+        amount: {
+          type: "number",
+          description: "Amount to subtract from the debt"
+        },
+        notes: {
+          type: "string",
+          description: "Notes about the debt reduction"
+        }
+      },
+      required: ["representative_name", "amount"]
+    }
+  },
+  {
+    name: "create_sales_colleague",
+    description: "Creates a new sales colleague in the system",
+    parameters: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          description: "Full name of the sales colleague"
+        },
+        commission_rate: {
+          type: "number",
+          description: "Commission rate percentage (e.g., 5.5 for 5.5%)"
+        }
+      },
+      required: ["name", "commission_rate"]
+    }
+  },
+  {
+    name: "update_sales_colleague",
+    description: "Updates an existing sales colleague's information",
+    parameters: {
+      type: "object",
+      properties: {
+        colleague_name: {
+          type: "string",
+          description: "Current name of the sales colleague to update"
+        },
+        new_data: {
+          type: "object",
+          description: "Object containing the fields to update"
+        }
+      },
+      required: ["colleague_name", "new_data"]
+    }
+  },
+  {
+    name: "delete_sales_colleague",
+    description: "Deletes a sales colleague from the system",
+    parameters: {
+      type: "object",
+      properties: {
+        colleague_name: {
+          type: "string",
+          description: "Name of the sales colleague to delete"
+        }
+      },
+      required: ["colleague_name"]
+    }
+  },
+  {
+    name: "get_all_sales_colleagues",
+    description: "Gets all sales colleagues in the system",
+    parameters: {
+      type: "object",
+      properties: {},
+      required: []
+    }
   }
 ];
 
@@ -530,6 +695,33 @@ export class FinancialAgent {
           
         case "get_all_debtors":
           return await this.getAllDebtors(args.minDebt);
+
+        case "create_representative":
+          return await this.createRepresentative(args.store_name, args.owner_name, args.panel_username, args.phone, args.sales_colleague_name);
+
+        case "update_representative":
+          return await this.updateRepresentative(args.representative_name, args.new_data);
+
+        case "delete_representative":
+          return await this.deleteRepresentative(args.representative_name);
+
+        case "increase_representative_debt":
+          return await this.increaseRepresentativeDebt(args.representative_name, args.amount, args.reason);
+
+        case "decrease_representative_debt":
+          return await this.decreaseRepresentativeDebt(args.representative_name, args.amount, args.notes);
+
+        case "create_sales_colleague":
+          return await this.createSalesColleague(args.name, args.commission_rate);
+
+        case "update_sales_colleague":
+          return await this.updateSalesColleague(args.colleague_name, args.new_data);
+
+        case "delete_sales_colleague":
+          return await this.deleteSalesColleague(args.colleague_name);
+
+        case "get_all_sales_colleagues":
+          return await this.getAllSalesColleagues();
           
         default:
           return { error: `Unknown function: ${name}` };
@@ -1023,6 +1215,256 @@ export class FinancialAgent {
       };
     } catch (error) {
       return { error: `Failed to get debtors: ${error.message}` };
+    }
+  }
+
+  // NEW: Create representative
+  private async createRepresentative(storeName: string, ownerName?: string, panelUsername?: string, phone?: string, salesColleagueName?: string): Promise<any> {
+    try {
+      // Check if representative already exists
+      const existingRep = await storage.getRepresentativeByStoreName(storeName);
+      if (existingRep) {
+        return { error: `نماینده با نام '${storeName}' قبلاً ثبت شده است.` };
+      }
+
+      if (panelUsername) {
+        const existingPanel = await storage.getRepresentativeByPanelUsername(panelUsername);
+        if (existingPanel) {
+          return { error: `نام کاربری پنل '${panelUsername}' قبلاً استفاده شده است.` };
+        }
+      }
+
+      const newRep = await storage.createRepresentative({
+        storeName,
+        ownerName: ownerName || null,
+        panelUsername: panelUsername || storeName.toLowerCase().replace(/\s+/g, ''),
+        phone: phone || null,
+        salesColleagueName: salesColleagueName || null,
+        totalDebt: '0',
+        isActive: true
+      });
+
+      return {
+        status: "success",
+        representative: {
+          id: newRep.id,
+          storeName: newRep.storeName,
+          ownerName: newRep.ownerName,
+          panelUsername: newRep.panelUsername
+        },
+        message: `نماینده '${storeName}' با موفقیت ایجاد شد.`
+      };
+    } catch (error) {
+      return { error: `خطا در ایجاد نماینده: ${error.message}` };
+    }
+  }
+
+  // NEW: Update representative
+  private async updateRepresentative(representativeName: string, newData: any): Promise<any> {
+    try {
+      const rep = await storage.getRepresentativeByStoreName(representativeName);
+      if (!rep) {
+        return { error: `نماینده '${representativeName}' یافت نشد.` };
+      }
+
+      const updatedRep = await storage.updateRepresentative(rep.id, newData);
+      if (!updatedRep) {
+        return { error: `خطا در به‌روزرسانی نماینده.` };
+      }
+
+      return {
+        status: "success",
+        representative: updatedRep,
+        message: `اطلاعات نماینده '${representativeName}' به‌روزرسانی شد.`
+      };
+    } catch (error) {
+      return { error: `خطا در به‌روزرسانی نماینده: ${error.message}` };
+    }
+  }
+
+  // NEW: Delete representative
+  private async deleteRepresentative(representativeName: string): Promise<any> {
+    try {
+      const rep = await storage.getRepresentativeByStoreName(representativeName);
+      if (!rep) {
+        return { error: `نماینده '${representativeName}' یافت نشد.` };
+      }
+
+      // Check if representative has unpaid invoices
+      const invoices = await storage.getInvoicesByRepresentative(rep.id);
+      const unpaidInvoices = invoices.filter(inv => inv.status === 'unpaid');
+      
+      if (unpaidInvoices.length > 0) {
+        return { 
+          error: `نماینده '${representativeName}' دارای ${unpaidInvoices.length} فاکتور پرداخت نشده است. ابتدا تسویه حساب کنید.`,
+          unpaid_invoices: unpaidInvoices.length
+        };
+      }
+
+      const deleted = await storage.deleteRepresentative(rep.id);
+      if (!deleted) {
+        return { error: `خطا در حذف نماینده.` };
+      }
+
+      return {
+        status: "success",
+        message: `نماینده '${representativeName}' با موفقیت حذف شد.`
+      };
+    } catch (error) {
+      return { error: `خطا در حذف نماینده: ${error.message}` };
+    }
+  }
+
+  // NEW: Increase representative debt
+  private async increaseRepresentativeDebt(representativeName: string, amount: number, reason?: string): Promise<any> {
+    try {
+      const rep = await storage.getRepresentativeByStoreName(representativeName);
+      if (!rep) {
+        return { error: `نماینده '${representativeName}' یافت نشد.` };
+      }
+
+      const currentDebt = parseFloat(rep.totalDebt || '0');
+      const newDebt = currentDebt + amount;
+      
+      await storage.updateRepresentativeDebt(rep.id, newDebt.toString());
+
+      // Create an invoice for the debt increase
+      await storage.createInvoice({
+        representativeId: rep.id,
+        amount: amount.toString(),
+        description: reason || 'افزایش بدهی',
+        status: 'unpaid'
+      });
+
+      return {
+        status: "success",
+        representative_name: representativeName,
+        amount_added: amount,
+        previous_debt: currentDebt,
+        new_debt: newDebt,
+        message: `بدهی نماینده '${representativeName}' ${amount.toLocaleString('fa-IR')} تومان افزایش یافت.`
+      };
+    } catch (error) {
+      return { error: `خطا در افزایش بدهی: ${error.message}` };
+    }
+  }
+
+  // NEW: Decrease representative debt (wrapper for registerPayment)
+  private async decreaseRepresentativeDebt(representativeName: string, amount: number, notes?: string): Promise<any> {
+    return await this.registerPayment(representativeName, amount, notes);
+  }
+
+  // NEW: Create sales colleague
+  private async createSalesColleague(name: string, commissionRate: number): Promise<any> {
+    try {
+      // Check if colleague already exists
+      const colleagues = await storage.getSalesColleagues();
+      const existingColleague = colleagues.find(c => c.name.toLowerCase() === name.toLowerCase());
+      
+      if (existingColleague) {
+        return { error: `همکار فروش با نام '${name}' قبلاً ثبت شده است.` };
+      }
+
+      const newColleague = await storage.createSalesColleague({
+        name,
+        commissionRate: commissionRate.toString()
+      });
+
+      return {
+        status: "success",
+        colleague: {
+          id: newColleague.id,
+          name: newColleague.name,
+          commissionRate: parseFloat(newColleague.commissionRate)
+        },
+        message: `همکار فروش '${name}' با نرخ کمیسیون ${commissionRate}% ایجاد شد.`
+      };
+    } catch (error) {
+      return { error: `خطا در ایجاد همکار فروش: ${error.message}` };
+    }
+  }
+
+  // NEW: Update sales colleague
+  private async updateSalesColleague(colleagueName: string, newData: any): Promise<any> {
+    try {
+      const colleagues = await storage.getSalesColleagues();
+      const colleague = colleagues.find(c => c.name.toLowerCase() === colleagueName.toLowerCase());
+      
+      if (!colleague) {
+        return { error: `همکار فروش '${colleagueName}' یافت نشد.` };
+      }
+
+      const updatedColleague = await storage.updateSalesColleague(colleague.id, newData);
+      if (!updatedColleague) {
+        return { error: `خطا در به‌روزرسانی همکار فروش.` };
+      }
+
+      return {
+        status: "success",
+        colleague: updatedColleague,
+        message: `اطلاعات همکار فروش '${colleagueName}' به‌روزرسانی شد.`
+      };
+    } catch (error) {
+      return { error: `خطا در به‌روزرسانی همکار فروش: ${error.message}` };
+    }
+  }
+
+  // NEW: Delete sales colleague
+  private async deleteSalesColleague(colleagueName: string): Promise<any> {
+    try {
+      const colleagues = await storage.getSalesColleagues();
+      const colleague = colleagues.find(c => c.name.toLowerCase() === colleagueName.toLowerCase());
+      
+      if (!colleague) {
+        return { error: `همکار فروش '${colleagueName}' یافت نشد.` };
+      }
+
+      // Check if colleague is assigned to any representatives
+      const representatives = await storage.getRepresentatives();
+      const assignedReps = representatives.filter(rep => 
+        rep.salesColleagueName && rep.salesColleagueName.toLowerCase() === colleagueName.toLowerCase()
+      );
+
+      if (assignedReps.length > 0) {
+        return { 
+          error: `همکار فروش '${colleagueName}' به ${assignedReps.length} نماینده تخصیص داده شده است. ابتدا تخصیص‌ها را تغییر دهید.`,
+          assigned_representatives: assignedReps.map(rep => rep.storeName)
+        };
+      }
+
+      const deleted = await storage.deleteSalesColleague(colleague.id);
+      if (!deleted) {
+        return { error: `خطا در حذف همکار فروش.` };
+      }
+
+      return {
+        status: "success",
+        message: `همکار فروش '${colleagueName}' با موفقیت حذف شد.`
+      };
+    } catch (error) {
+      return { error: `خطا در حذف همکار فروش: ${error.message}` };
+    }
+  }
+
+  // NEW: Get all sales colleagues
+  private async getAllSalesColleagues(): Promise<any> {
+    try {
+      const colleagues = await storage.getSalesColleagues();
+      
+      const formattedColleagues = colleagues.map(colleague => ({
+        id: colleague.id,
+        name: colleague.name,
+        commissionRate: parseFloat(colleague.commissionRate),
+        createdAt: colleague.createdAt
+      }));
+
+      return {
+        status: "success",
+        total_count: formattedColleagues.length,
+        colleagues: formattedColleagues
+      };
+    } catch (error) {
+      return { error: `خطا در دریافت لیست همکاران فروش: ${error.message}` };
     }
   }
 }

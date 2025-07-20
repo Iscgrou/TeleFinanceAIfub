@@ -25,7 +25,10 @@ export interface IStorage {
   // Sales colleagues
   getSalesColleagues(): Promise<SalesColleague[]>;
   getSalesColleagueByName(name: string): Promise<SalesColleague | undefined>;
+  getSalesColleagueById(id: number): Promise<SalesColleague | undefined>;
   createSalesColleague(colleague: InsertSalesColleague): Promise<SalesColleague>;
+  updateSalesColleague(id: number, data: Partial<InsertSalesColleague>): Promise<SalesColleague | null>;
+  deleteSalesColleague(id: number): Promise<boolean>;
 
   // Representatives
   getRepresentatives(): Promise<Representative[]>;
@@ -122,9 +125,29 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async getSalesColleagueById(id: number): Promise<SalesColleague | undefined> {
+    const result = await db.select().from(salesColleagues).where(eq(salesColleagues.id, id)).limit(1);
+    return result[0];
+  }
+
   async createSalesColleague(insertColleague: InsertSalesColleague): Promise<SalesColleague> {
     const result = await db.insert(salesColleagues).values(insertColleague).returning();
     return result[0];
+  }
+
+  async updateSalesColleague(id: number, data: Partial<InsertSalesColleague>): Promise<SalesColleague | null> {
+    const result = await db.update(salesColleagues)
+      .set(data)
+      .where(eq(salesColleagues.id, id))
+      .returning();
+    return result[0] || null;
+  }
+
+  async deleteSalesColleague(id: number): Promise<boolean> {
+    const result = await db.delete(salesColleagues)
+      .where(eq(salesColleagues.id, id))
+      .returning();
+    return result.length > 0;
   }
 
   async getRepresentatives(): Promise<Representative[]> {

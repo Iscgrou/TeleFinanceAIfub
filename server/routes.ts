@@ -6,7 +6,8 @@ import {
   insertSystemSettingsSchema,
   insertRepresentativeSchema,
   insertInvoiceSchema,
-  insertPaymentSchema
+  insertPaymentSchema,
+  insertSalesColleagueSchema
 } from "@shared/schema";
 import { initializeBot } from "./telegram/bot";
 import { generateInvoiceImage } from "./services/svg-invoice-generator";
@@ -345,6 +346,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(colleagues);
     } catch (error) {
       res.status(500).json({ message: "Error fetching sales colleagues" });
+    }
+  });
+
+  // Create new sales colleague
+  app.post("/api/sales-colleagues", async (req, res) => {
+    try {
+      const validatedData = insertSalesColleagueSchema.parse(req.body);
+      const colleague = await storage.createSalesColleague(validatedData);
+      res.status(201).json(colleague);
+    } catch (error) {
+      if (error.name === 'ZodError') {
+        res.status(400).json({ message: "Invalid sales colleague data" });
+      } else {
+        res.status(500).json({ message: "خطا در ایجاد همکار فروش" });
+      }
+    }
+  });
+
+  // Update sales colleague
+  app.patch("/api/sales-colleagues/:id", async (req, res) => {
+    try {
+      const colleagueId = parseInt(req.params.id);
+      const updatedColleague = await storage.updateSalesColleague(colleagueId, req.body);
+      
+      if (!updatedColleague) {
+        return res.status(404).json({ message: "همکار فروش یافت نشد" });
+      }
+      
+      res.json(updatedColleague);
+    } catch (error) {
+      res.status(500).json({ message: "خطا در بروزرسانی همکار فروش" });
+    }
+  });
+
+  // Delete sales colleague
+  app.delete("/api/sales-colleagues/:id", async (req, res) => {
+    try {
+      const colleagueId = parseInt(req.params.id);
+      const deleted = await storage.deleteSalesColleague(colleagueId);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "همکار فروش یافت نشد" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "خطا در حذف همکار فروش" });
+    }
+  });
+
+  // Get sales colleague by ID
+  app.get("/api/sales-colleagues/:id", async (req, res) => {
+    try {
+      const colleagueId = parseInt(req.params.id);
+      const colleague = await storage.getSalesColleagueById(colleagueId);
+      
+      if (!colleague) {
+        return res.status(404).json({ message: "همکار فروش یافت نشد" });
+      }
+      
+      res.json(colleague);
+    } catch (error) {
+      res.status(500).json({ message: "خطا در دریافت اطلاعات همکار فروش" });
     }
   });
 

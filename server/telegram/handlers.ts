@@ -124,6 +124,43 @@ export async function handleCallbackQuery(query: TelegramBot.CallbackQuery): Pro
         await sendMessage(chatId, '🤖 حالا می‌توانید با من صحبت کنید! درخواست خود را به زبان فارسی بنویسید:\n\nمثال: "وضعیت فروشگاه اکباتان رو بررسی کن"');
         break;
 
+      // Representatives management
+      case 'add_representative':
+        await sendMessage(chatId, '➕ برای افزودن نماینده جدید، اطلاعات زیر را به ترتیب ارسال کنید:\n\n"نماینده جدید:\nنام فروشگاه: [نام]\nنام مالک: [نام]\nنام کاربری پنل: [نام کاربری]\nشماره تلفن: [شماره]\nنام همکار فروش: [نام]"\n\nمثال:\nنماینده جدید:\nنام فروشگاه: فروشگاه تهران\nنام مالک: احمد احمدی\nنام کاربری پنل: tehranshop\nشماره تلفن: 09123456789\nنام همکار فروش: علی محمدی');
+        break;
+        
+      case 'search_representative':
+        await sendMessage(chatId, '🔍 برای جستجوی نماینده، نام فروشگاه یا نام کاربری پنل را ارسال کنید:\n\nمثال: "جستجوی نماینده: tehranshop"');
+        break;
+        
+      case 'list_representatives':
+        await handleListRepresentatives(chatId);
+        break;
+        
+      case 'debtors_list':
+        await sendMessage(chatId, '💰 دریافت لیست بدهکاران...');
+        await processAICommand(chatId, 'لیست نمایندگان بدهکار رو نشون بده');
+        break;
+
+      // Sales colleagues management  
+      case 'add_colleague':
+        await sendMessage(chatId, '👥 برای افزودن همکار فروش جدید، اطلاعات زیر را ارسال کنید:\n\n"همکار جدید:\nنام: [نام کامل]\nنرخ کمیسیون: [درصد]"\n\nمثال:\nهمکار جدید:\nنام: علی محمدی\nنرخ کمیسیون: 5');
+        break;
+        
+      case 'list_colleagues':
+        await handleListColleagues(chatId);
+        break;
+        
+      case 'calculate_commissions':
+        await sendMessage(chatId, '💰 محاسبه کمیسیون...');
+        await processAICommand(chatId, 'کمیسیون همکاران فروش رو برای ماه گذشته محاسبه کن');
+        break;
+        
+      case 'payout_commissions':
+        await sendMessage(chatId, '💳 پردازش پرداخت کمیسیون‌ها...');
+        await processAICommand(chatId, 'وضعیت پرداخت کمیسیون‌ها رو نشون بده');
+        break;
+
       default:
         // Handle other callback queries through AI agent
         await handleCallbackAsCommand(chatId, data);
@@ -146,6 +183,164 @@ export async function handleDocument(msg: TelegramBot.Message): Promise<void> {
   } catch (error) {
     console.error('Error handling document:', error);
     await sendMessage(chatId, '❌ خطا در پردازش فایل.');
+  }
+}
+
+// Handle list representatives command
+async function handleListRepresentatives(chatId: string): Promise<void> {
+  try {
+    const representatives = await storage.getRepresentatives();
+    
+    if (representatives.length === 0) {
+      await sendMessage(chatId, '📋 هیچ نماینده‌ای در سیستم ثبت نشده است.');
+      return;
+    }
+
+    const activeReps = representatives.filter(rep => rep.isActive);
+    const inactiveReps = representatives.filter(rep => !rep.isActive);
+    
+    let message = `📊 **آمار کلی نمایندگان:**\n\n`;
+    message += `🟢 فعال: ${activeReps.length}\n`;
+    message += `🔴 غیرفعال: ${inactiveReps.length}\n`;
+    message += `📈 مجموع کل: ${representatives.length}\n\n`;
+    
+    if (activeReps.length > 0) {
+      message += `📋 **نمایندگان فعال:**\n\n`;
+      activeReps.slice(0, 10).forEach((rep, index) => {
+        const debt = parseFloat(rep.totalDebt || '0');
+        const debtFormatted = debt.toLocaleString('fa-IR');
+        message += `${index + 1}. **${rep.storeName}**\n`;
+        message += `   👤 ${rep.ownerName || 'نامشخص'}\n`;
+        message += `   💰 بدهی: ${debtFormatted} تومان\n`;
+        message += `   🔐 نام کاربری: ${rep.panelUsername}\n\n`;
+      });
+      
+      if (activeReps.length > 10) {
+        message += `... و ${activeReps.length - 10} نماینده دیگر\n\n`;
+      }
+    }
+    
+    message += `💡 برای جزئیات بیشتر، از دستور "جستجوی نماینده: [نام]" استفاده کنید.`;
+    
+    await sendMessage(chatId, message);
+  } catch (error) {
+    console.error('Error listing representatives:', error);
+    await sendMessage(chatId, '❌ خطا در دریافت لیست نمایندگان.');
+  }
+}
+
+// Handle list colleagues command
+async function handleListColleagues(chatId: string): Promise<void> {
+  try {
+    const colleagues = await storage.getSalesColleagues();
+    
+    if (colleagues.length === 0) {
+      await sendMessage(chatId, '👥 هیچ همکار فروشی در سیستم ثبت نشده است.');
+      return;
+    }
+
+    let message = `👥 **لیست همکاران فروش:**\n\n`;
+    
+    for (let i = 0; i < colleagues.length; i++) {
+      const colleague = colleagues[i];
+      const commissionRate = parseFloat(colleague.commissionRate);
+      
+      message += `${i + 1}. **${colleague.name}**\n`;
+      message += `   💰 نرخ کمیسیون: ${commissionRate}%\n`;
+      message += `   📅 تاریخ عضویت: ${new Date(colleague.createdAt).toLocaleDateString('fa-IR')}\n\n`;
+    }
+    
+    message += `💡 برای محاسبه کمیسیون، از دکمه "💰 محاسبه کمیسیون" استفاده کنید.`;
+    
+    await sendMessage(chatId, message);
+  } catch (error) {
+    console.error('Error listing colleagues:', error);
+    await sendMessage(chatId, '❌ خطا در دریافت لیست همکاران فروش.');
+  }
+}
+
+// Handle new representative input
+async function handleNewRepresentativeInput(chatId: string, text: string): Promise<void> {
+  try {
+    // Parse the input format:
+    // نماینده جدید:
+    // نام فروشگاه: [نام]
+    // نام مالک: [نام]
+    // نام کاربری پنل: [نام کاربری]
+    // شماره تلفن: [شماره]
+    // نام همکار فروش: [نام]
+    
+    const lines = text.split('\n').map(line => line.trim());
+    const data: any = {};
+    
+    for (const line of lines) {
+      if (line.startsWith('نام فروشگاه:')) {
+        data.storeName = line.replace('نام فروشگاه:', '').trim();
+      } else if (line.startsWith('نام مالک:')) {
+        data.ownerName = line.replace('نام مالک:', '').trim();
+      } else if (line.startsWith('نام کاربری پنل:')) {
+        data.panelUsername = line.replace('نام کاربری پنل:', '').trim();
+      } else if (line.startsWith('شماره تلفن:')) {
+        data.phone = line.replace('شماره تلفن:', '').trim();
+      } else if (line.startsWith('نام همکار فروش:')) {
+        data.salesColleagueName = line.replace('نام همکار فروش:', '').trim();
+      }
+    }
+    
+    // Validate required fields
+    if (!data.storeName) {
+      await sendMessage(chatId, '❌ نام فروشگاه اجباری است. لطفا فرمت صحیح را رعایت کنید.');
+      return;
+    }
+    
+    // Convert to AI command
+    const command = `نماینده جدید ایجاد کن: نام فروشگاه="${data.storeName}", نام مالک="${data.ownerName || ''}", نام کاربری="${data.panelUsername || ''}", تلفن="${data.phone || ''}", همکار فروش="${data.salesColleagueName || ''}"`;
+    await processAICommand(chatId, command);
+    
+  } catch (error) {
+    console.error('Error handling new representative input:', error);
+    await sendMessage(chatId, '❌ خطا در پردازش اطلاعات نماینده. لطفا فرمت صحیح را رعایت کنید.');
+  }
+}
+
+// Handle new colleague input
+async function handleNewColleagueInput(chatId: string, text: string): Promise<void> {
+  try {
+    // Parse the input format:
+    // همکار جدید:
+    // نام: [نام کامل]
+    // نرخ کمیسیون: [درصد]
+    
+    const lines = text.split('\n').map(line => line.trim());
+    const data: any = {};
+    
+    for (const line of lines) {
+      if (line.startsWith('نام:')) {
+        data.name = line.replace('نام:', '').trim();
+      } else if (line.startsWith('نرخ کمیسیون:')) {
+        const rateStr = line.replace('نرخ کمیسیون:', '').trim();
+        data.commissionRate = parseFloat(rateStr);
+      }
+    }
+    
+    // Validate required fields
+    if (!data.name) {
+      await sendMessage(chatId, '❌ نام همکار فروش اجباری است. لطفا فرمت صحیح را رعایت کنید.');
+      return;
+    }
+    
+    if (!data.commissionRate || isNaN(data.commissionRate)) {
+      await sendMessage(chatId, '❌ نرخ کمیسیون باید یک عدد معتبر باشد. مثال: 5.5');
+      return;
+    }
+    
+    // Convert to AI command
+    const command = `همکار فروش جدید ایجاد کن: نام="${data.name}", نرخ کمیسیون=${data.commissionRate}`;
+    await processAICommand(chatId, command);
+    
+  } catch (error) {
+    console.error('Error handling new colleague input:', error);
+    await sendMessage(chatId, '❌ خطا در پردازش اطلاعات همکار فروش. لطفا فرمت صحیح را رعایت کنید.');
   }
 }
 
@@ -204,6 +399,38 @@ async function handleTextCommand(chatId: string, text: string): Promise<void> {
   await sendMessage(chatId, '🤖 در حال تحلیل دستور شما...');
   
   try {
+    // Handle representative creation
+    if (text.startsWith('نماینده جدید:')) {
+      await handleNewRepresentativeInput(chatId, text);
+      return;
+    }
+
+    // Handle colleague creation
+    if (text.startsWith('همکار جدید:')) {
+      await handleNewColleagueInput(chatId, text);
+      return;
+    }
+
+    // Handle representative search
+    if (text.startsWith('جستجوی نماینده:')) {
+      const searchTerm = text.replace('جستجوی نماینده:', '').trim();
+      await processAICommand(chatId, `جستجوی نماینده: ${searchTerm}`);
+      return;
+    }
+
+    // Check for structured user input patterns
+    if (text.includes('پرداخت:') || text.includes('پرداخت ')) {
+      const command = `ثبت پرداخت: ${text}`;
+      await processAICommand(chatId, command);
+      return;
+    }
+
+    if (text.includes('فاکتور:') || text.includes('فاکتور ')) {
+      const command = `صادر کردن فاکتور: ${text}`;
+      await processAICommand(chatId, command);
+      return;
+    }
+
     // Process command through AI agent with enhanced confirmation flow
     await processAICommand(chatId, text);
   } catch (error) {
