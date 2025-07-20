@@ -159,10 +159,19 @@ export default function SalesColleaguesManagement() {
           <h1 className="text-2xl font-bold">مدیریت همکاران فروش</h1>
           <p className="text-gray-600">افزودن، ویرایش و حذف همکاران فروش</p>
         </div>
-        <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          افزودن همکار جدید
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={() => window.location.href = '/admin'} 
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            ← بازگشت به داشبورد
+          </Button>
+          <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            افزودن همکار جدید
+          </Button>
+        </div>
       </div>
 
       {/* Search */}

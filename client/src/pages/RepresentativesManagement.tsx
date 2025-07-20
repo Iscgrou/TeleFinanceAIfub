@@ -79,7 +79,7 @@ export default function RepresentativesManagement() {
     queryFn: () => apiRequest('/api/sales-colleagues')
   });
 
-  const representatives: Representative[] = repsData?.data || [];
+  const representatives: Representative[] = Array.isArray(repsData) ? repsData : repsData?.data || [];
   const colleagues: SalesColleague[] = colleaguesData || [];
 
   // Add representative mutation
@@ -250,10 +250,19 @@ export default function RepresentativesManagement() {
           <h1 className="text-2xl font-bold">مدیریت نمایندگان</h1>
           <p className="text-gray-600">افزودن، ویرایش و حذف نمایندگان</p>
         </div>
-        <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          افزودن نماینده جدید
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={() => window.location.href = '/admin'} 
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            ← بازگشت به داشبورد
+          </Button>
+          <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            افزودن نماینده جدید
+          </Button>
+        </div>
       </div>
 
       {/* Search */}

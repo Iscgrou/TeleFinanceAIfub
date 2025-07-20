@@ -68,8 +68,8 @@ export default function InvoicesManagement() {
     queryFn: () => apiRequest('/api/representatives')
   });
 
-  const invoices: Invoice[] = invoicesData?.data || [];
-  const representatives: Representative[] = repsData?.data || [];
+  const invoices: Invoice[] = Array.isArray(invoicesData) ? invoicesData : invoicesData?.data || [];
+  const representatives: Representative[] = Array.isArray(repsData) ? repsData : repsData?.data || [];
 
   // Create invoice mutation
   const createMutation = useMutation({
@@ -183,10 +183,19 @@ export default function InvoicesManagement() {
           <h1 className="text-2xl font-bold">مدیریت فاکتورها</h1>
           <p className="text-gray-600">ایجاد، مشاهده و مدیریت فاکتورهای نمایندگان</p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          ایجاد فاکتور جدید
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={() => window.location.href = '/admin'} 
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            ← بازگشت به داشبورد
+          </Button>
+          <Button onClick={() => setIsCreateDialogOpen(true)} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            ایجاد فاکتور جدید
+          </Button>
+        </div>
       </div>
 
       {/* Statistics Cards */}
