@@ -104,7 +104,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  console.log('📡 Starting route registration...');
   const server = await registerRoutes(app);
+  console.log('✅ Route registration completed');
   
   // Initialize default reminder templates and rules
   setTimeout(async () => {
@@ -119,10 +121,12 @@ app.use((req, res, next) => {
   // Initialize Telegram Bot if token is configured
   setTimeout(async () => {
     try {
+      console.log('🤖 Starting Telegram bot initialization...');
       const { initializeBot } = await import('./telegram/bot');
       await initializeBot();
+      console.log('✅ Telegram bot initialization completed');
     } catch (error) {
-      console.log('Telegram bot initialization skipped:', (error as Error).message);
+      console.log('❌ Telegram bot initialization failed:', (error as Error).message);
     }
   }, 5000); // Give server time to start
 

@@ -15,11 +15,20 @@ export async function initializeBot(): Promise<void> {
     return;
   }
 
+  console.log('🔍 Reading bot token from database and environment...');
   const settings = await storage.getSystemSettings();
-  const botToken = settings?.telegramBotToken || process.env.TELEGRAM_BOT_TOKEN;
+  const dbToken = settings?.telegramBotToken;
+  const envToken = process.env.TELEGRAM_BOT_TOKEN;
+  
+  console.log('📊 Token sources:', {
+    database: dbToken ? `${dbToken.substring(0, 10)}...` : 'null',
+    environment: envToken ? `${envToken.substring(0, 10)}...` : 'null'
+  });
+  
+  const botToken = envToken || dbToken; // Prioritize environment variable
   
   if (!botToken) {
-    console.log('Telegram bot token not configured. Bot will not start.');
+    console.log('❌ Telegram bot token not configured. Bot will not start.');
     return;
   }
 
@@ -83,15 +92,28 @@ export async function initializeBot(): Promise<void> {
 
 async function stopBot(): Promise<void> {
   if (bot) {
-    console.log('Stopping existing bot instance...');
+    console.log('🛑 Force stopping existing bot instance...');
     try {
-      await bot.stopPolling();
-      // Give extra time for cleanup
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Remove all listeners first
+      bot.removeAllListeners();
+      
+      // Force stop polling with cancel
+      await bot.stopPolling({ cancel: true, reason: 'Force restart with new token' });
+      
+      // Force close
+      if (typeof bot.close === 'function') {
+        await bot.close();
+      }
+      
+      console.log('✅ Bot stopped successfully');
     } catch (e) {
-      console.log('Error stopping polling:', (e as Error).message);
+      console.log('⚠️ Error stopping polling (forcing anyway):', (e as Error).message);
     }
+    
     bot = null;
+    
+    // Give extra time for cleanup
+    await new Promise(resolve => setTimeout(resolve, 3000));
   }
 }
 
