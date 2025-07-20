@@ -73,6 +73,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Settings API routes
+  app.get("/api/settings", async (req, res) => {
+    try {
+      const settings = await storage.getSystemSettings();
+      if (!settings) {
+        // Return default settings if none exist
+        const defaultSettings = await storage.createOrUpdateSystemSettings({
+          geminiApiKey: "",
+          speechToTextProvider: "google",
+          speechToTextApiKey: "",
+          telegramBotToken: "",
+          adminChatId: "",
+          invoiceTemplate: JSON.stringify({
+            companyName: "شرکت خدمات پروکسی",
+            companyAddress: "تهران، ایران",
+            companyPhone: "021-12345678",
+            logoUrl: "",
+            primaryColor: "#3b82f6",
+            secondaryColor: "#64748b",
+            footerText: "با تشکر از همکاری شما",
+            showQRCode: true
+          }),
+          representativePortalTexts: JSON.stringify({
+            welcomeTitle: "پورتال نماینده",
+            welcomeSubtitle: "مدیریت حساب و مشاهده وضعیت مالی",
+            debtSectionTitle: "وضعیت بدهی",
+            invoicesSectionTitle: "فاکتورهای اخیر",
+            paymentsSectionTitle: "پرداخت‌های انجام شده",
+            contactInfo: "برای سوال یا مشکل با ما تماس بگیرید",
+            emergencyContact: "شماره تماس اضطراری: 021-12345678"
+          })
+        });
+        res.json(defaultSettings);
+      } else {
+        res.json(settings);
+      }
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      res.status(500).json({ message: "Error fetching settings" });
+    }
+  });
+
+  app.post("/api/settings", async (req, res) => {
+    try {
+      const updatedSettings = await storage.createOrUpdateSystemSettings(req.body);
+      res.json(updatedSettings);
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      res.status(500).json({ message: "Error updating settings" });
+    }
+  });
+
   // Representative profile API routes
   app.get("/api/representatives/:id/stats", async (req, res) => {
     try {

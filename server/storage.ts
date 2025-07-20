@@ -61,7 +61,7 @@ export interface IStorage {
 
   // System settings
   getSystemSettings(): Promise<SystemSettings | undefined>;
-  updateSystemSettings(settings: InsertSystemSettings): Promise<SystemSettings>;
+  createOrUpdateSystemSettings(settings: Partial<InsertSystemSettings>): Promise<SystemSettings>;
   
   // Data management
   clearFinancialData(): Promise<void>;
@@ -381,14 +381,20 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async updateSystemSettings(insertSettings: InsertSystemSettings): Promise<SystemSettings> {
+  async createOrUpdateSystemSettings(insertSettings: Partial<InsertSystemSettings>): Promise<SystemSettings> {
     const existing = await this.getSystemSettings();
     
     if (existing) {
-      const result = await db.update(systemSettings).set(insertSettings).where(eq(systemSettings.id, existing.id)).returning();
+      const result = await db.update(systemSettings)
+        .set({ ...insertSettings, updatedAt: new Date() })
+        .where(eq(systemSettings.id, existing.id))
+        .returning();
       return result[0];
     } else {
-      const result = await db.insert(systemSettings).values(insertSettings).returning();
+      const result = await db.insert(systemSettings).values({
+        ...insertSettings,
+        updatedAt: new Date()
+      }).returning();
       return result[0];
     }
   }

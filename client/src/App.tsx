@@ -11,6 +11,7 @@ import SalesColleaguesManagement from './pages/SalesColleaguesManagement'
 import InvoicesManagement from './pages/InvoicesManagement'
 import Reports from './pages/Reports'
 import ActivityLog from './pages/ActivityLog'
+import SettingsPage from './pages/SettingsPage'
 
 // Create QueryClient instance
 const queryClient = new QueryClient({
@@ -24,26 +25,7 @@ const queryClient = new QueryClient({
 
 
 
-// Settings Page Component
-function SettingsPage() {
-  return (
-    <div className="p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">تنظیمات سیستم</h1>
-          <p className="text-gray-600">مدیریت تنظیمات کلی و پیکربندی سیستم</p>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">تنظیمات در حال توسعه</h2>
-          <p className="text-gray-600">
-            این بخش در حال توسعه است. برای تنظیمات فعلی می‌توانید از داشبورد اصلی استفاده کنید.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
+
 
 // 404 Page Component
 function NotFoundPage() {

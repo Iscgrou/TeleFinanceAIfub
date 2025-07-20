@@ -73,6 +73,8 @@ export const systemSettings = pgTable("system_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+
+
 // Invoice templates for customizable invoice layouts
 export const invoiceTemplates = pgTable('invoice_templates', {
   id: serial('id').primaryKey(),
