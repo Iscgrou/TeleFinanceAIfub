@@ -1,170 +1,114 @@
-# Financial Management System with Representative Portals
+# Advanced AI-Powered Financial Management Platform
 
-## Overview
+## Project Overview
+An advanced AI-powered financial management platform specifically designed for proxy service businesses, focusing on intelligent debt recovery and comprehensive financial analytics through a modern, responsive web architecture with integrated Telegram bot functionality.
 
-A comprehensive financial management platform designed for proxy service businesses, featuring:
-- **Web Dashboard**: Complete admin interface for financial management
-- **Representative Portals**: Individual portals for each representative at `/portal/username`  
-- **Sales Colleague Profiles**: Comprehensive profile system for sales staff
-- **Telegram Bot Integration**: AI-powered bot for administrative tasks
-- **Automatic Portal Assignment**: Every representative gets their own portal upon registration
+### Primary Purpose
+- **Debt Management**: Track and manage representative debts with intelligent recovery strategies
+- **Financial Analytics**: Real-time financial health monitoring and predictive analytics
+- **Multi-channel Communication**: Telegram bot integration for seamless representative interactions
+- **Representative Portal**: Web-based management interface with granular access controls
+
+### Current System Statistics
+- **Active Representatives**: 199
+- **Total Outstanding Debt**: 109,301,200 Toman
+- **Average Debt per Representative**: 549,252 Toman
+- **Unpaid Invoices**: 199 (100% of representatives)
+- **System Status**: Operational with zero-fault tolerance
+
+## Technical Architecture
+
+### Frontend Stack
+- **Framework**: Next.js with Server-Side Rendering
+- **Language**: TypeScript
+- **UI Components**: Radix UI + shadcn/ui + Tailwind CSS
+- **Routing**: Wouter for client-side routing
+- **State Management**: TanStack Query + Zustand
+- **Charts & Visualizations**: Recharts library
+- **Language Support**: Persian RTL + English with i18n
+
+### Backend Infrastructure
+- **Server**: Express.js with TypeScript
+- **Database**: PostgreSQL with Drizzle ORM
+- **Real-time**: WebSocket (Socket.IO) for live updates
+- **Session Management**: Express Sessions with PostgreSQL store
+- **Job Processing**: Bull Queue with Redis
+- **External APIs**: Telegram Bot API, Twilio (SMS), SendGrid (Email)
+
+### Core Features
+1. **Representative Management**: CRUD operations with debt tracking
+2. **Invoice System**: Automated invoice generation with PNG export
+3. **Payment Tracking**: Real-time payment processing and history
+4. **Financial Analytics**: Dynamic dashboards and reporting
+5. **Telegram Bot Integration**: AI-powered conversational interface
+6. **Multi-user System**: Role-based access control
 
 ## User Preferences
 
-- **Communication Style**: Simple, everyday language
-- **Interface Language**: Persian/Farsi with RTL support
-- **User Focus**: Financial managers and accounting staff
+### Communication Style
+- Primary language: Persian (Farsi)
+- Technical level: Business-focused (non-technical explanations)
+- Response format: Concise, action-oriented
+- Error reporting: Clear, user-friendly messages
 
-## Core Objectives
+### Development Preferences
+- Code organization: Feature-based modular structure
+- Database operations: Use Drizzle ORM with type safety
+- UI consistency: Maintain shadcn/ui design system
+- Performance: Prioritize user experience and responsiveness
 
-### 1. Representative Management System
-- **Individual Portals**: Each representative has a unique portal showing their financial status
-- **Profile System**: Comprehensive profiles including debt tracking, invoice history, payment records
-- **Automatic Assignment**: Portal creation upon adding representatives (manual or JSON import)
-- **Real-time Data**: Live debt status, invoice tracking, payment history
+## Recent Changes (July 20, 2025)
 
-### 2. Sales Colleague Management
-- **Staff Profiles**: Complete profile system for sales colleagues
-- **Commission Tracking**: Automated commission calculations and records
-- **Performance Analytics**: Individual and team performance metrics
-- **Portal Access**: Each colleague gets management access based on role
+### Reported Issues Requiring Attention
+✓ **Critical Issues Identified:**
+- Debt increase/decrease functionality for representatives not working
+- User information editing not saving changes
+- Sales colleague editing not saving changes
+- Invoice creation (new invoice opens but issuance fails)
 
-### 3. Financial Operations
-- **Invoice Management**: Complete invoice lifecycle from creation to payment
-- **Payment Tracking**: Real-time payment processing and debt updates
-- **Debt Management**: Automated debt tracking and reminder systems
-- **Financial Analytics**: Comprehensive reporting and analysis tools
+✓ **UI/UX Improvements Needed:**
+- Remove security section from sidebar (not required)
+- Remove bank reconciliation and cash flow sections from financial analysis
+- Design and implement settings section (currently missing)
 
-## System Architecture
+✓ **Frontend Errors:**
+- `ReferenceError: Link is not defined` in SidebarContent component
+- Multiple unhandled rejections causing UI crashes
 
-### Frontend Architecture
-- **Framework**: React 18 with TypeScript
-- **Routing**: Wouter for lightweight client-side routing
-- **State Management**: TanStack Query for server state
-- **UI Framework**: Radix UI with shadcn/ui design system
-- **Styling**: Tailwind CSS with Persian RTL support
-- **Build Tool**: Vite for development and production
+### Next Priority Actions
+→ Fix `Link` import issue in MainLayout component
+→ Investigate and repair debt modification functionality
+→ Fix user and sales colleague edit operations
+→ Resolve invoice issuance problems
+→ Clean up sidebar navigation structure
+→ Design and implement settings page
 
-### Backend Architecture
-- **Framework**: Express.js with TypeScript
-- **Database**: PostgreSQL with Drizzle ORM
-- **AI Integration**: Google Gemini for natural language processing
-- **External APIs**: Telegram Bot API, Speech-to-Text services
-- **Transaction Support**: Full ACID compliance with WebSocket driver
+## Development Guidelines
 
-### Database Schema
-Core entities:
-- **Representatives**: Store owners with individual portal access
-- **Sales Colleagues**: Staff members with commission tracking
-- **Invoices**: Financial records with status tracking
-- **Payments**: Payment records linked to representatives
-- **Commission Records**: Commission calculations for sales staff
-- **System Settings**: Configuration and customization options
+### Code Quality Standards
+- Follow TypeScript strict mode
+- Use Drizzle ORM for all database operations
+- Implement proper error handling with user-friendly messages
+- Maintain consistent Persian language support
+- Ensure responsive design for all screen sizes
 
-## Representative Portal System
+### Database Management
+- Use `npm run db:push` for schema migrations
+- Never manually write SQL migrations
+- Update both `shared/schema.ts` and `server/storage.ts` for schema changes
+- Maintain referential integrity for all foreign keys
 
-### Portal Features (Critical - Currently Missing)
-- **Individual Access**: Each representative accesses `/portal/their-username`
-- **Debt Dashboard**: Real-time total debt display with visual indicators
-- **Invoice History**: Complete list of invoices with status and details
-- **Payment History**: Record of all payments made
-- **Invoice Details Modal**: Detailed view of line items and invoice information
-- **Customizable Interface**: Admin-configurable portal texts and labels
+### Testing & Deployment
+- Test all functionality before marking complete
+- Verify Persian text rendering and RTL layout
+- Ensure mobile responsiveness
+- Validate all form submissions and error states
 
-### Automatic Portal Assignment (Critical - Currently Missing)
-- **Manual Addition**: When admin adds representative → automatic portal creation
-- **JSON Import**: Bulk import from usage files → individual portals for each
-- **Unique URLs**: Each representative gets secure access to their portal
-- **Data Isolation**: Complete separation of data between representatives
+## Project Status: ACTIVE DEVELOPMENT
+**Last Updated**: July 20, 2025
+**Current Focus**: Fixing critical CRUD operations and UI navigation issues
+**Deployment**: Replit production environment with PostgreSQL database
 
-## Sales Colleague Profile System (Critical - Currently Missing)
+---
 
-### Profile Components
-- **Personal Information**: Name, contact details, role assignments
-- **Commission Tracking**: Real-time commission calculations and history
-- **Performance Metrics**: Sales performance and representative assignments
-- **Access Controls**: Role-based permissions for system features
-
-## API Structure
-
-### Core Endpoints
-- `/api/representatives` - Representative CRUD operations
-- `/api/representatives/by-username/:username` - Portal data retrieval
-- `/api/representatives/:id/invoices` - Representative-specific invoices
-- `/api/representatives/:id/payments` - Representative-specific payments
-- `/api/sales-colleagues` - Sales colleague management
-- `/api/dashboard/stats` - System analytics and metrics
-
-### Portal-Specific Endpoints (Critical - Currently Missing)
-- `/api/portal/texts` - Customizable portal interface texts
-- `/api/portal/settings` - Portal configuration and themes
-- `/api/representatives/:id/profile` - Complete representative profile data
-
-## Telegram Bot Integration
-
-### AI-Powered Features
-- **Natural Language Processing**: Google Gemini with function calling
-- **Multi-step Workflows**: Complex administrative task automation
-- **Voice Message Support**: Speech-to-text for voice commands
-- **Real-time Queries**: Instant access to financial data and operations
-
-### Administrative Commands
-- Representative management (add, update, query)
-- Invoice generation and processing
-- Payment recording and tracking
-- Financial reporting and analytics
-
-## Data Flow
-
-### Representative Portal Flow (Critical - Currently Missing)
-1. **Portal Access**: Representative visits `/portal/username`
-2. **Authentication**: Username validation and data retrieval
-3. **Data Loading**: Fetch representative-specific invoices, payments, debt status
-4. **Real-time Updates**: Live synchronization with admin system changes
-
-### Administrative Flow
-1. **Web Dashboard**: Admin actions → API calls → Database updates
-2. **Telegram Bot**: Commands → AI processing → Database operations
-3. **Cross-platform Sync**: All changes reflected across web and Telegram interfaces
-
-## Current System Status (July 20, 2025)
-
-### ✅ Completed Features
-- Unified web dashboard with responsive sidebar
-- Complete CRUD operations for representatives and sales colleagues
-- Advanced financial analytics (credit management, cash flow, profitability)
-- Telegram bot with AI integration
-- Database schema and API endpoints
-- **Representative Portal System**: Individual portals at `/portal/username` ✅ RESTORED
-- **Portal Links**: Direct links from admin dashboard to representative portals ✅ ADDED
-- **Profile API Endpoints**: Complete stats and data APIs for representatives and colleagues ✅ RESTORED
-- **Representative Profile Component**: Comprehensive profile management ✅ CREATED
-- **Sales Colleague Profile Component**: Full profile system for sales staff ✅ CREATED
-
-### ✅ Recently Restored (July 20, 2025 - 10:26 AM)
-- **Automatic Portal Assignment**: Every representative now has automatic portal access
-- **Profile Data Integration**: Complete profile data display and management
-- **Portal Customization**: Admin-configurable portal texts and settings
-- **Cross-System Integration**: Seamless connection between admin dashboard and portals
-
-## Deployment Configuration
-
-### Development Environment
-- Vite dev server with hot module replacement
-- Express server with TypeScript compilation
-- PostgreSQL database with Neon serverless
-- Environment-based configuration management
-
-### Production Strategy
-- Static frontend served by Express
-- Optimized database queries with pagination
-- Secure API endpoints with proper validation
-- Real-time data synchronization across platforms
-
-## Next Priority Actions
-
-1. **Restore Representative Portal System** - Recreate individual portal functionality
-2. **Implement Automatic Portal Assignment** - Ensure new representatives get portals
-3. **Create Sales Colleague Profile System** - Comprehensive profile management
-4. **Add Portal Customization** - Admin controls for portal appearance and texts
-5. **Test Portal Integration** - Verify data flow between admin system and portals
+*This document serves as the central source of truth for project context, user preferences, and architectural decisions. It should be updated whenever significant changes are made or user preferences are clarified.*
