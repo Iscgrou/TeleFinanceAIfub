@@ -134,19 +134,6 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
-
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 80 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
   // Safari/iOS compatibility middleware for portal routes
   const safariPortalMiddleware = (req: Request, res: Response, next: NextFunction) => {
     // Add headers required for Safari/iOS compatibility
@@ -169,7 +156,7 @@ app.use((req, res, next) => {
     next();
   };
 
-  // Add portal routes with Safari middleware
+  // Add portal routes with Safari middleware - BEFORE VITE SETUP
   // Primary route for Safari (most compatible)
   app.get('/view/:username', safariPortalMiddleware, (req, res) => {
     res.sendFile(path.resolve(import.meta.dirname, '..', 'safari-portal.html'));
@@ -283,6 +270,15 @@ app.use((req, res, next) => {
       res.json({ success: true, message: 'Logged out successfully' });
     });
   });
+
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
 
   process.env.PORT = process.env.PORT || '80';
   const port = parseInt(process.env.PORT, 10);
