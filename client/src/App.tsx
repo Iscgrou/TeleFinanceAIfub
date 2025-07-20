@@ -5,6 +5,10 @@ import { Toaster } from '@/components/ui/toaster'
 import { apiRequest } from './utils/api'
 import RepresentativePortal from './components/RepresentativePortal'
 import AdminDashboard from './components/AdminDashboard'
+import RepresentativesManagement from './pages/RepresentativesManagement'
+import SalesColleaguesManagement from './pages/SalesColleaguesManagement'
+import InvoicesManagement from './pages/InvoicesManagement'
+import AdminNavigation from './pages/AdminNavigation'
 
 // Create QueryClient instance
 const queryClient = new QueryClient({
@@ -993,6 +997,30 @@ function App() {
         <Route path="/admin/advanced">
           <QueryClientProvider client={queryClient}>
             <AdminDashboard />
+            <Toaster />
+          </QueryClientProvider>
+        </Route>
+        <Route path="/admin/representatives">
+          <QueryClientProvider client={queryClient}>
+            <RepresentativesManagement />
+            <Toaster />
+          </QueryClientProvider>
+        </Route>
+        <Route path="/admin/colleagues">
+          <QueryClientProvider client={queryClient}>
+            <SalesColleaguesManagement />
+            <Toaster />
+          </QueryClientProvider>
+        </Route>
+        <Route path="/admin/invoices">
+          <QueryClientProvider client={queryClient}>
+            <InvoicesManagement />
+            <Toaster />
+          </QueryClientProvider>
+        </Route>
+        <Route path="/admin">
+          <QueryClientProvider client={queryClient}>
+            <AdminNavigation />
             <Toaster />
           </QueryClientProvider>
         </Route>
