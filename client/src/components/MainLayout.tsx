@@ -22,7 +22,9 @@ import {
   Moon,
   History,
   MessageCircle,
-  Brain
+  Brain,
+  Shield,
+  AlertTriangle
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 
@@ -109,6 +111,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
       icon: Brain,
       href: '/ai-analytics',
       description: 'تحلیل AI برای بدهی‌ها',
+      badge: 'جدید'
+    },
+    {
+      id: 'alerts',
+      title: 'مدیریت هشدارها',
+      icon: Shield,
+      href: '/alerts',
+      description: 'سیستم هشدارهای هوشمند',
       badge: 'جدید'
     },
     {

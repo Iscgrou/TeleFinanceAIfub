@@ -14,6 +14,7 @@ import ActivityLog from './pages/ActivityLog'
 import SettingsPage from './pages/SettingsPage'
 import InvoiceHistoryPage from './pages/InvoiceHistoryPage'
 import AIAnalytics from './pages/AIAnalytics'
+import AlertManagement from './pages/dashboard/AlertManagement'
 
 // Create QueryClient instance
 const queryClient = new QueryClient({
@@ -100,6 +101,10 @@ export default function App() {
                   
                   {/* AI Analytics Route - Phase 5.1 */}
                   <Route path="/ai-analytics" component={AIAnalytics} />
+                  
+                  {/* Alert Management Route - Phase 6 Dashboard */}
+                  <Route path="/alerts" component={AlertManagement} />
+                  <Route path="/dashboard/alerts" component={AlertManagement} />
                   
                   {/* Legacy Route Redirects */}
                   <Route path="/admin/advanced">
