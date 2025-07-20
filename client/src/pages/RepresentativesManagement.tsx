@@ -333,6 +333,15 @@ export default function RepresentativesManagement() {
                       <Button
                         size="sm"
                         variant="outline"
+                        onClick={() => window.open(`/portal/${rep.panelUsername}`, '_blank')}
+                        className="text-purple-600 hover:text-purple-700"
+                        title="مشاهده پرتال نماینده"
+                      >
+                        🔗
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={() => {
                           setSelectedRep(rep);
                           setIsEditDialogOpen(true);

@@ -73,6 +73,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Representative profile API routes
+  app.get("/api/representatives/:id/stats", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      console.log(`🔍 Fetching stats for representative ID: ${id}`);
+      
+      // Get all invoices for this representative
+      const invoices = await storage.getInvoicesByRepresentative(id);
+      console.log(`📄 Found ${invoices.length} invoices`);
+      
+      const payments = await storage.getPaymentsByRepresentative(id);
+      console.log(`💳 Found ${payments.length} payments`);
+      
+      const totalInvoices = invoices.length;
+      const paidInvoices = invoices.filter(inv => inv.status === 'paid').length;
+      const totalPayments = payments.length;
+      
+      const averageInvoiceAmount = totalInvoices > 0 
+        ? invoices.reduce((sum, inv) => sum + parseFloat(inv.amount), 0) / totalInvoices 
+        : 0;
+      
+      const lastPaymentDate = payments.length > 0 
+        ? payments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0].createdAt
+        : null;
+      
+      // Simple credit rating based on payment history
+      const paymentRatio = totalInvoices > 0 ? paidInvoices / totalInvoices : 1;
+      let creditRating = 'fair';
+      if (paymentRatio >= 0.9) creditRating = 'excellent';
+      else if (paymentRatio >= 0.7) creditRating = 'good';
+      else if (paymentRatio < 0.3) creditRating = 'poor';
+      
+      const statsData = {
+        totalInvoices,
+        paidInvoices,
+        totalPayments,
+        averageInvoiceAmount,
+        lastPaymentDate,
+        creditRating
+      };
+      
+      console.log(`📊 Stats calculated:`, statsData);
+      
+      res.json({
+        data: statsData
+      });
+    } catch (error) {
+      console.error('❌ Error fetching representative stats:', error);
+      res.status(500).json({ message: "Error fetching representative stats", error: error.message });
+    }
+  });
+
+  // Sales colleague profile API routes
+  app.get("/api/sales-colleagues/:id/stats", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Get all representatives assigned to this colleague
+      const representatives = await storage.getRepresentativesByColleagueId(id);
+      const totalRepresentatives = representatives.length;
+      
+      // Get commission records for this colleague
+      const commissions = await storage.getCommissionsByColleague(id);
+      const totalCommissions = commissions.reduce((sum, comm) => sum + parseFloat(comm.amount), 0);
+      
+      // Calculate this month's commissions
+      const thisMonth = new Date();
+      thisMonth.setDate(1);
+      const thisMonthCommissions = commissions
+        .filter(comm => new Date(comm.createdAt) >= thisMonth)
+        .reduce((sum, comm) => sum + parseFloat(comm.amount), 0);
+      
+      const averageCommissionPerRep = totalRepresentatives > 0 ? totalCommissions / totalRepresentatives : 0;
+      
+      // Find top representative by debt
+      const topRepresentative = representatives.length > 0 
+        ? representatives.reduce((top, rep) => 
+            parseFloat(rep.totalDebt) > parseFloat(top.totalDebt) ? rep : top
+          )
+        : null;
+      
+      res.json({
+        data: {
+          totalRepresentatives,
+          totalCommissions,
+          thisMonthCommissions,
+          averageCommissionPerRep,
+          topRepresentative: topRepresentative ? {
+            name: topRepresentative.storeName,
+            totalDebt: parseFloat(topRepresentative.totalDebt)
+          } : null,
+          recentActivity: [] // Can be expanded later
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching colleague stats" });
+    }
+  });
+
+  app.get("/api/sales-colleagues/:id/representatives", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const representatives = await storage.getRepresentativesByColleagueId(id);
+      res.json({ data: representatives });
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching colleague representatives" });
+    }
+  });
+
+  app.get("/api/sales-colleagues/:id/commissions", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const commissions = await storage.getCommissionsByColleague(id);
+      
+      // Sort by creation date descending and limit
+      const sortedCommissions = commissions
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, limit);
+      
+      res.json({ data: sortedCommissions });
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching colleague commissions" });
+    }
+  });
+
   app.get("/api/representatives", async (req, res) => {
     console.log("🔍 [CRITICAL DEBUG] Representatives endpoint called");
     console.log("🔍 [CRITICAL DEBUG] DATABASE_URL:", process.env.DATABASE_URL ? 

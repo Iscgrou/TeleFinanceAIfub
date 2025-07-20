@@ -111,11 +111,11 @@ export default function RepresentativePortal({ username }: RepresentativePortalP
 
       // Load invoices
       const invoicesResponse = await apiRequest(`/api/representatives/${repResponse.id}/invoices`);
-      setInvoices(invoicesResponse);
+      setInvoices(invoicesResponse.data || invoicesResponse || []);
 
       // Load payments
       const paymentsResponse = await apiRequest(`/api/representatives/${repResponse.id}/payments`);
-      setPayments(paymentsResponse);
+      setPayments(paymentsResponse.data || paymentsResponse || []);
 
       // Load portal texts
       try {

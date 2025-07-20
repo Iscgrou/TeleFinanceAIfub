@@ -363,6 +363,14 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(commissionRecords).where(eq(commissionRecords.colleagueId, colleagueId)).orderBy(desc(commissionRecords.createdAt));
   }
 
+  async getCommissionsByColleagueId(colleagueId: number): Promise<CommissionRecord[]> {
+    return await db.select().from(commissionRecords).where(eq(commissionRecords.colleagueId, colleagueId)).orderBy(desc(commissionRecords.createdAt));
+  }
+
+  async getRepresentativesByColleagueId(colleagueId: number): Promise<Representative[]> {
+    return await db.select().from(representatives).where(eq(representatives.colleagueId, colleagueId));
+  }
+
   async createCommissionRecord(insertRecord: InsertCommissionRecord): Promise<CommissionRecord> {
     const result = await db.insert(commissionRecords).values(insertRecord).returning();
     return result[0];

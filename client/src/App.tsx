@@ -23,24 +23,7 @@ const queryClient = new QueryClient({
   },
 });
 
-// Portal Route Component for Representatives
-function PortalRoute({ params }: { params: { username: string } }) {
-  const { username } = params;
-  
-  if (!username) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4 text-center">
-          <div className="text-red-500 text-6xl mb-4">❌</div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">نام کاربری نامعتبر</h2>
-          <p className="text-gray-600 mb-4">لطفاً نام کاربری صحیح وارد کنید</p>
-        </div>
-      </div>
-    );
-  }
-  
-  return <RepresentativePortal username={username} />;
-}
+
 
 // Settings Page Component
 function SettingsPage() {
@@ -88,9 +71,20 @@ export default function App() {
       <Router>
         <Switch>
           {/* Representative Portal Routes (No Layout) */}
-          <Route path="/portal/:username">
-            {({ username }) => <PortalRoute params={{ username: username! }} />}
-          </Route>
+          <Route path="/portal/:username" component={({ params }) => {
+            if (!params?.username) {
+              return (
+                <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center">
+                  <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4 text-center">
+                    <div className="text-red-500 text-6xl mb-4">❌</div>
+                    <h2 className="text-xl font-bold text-gray-800 mb-2">نام کاربری نامعتبر</h2>
+                    <p className="text-gray-600 mb-4">لطفاً نام کاربری صحیح وارد کنید</p>
+                  </div>
+                </div>
+              );
+            }
+            return <RepresentativePortal username={params.username} />;
+          }} />
 
           {/* Main Application Routes (With Layout) */}
           <Route>
