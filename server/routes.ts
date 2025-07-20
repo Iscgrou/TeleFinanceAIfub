@@ -701,7 +701,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log('\n🔍 DEBUG: Starting direct usage processing test...');
+      console.log('\n🔍 DEBUG: Usage data type:', typeof usageData, Array.isArray(usageData));
+      
       const { processUsageFile } = await import('./services/usage-processor');
+      // Pass usageData directly (can be array or object)
       const result = await processUsageFile(usageData);
       
       console.log('\n🔍 DEBUG: Processing result:', result);

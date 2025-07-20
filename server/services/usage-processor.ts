@@ -36,16 +36,30 @@ interface ProcessingResult {
 }
 
 // Part 1: Parse and validate usage.json with PHPMyAdmin export format (VALIDATED WITH REAL DATA)
-export function parseUsageFile(fileContent: string): { data: TransactionRecord[], error?: string } {
+export function parseUsageFile(fileContent: string | any[]): { data: TransactionRecord[], error?: string } {
   try {
-    const parsed = JSON.parse(fileContent);
+    let parsed;
+    
+    // Handle direct array input (from API endpoint)
+    if (Array.isArray(fileContent)) {
+      console.log('📄 Direct array input detected');
+      parsed = fileContent;
+    } else {
+      parsed = JSON.parse(fileContent as string);
+    }
     
     // Ensure root is an array
     if (!Array.isArray(parsed)) {
       return { data: [], error: 'Root element must be a JSON array' };
     }
     
-    console.log(`📋 Parsing PHPMyAdmin JSON export with ${parsed.length} elements`);
+    console.log(`📋 Parsing JSON with ${parsed.length} elements`);
+    
+    // Direct array case (from API endpoints)
+    if (parsed.length > 0 && parsed[0] && 'admin_username' in parsed[0]) {
+      console.log(`✓ Direct transaction array detected with ${parsed.length} transactions`);
+      return { data: parsed };
+    }
     
     // PHPMyAdmin format: Skip exactly 16 header elements, find the data payload
     // Based on validated real production data structure
@@ -79,14 +93,14 @@ export function parseUsageFile(fileContent: string): { data: TransactionRecord[]
       } else {
         return { 
           data: [], 
-          error: 'Invalid PHPMyAdmin JSON format. Expected format: 16 header objects + {data: [...]} object with transaction array' 
+          error: 'Invalid JSON format. Expected either direct transaction array or PHPMyAdmin format' 
         };
       }
     }
     
     return { data: dataPayload };
-  } catch (error) {
-    return { data: [], error: `JSON parsing failed: ${error.message}` };
+  } catch (error: any) {
+    return { data: [], error: `JSON parsing failed: ${error?.message || String(error)}` };
   }
 }
 
@@ -275,8 +289,8 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
             representative_id = newRep[0].id;
             colleague_id = null;
             console.log(`   ✓ Created new representative with ID: ${representative_id}`);
-          } catch (createError) {
-            console.error(`   ❌ Failed to create representative: ${createError.message}`);
+          } catch (createError: any) {
+            console.error(`   ❌ Failed to create representative: ${createError?.message || String(createError)}`);
             throw createError;
           }
         }
@@ -289,7 +303,6 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
             .values({
               representativeId: representative_id,
               amount: summary.total_due.toString(),
-              description: `Usage-based invoice - ${summary.line_items.length} transactions`,
               status: 'unpaid',
               isManual: false,
               usageJsonDetails: JSON.stringify(summary.line_items),
@@ -298,12 +311,12 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
             })
             .returning();
           
-          const new_invoice_id = newInvoice[0].id;
+          const newInvoiceId = newInvoice[0].id;
           invoicesCreated++;
           totalAmount += summary.total_due;
-          console.log(`   ✓ Created invoice with ID: ${new_invoice_id}`);
-        } catch (invoiceError) {
-          console.error(`   ❌ Failed to create invoice: ${invoiceError.message}`);
+          console.log(`   ✓ Created invoice with ID: ${newInvoiceId}`);
+        } catch (invoiceError: any) {
+          console.error(`   ❌ Failed to create invoice: ${invoiceError?.message || String(invoiceError)}`);
           throw invoiceError;
         }
         
@@ -317,8 +330,8 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
             })
             .where(eq(representatives.id, representative_id));
           console.log(`   ✓ Updated representative debt`);
-        } catch (updateError) {
-          console.error(`   ❌ Failed to update debt: ${updateError.message}`);
+        } catch (updateError: any) {
+          console.error(`   ❌ Failed to update debt: ${updateError?.message || String(updateError)}`);
           throw updateError;
         }
         
@@ -331,14 +344,14 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
             .limit(1);
           
           if (colleague.length > 0) {
-            const commission_rate = colleague[0].commissionRate / 100;
+            const commission_rate = Number(colleague[0].commissionRate || 0) / 100;
             const commission_amount = summary.total_due * commission_rate;
             
             await tx
               .insert(commissionRecords)
               .values({
                 colleagueId: colleague_id,
-                sourceInvoiceId: new_invoice_id,
+                sourceInvoiceId: newInvoice[0].id,
                 commissionAmount: commission_amount.toString(),
                 payoutStatus: 'pending'
               });
@@ -366,8 +379,8 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
       console.log(`   Representatives in DB: ${allReps.length}`);
       console.log(`   Invoices in DB: ${allInvoices.length}`);
       console.log(`   ✅ Data persistence verified!`);
-    } catch (verifyError) {
-      console.error('   ❌ Verification failed:', verifyError);
+    } catch (verifyError: any) {
+      console.error('   ❌ Verification failed:', verifyError?.message || String(verifyError));
     }
     
     return {
@@ -377,11 +390,11 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
       totalAmount
     };
     
-  } catch (error) {
+  } catch (error: any) {
     // CRITICAL: Log full error details before rollback
     console.error('❌ CRITICAL TRANSACTION FAILURE:', {
-      error: error.message,
-      stack: error.stack,
+      error: error?.message || String(error),
+      stack: error?.stack,
       batchId: batchId,
       entriesProcessed: Object.keys(aggregatedData).length,
       invoicesCreated: invoicesCreated,
@@ -389,14 +402,14 @@ export async function processAndCommitTransactions(aggregatedData: AggregatedDat
     });
     
     // Log the specific error type
-    if (error.code) {
+    if (error?.code) {
       console.error(`Database error code: ${error.code}`);
     }
     
     return {
       success: false,
-      message: `❌ خطای بحرانی در حین پردازش. عملیات متوقف و تمام تغییرات بازگردانده شد. خطا: ${error.message}`,
-      error: error.message
+      message: `❌ خطای بحرانی در حین پردازش. عملیات متوقف و تمام تغییرات بازگردانده شد. خطا: ${error?.message || String(error)}`,
+      error: error?.message || String(error)
     };
   }
 }
