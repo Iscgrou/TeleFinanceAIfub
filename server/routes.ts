@@ -1223,5 +1223,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug System API Routes
+  app.post('/api/debug/test-block', async (req, res) => {
+    try {
+      const { blockId } = req.body;
+      const { debugEngine } = await import('./services/debugEngine');
+      const result = await debugEngine.testBlock(blockId);
+      res.json({ success: true, result });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to test block', 
+        error: (error as Error).message 
+      });
+    }
+  });
+
+  app.post('/api/debug/test-all', async (req, res) => {
+    try {
+      const { debugEngine } = await import('./services/debugEngine');
+      const results = await debugEngine.runFullTest();
+      const summary = debugEngine.generateSummaryReport();
+      
+      // ذخیره گزارش
+      const reportPath = await debugEngine.saveReport(`debug-report-${Date.now()}.json`);
+      
+      res.json({ 
+        success: true, 
+        summary,
+        totalResults: results.size,
+        reportPath
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to run full test', 
+        error: (error as Error).message 
+      });
+    }
+  });
+
+  app.get('/api/debug/report', async (req, res) => {
+    try {
+      const { debugEngine } = await import('./services/debugEngine');
+      const summary = debugEngine.generateSummaryReport();
+      res.json({ success: true, summary });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to generate report', 
+        error: (error as Error).message 
+      });
+    }
+  });
+
+  app.post('/api/debug/sync-test', async (req, res) => {
+    try {
+      const { debugEngine } = await import('./services/debugEngine');
+      const result = await debugEngine.testBotWebAppSync();
+      res.json({ success: true, syncTest: result });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to test sync', 
+        error: (error as Error).message 
+      });
+    }
+  });
+
   return httpServer;
 }
