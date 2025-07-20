@@ -64,7 +64,7 @@ export default function SalesColleaguesManagement() {
   // Update colleague mutation
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => 
-      apiRequest(`/api/sales-colleagues/${id}`, { method: 'PUT', body: data }),
+      apiRequest(`/api/sales-colleagues/${id}`, { method: 'PATCH', body: data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sales-colleagues'] });
       setIsEditDialogOpen(false);

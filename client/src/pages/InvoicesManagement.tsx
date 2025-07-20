@@ -78,10 +78,28 @@ export default function InvoicesManagement() {
       queryClient.invalidateQueries({ queryKey: ['/api/invoices'] });
       queryClient.invalidateQueries({ queryKey: ['/api/representatives'] });
       setIsCreateDialogOpen(false);
+      createForm.reset();
       toast({ title: '✅ فاکتور با موفقیت ایجاد شد' });
     },
-    onError: () => {
-      toast({ title: '❌ خطا در ایجاد فاکتور', variant: 'destructive' });
+    onError: (error: any) => {
+      console.error('Invoice creation error:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'خطا در ایجاد فاکتور';
+      const validationErrors = error?.response?.data?.errors;
+      
+      if (validationErrors && Array.isArray(validationErrors)) {
+        const errorDetails = validationErrors.map((err: any) => err.message).join(', ');
+        toast({ 
+          title: '❌ خطا در ایجاد فاکتور', 
+          description: errorDetails,
+          variant: 'destructive' 
+        });
+      } else {
+        toast({ 
+          title: '❌ خطا در ایجاد فاکتور', 
+          description: errorMessage,
+          variant: 'destructive' 
+        });
+      }
     }
   });
 

@@ -98,7 +98,7 @@ export default function RepresentativesManagement() {
   // Update representative mutation
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => 
-      apiRequest(`/api/representatives/${id}`, { method: 'PUT', body: data }),
+      apiRequest(`/api/representatives/${id}`, { method: 'PATCH', body: data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/representatives'] });
       setIsEditDialogOpen(false);

@@ -298,6 +298,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Increase representative debt
+  app.post("/api/representatives/:id/increase-debt", async (req, res) => {
+    try {
+      const representativeId = parseInt(req.params.id);
+      const { amount, description } = req.body;
+      
+      if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+        return res.status(400).json({ message: "مبلغ نامعتبر است" });
+      }
+      
+      // Get current representative
+      const rep = await storage.getRepresentativeById(representativeId);
+      if (!rep) {
+        return res.status(404).json({ message: "نماینده یافت نشد" });
+      }
+      
+      // Calculate new debt
+      const currentDebt = parseFloat(rep.totalDebt || '0');
+      const increaseAmount = parseFloat(amount);
+      const newDebt = currentDebt + increaseAmount;
+      
+      // Update debt
+      await storage.updateRepresentativeDebt(representativeId, newDebt.toString());
+      
+      // TODO: Add to ledger for tracking
+      
+      res.json({ success: true, newDebt: newDebt.toString() });
+    } catch (error) {
+      console.error('Error increasing debt:', error);
+      res.status(500).json({ message: "خطا در افزایش بدهی" });
+    }
+  });
+
+  // Decrease representative debt
+  app.post("/api/representatives/:id/decrease-debt", async (req, res) => {
+    try {
+      const representativeId = parseInt(req.params.id);
+      const { amount, description } = req.body;
+      
+      if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+        return res.status(400).json({ message: "مبلغ نامعتبر است" });
+      }
+      
+      // Get current representative
+      const rep = await storage.getRepresentativeById(representativeId);
+      if (!rep) {
+        return res.status(404).json({ message: "نماینده یافت نشد" });
+      }
+      
+      // Calculate new debt
+      const currentDebt = parseFloat(rep.totalDebt || '0');
+      const decreaseAmount = parseFloat(amount);
+      const newDebt = Math.max(0, currentDebt - decreaseAmount); // Ensure debt doesn't go negative
+      
+      // Update debt
+      await storage.updateRepresentativeDebt(representativeId, newDebt.toString());
+      
+      // TODO: Add to ledger for tracking
+      
+      res.json({ success: true, newDebt: newDebt.toString() });
+    } catch (error) {
+      console.error('Error decreasing debt:', error);
+      res.status(500).json({ message: "خطا در کاهش بدهی" });
+    }
+  });
+
   app.get("/api/invoices/:id/detail", async (req, res) => {
     try {
       const invoiceId = parseInt(req.params.id);
@@ -347,14 +413,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new invoice
   app.post("/api/invoices", async (req, res) => {
     try {
+      console.log('Create invoice request body:', req.body);
       const validatedData = insertInvoiceSchema.parse(req.body);
       const invoice = await storage.createInvoice(validatedData);
       res.status(201).json(invoice);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Invoice creation error:', error);
       if (error.name === 'ZodError') {
-        res.status(400).json({ message: "Invalid invoice data" });
+        res.status(400).json({ 
+          message: "داده‌های فاکتور نامعتبر است",
+          errors: error.errors // Include specific validation errors
+        });
       } else {
-        res.status(500).json({ message: "خطا در ایجاد فاکتور" });
+        res.status(500).json({ 
+          message: "خطا در ایجاد فاکتور",
+          error: error.message 
+        });
       }
     }
   });
