@@ -1,88 +1,80 @@
 import { 
-  admins, salesColleagues, representatives, invoices, payments, 
-  commissionRecords, systemSettings, invoiceTemplates,
-  type Admin, type InsertAdmin,
+  salesColleagues, representatives, invoices, invoiceItems, payments, 
+  paymentAllocations, auditLogs, systemSettings, invoiceTemplates,
   type SalesColleague, type InsertSalesColleague,
-  type Representative, type InsertRepresentative,
-  type Invoice, type InsertInvoice,
+  type Representative, type InsertRepresentative, type RepresentativeWithDetails,
+  type Invoice, type InsertInvoice, type InvoiceWithDetails,
+  type InvoiceItem, type InsertInvoiceItem,
   type Payment, type InsertPayment,
-  type CommissionRecord, type InsertCommissionRecord,
+  type PaymentAllocation, type InsertPaymentAllocation,
+  type AuditLog, type InsertAuditLog,
   type SystemSettings, type InsertSystemSettings,
-  type InvoiceTemplate, type InsertInvoiceTemplate
+  type InvoiceTemplate, type InsertInvoiceTemplate,
+  type DashboardStats
 } from "@shared/schema";
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import { eq, desc, sql, or, and, asc } from 'drizzle-orm';
+import { eq, desc, sql, or, and, asc, sum, count } from 'drizzle-orm';
 import ws from 'ws';
 
 export interface IStorage {
-  // Admin management
-  getAdmin(chatId: string): Promise<Admin | undefined>;
-  createAdmin(admin: InsertAdmin): Promise<Admin>;
-  getAdminCount(): Promise<number>;
-  getAllAdmins(): Promise<Admin[]>;
-
-  // Sales colleagues
+  // Sales Colleagues
   getSalesColleagues(): Promise<SalesColleague[]>;
-  getSalesColleagueByName(name: string): Promise<SalesColleague | undefined>;
   getSalesColleagueById(id: number): Promise<SalesColleague | undefined>;
   createSalesColleague(colleague: InsertSalesColleague): Promise<SalesColleague>;
   updateSalesColleague(id: number, data: Partial<InsertSalesColleague>): Promise<SalesColleague | null>;
   deleteSalesColleague(id: number): Promise<boolean>;
 
   // Representatives
-  getRepresentatives(): Promise<Representative[]>;
-  getRepresentativeByStoreName(storeName: string): Promise<Representative | undefined>;
-  getRepresentativeByPanelUsername(panelUsername: string): Promise<Representative | undefined>;
-  getRepresentativeById(id: number): Promise<Representative | undefined>;
+  getRepresentatives(): Promise<RepresentativeWithDetails[]>;
+  getRepresentativeById(id: number): Promise<RepresentativeWithDetails | undefined>;
   createRepresentative(representative: InsertRepresentative): Promise<Representative>;
-  updateRepresentativeDebt(id: number, newDebt: string): Promise<void>;
   updateRepresentative(id: number, data: Partial<InsertRepresentative>): Promise<Representative | null>;
+  updateRepresentativeBalance(id: number, amount: number): Promise<void>;
   deleteRepresentative(id: number): Promise<boolean>;
 
   // Invoices
-  getInvoices(): Promise<Invoice[]>;
-  getInvoicesByRepresentative(representativeId: number): Promise<Invoice[]>;
-  getInvoiceById(id: number): Promise<Invoice | undefined>;
-  createInvoice(invoice: InsertInvoice): Promise<Invoice>;
+  getInvoices(): Promise<InvoiceWithDetails[]>;
+  getInvoiceById(id: number): Promise<InvoiceWithDetails | undefined>;
+  getInvoicesByRepresentative(representativeId: number): Promise<InvoiceWithDetails[]>;
+  createInvoice(invoice: InsertInvoice, items: InsertInvoiceItem[]): Promise<Invoice>;
   updateInvoice(id: number, data: Partial<InsertInvoice>): Promise<Invoice | null>;
-  processWeeklyInvoices(data: any): Promise<any>;
+  deleteInvoice(id: number): Promise<boolean>;
+
+  // Invoice Items
+  createInvoiceItems(items: InsertInvoiceItem[]): Promise<InvoiceItem[]>;
+  getInvoiceItems(invoiceId: number): Promise<InvoiceItem[]>;
 
   // Payments
   getPayments(): Promise<Payment[]>;
   getPaymentsByRepresentative(representativeId: number): Promise<Payment[]>;
   createPayment(payment: InsertPayment): Promise<Payment>;
-  updatePayment(id: number, data: Partial<InsertPayment>): Promise<Payment | null>;
+  allocatePayment(paymentId: number, allocations: InsertPaymentAllocation[]): Promise<void>;
   deletePayment(id: number): Promise<boolean>;
 
-  // Commission records
-  getCommissionsByColleague(colleagueId: number): Promise<CommissionRecord[]>;
-  createCommissionRecord(record: InsertCommissionRecord): Promise<CommissionRecord>;
+  // Audit Logs
+  getAuditLogs(limit?: number): Promise<AuditLog[]>;
+  createAuditLog(log: InsertAuditLog): Promise<AuditLog>;
 
-  // System settings
-  getSystemSettings(): Promise<SystemSettings | undefined>;
-  updateSystemSettings(settings: InsertSystemSettings): Promise<SystemSettings>;
-  
-  // Data management
-  clearFinancialData(): Promise<void>;
-  clearAllData(): Promise<void>;
+  // System Settings
+  getSystemSettings(): Promise<SystemSettings[]>;
+  updateSystemSetting(key: string, value: string): Promise<void>;
 
-  // Dashboard stats
-  getDashboardStats(): Promise<{
-    totalDebt: string;
-    pendingCommissions: string;
-    todayPayments: string;
-    activeRepresentatives: number;
-  }>;
-  
-  // Invoice template management
+  // Invoice Templates
   getInvoiceTemplates(): Promise<InvoiceTemplate[]>;
   getActiveInvoiceTemplate(): Promise<InvoiceTemplate | null>;
-  getInvoiceTemplateById(id: number): Promise<InvoiceTemplate | null>;
   createInvoiceTemplate(template: InsertInvoiceTemplate): Promise<InvoiceTemplate>;
-  updateInvoiceTemplate(id: number, template: Partial<InsertInvoiceTemplate>): Promise<InvoiceTemplate | null>;
-  deleteInvoiceTemplate(id: number): Promise<boolean>;
-  setActiveInvoiceTemplate(id: number): Promise<boolean>;
+  updateInvoiceTemplate(id: number, data: Partial<InsertInvoiceTemplate>): Promise<InvoiceTemplate | null>;
+
+  // Dashboard
+  getDashboardStats(): Promise<DashboardStats>;
+
+  // Search
+  searchGlobal(query: string): Promise<{
+    representatives: RepresentativeWithDetails[];
+    invoices: InvoiceWithDetails[];
+    salesColleagues: SalesColleague[];
+  }>;
 }
 
 // Configure WebSocket for Node.js environment
@@ -93,36 +85,50 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool);
 
 export class DatabaseStorage implements IStorage {
-  constructor() {
-    // Database connection is established via drizzle
+  // Helper method to generate next code
+  private async generateCode(prefix: string, table: any, codeField: any): Promise<string> {
+    const result = await db.select({ code: codeField })
+      .from(table)
+      .where(sql`${codeField} LIKE ${prefix + '%'}`)
+      .orderBy(desc(codeField))
+      .limit(1);
+    
+    if (result.length === 0) {
+      return `${prefix}001`;
+    }
+    
+    const lastCode = result[0].code;
+    const lastNumber = parseInt(lastCode.replace(prefix, ''));
+    const nextNumber = lastNumber + 1;
+    
+    return `${prefix}${nextNumber.toString().padStart(3, '0')}`;
   }
 
-  async getAdmin(chatId: string): Promise<Admin | undefined> {
-    const result = await db.select().from(admins).where(eq(admins.chatId, chatId)).limit(1);
-    return result[0];
+  // Helper method to generate invoice number
+  private async generateInvoiceNumber(): Promise<string> {
+    const year = new Date().getFullYear();
+    const prefix = `INV${year}`;
+    
+    const result = await db.select({ invoiceNumber: invoices.invoiceNumber })
+      .from(invoices)
+      .where(sql`${invoices.invoiceNumber} LIKE ${prefix + '%'}`)
+      .orderBy(desc(invoices.invoiceNumber))
+      .limit(1);
+    
+    if (result.length === 0) {
+      return `${prefix}001`;
+    }
+    
+    const lastNumber = result[0].invoiceNumber;
+    const lastSeq = parseInt(lastNumber.replace(prefix, ''));
+    const nextSeq = lastSeq + 1;
+    
+    return `${prefix}${nextSeq.toString().padStart(3, '0')}`;
   }
 
-  async createAdmin(insertAdmin: InsertAdmin): Promise<Admin> {
-    const result = await db.insert(admins).values(insertAdmin).returning();
-    return result[0];
-  }
-
-  async getAdminCount(): Promise<number> {
-    const result = await db.select({ count: sql`COUNT(*)` }).from(admins);
-    return Number(result[0].count);
-  }
-
-  async getAllAdmins(): Promise<Admin[]> {
-    return await db.select().from(admins);
-  }
-
+  // Sales Colleagues
   async getSalesColleagues(): Promise<SalesColleague[]> {
-    return await db.select().from(salesColleagues);
-  }
-
-  async getSalesColleagueByName(name: string): Promise<SalesColleague | undefined> {
-    const result = await db.select().from(salesColleagues).where(eq(salesColleagues.name, name)).limit(1);
-    return result[0];
+    return await db.select().from(salesColleagues).orderBy(salesColleagues.name);
   }
 
   async getSalesColleagueById(id: number): Promise<SalesColleague | undefined> {
@@ -130,307 +136,453 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async createSalesColleague(insertColleague: InsertSalesColleague): Promise<SalesColleague> {
-    const result = await db.insert(salesColleagues).values(insertColleague).returning();
+  async createSalesColleague(colleague: InsertSalesColleague): Promise<SalesColleague> {
+    // Generate code if not provided
+    if (!colleague.code) {
+      colleague.code = await this.generateCode('SC', salesColleagues, salesColleagues.code);
+    }
+    
+    const result = await db.insert(salesColleagues).values(colleague).returning();
+    
+    // Log audit
+    await this.createAuditLog({
+      userId: 'admin',
+      action: 'افزودن همکار فروش',
+      entityType: 'sales_colleague',
+      entityId: result[0].id.toString(),
+      details: { name: colleague.name }
+    });
+    
     return result[0];
   }
 
   async updateSalesColleague(id: number, data: Partial<InsertSalesColleague>): Promise<SalesColleague | null> {
     const result = await db.update(salesColleagues)
-      .set(data)
+      .set({ ...data, updatedAt: new Date() })
       .where(eq(salesColleagues.id, id))
       .returning();
+    
+    if (result.length > 0) {
+      await this.createAuditLog({
+        userId: 'admin',
+        action: 'ویرایش همکار فروش',
+        entityType: 'sales_colleague',
+        entityId: id.toString(),
+        details: data
+      });
+    }
+    
     return result[0] || null;
   }
 
   async deleteSalesColleague(id: number): Promise<boolean> {
-    const result = await db.delete(salesColleagues)
-      .where(eq(salesColleagues.id, id))
-      .returning();
+    const result = await db.delete(salesColleagues).where(eq(salesColleagues.id, id)).returning();
+    
+    if (result.length > 0) {
+      await this.createAuditLog({
+        userId: 'admin',
+        action: 'حذف همکار فروش',
+        entityType: 'sales_colleague',
+        entityId: id.toString(),
+        details: { name: result[0].name }
+      });
+    }
+    
     return result.length > 0;
   }
 
-  async getRepresentatives(): Promise<Representative[]> {
-    return await db.select().from(representatives);
+  // Representatives
+  async getRepresentatives(): Promise<RepresentativeWithDetails[]> {
+    const result = await db.select({
+      id: representatives.id,
+      name: representatives.name,
+      code: representatives.code,
+      storeName: representatives.storeName,
+      phone: representatives.phone,
+      panelUsername: representatives.panelUsername,
+      salesColleagueId: representatives.salesColleagueId,
+      accountBalance: representatives.accountBalance,
+      creditLimit: representatives.creditLimit,
+      tariffs: representatives.tariffs,
+      isActive: representatives.isActive,
+      createdAt: representatives.createdAt,
+      updatedAt: representatives.updatedAt,
+      salesColleague: {
+        id: salesColleagues.id,
+        name: salesColleagues.name,
+        code: salesColleagues.code,
+        commissionRate: salesColleagues.commissionRate,
+        isActive: salesColleagues.isActive,
+        createdAt: salesColleagues.createdAt,
+        updatedAt: salesColleagues.updatedAt,
+      }
+    })
+    .from(representatives)
+    .leftJoin(salesColleagues, eq(representatives.salesColleagueId, salesColleagues.id))
+    .orderBy(representatives.name);
+
+    return result.map(row => ({
+      ...row,
+      salesColleague: row.salesColleague.id ? row.salesColleague : undefined
+    }));
   }
 
-  // NEW: Paginated representatives with enhanced performance
-  async getRepresentativesPaginated(params: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    sortBy?: keyof Representative;
-    sortOrder?: 'asc' | 'desc';
-    includeInactive?: boolean;
-  } = {}): Promise<{
-    data: Representative[];
-    total: number;
-    page: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  }> {
-    const startTime = performance.now();
-    console.log(`📊 Starting paginated representatives query...`);
-    
-    try {
-      // Validate and set defaults
-      const page = Math.max(1, params.page || 1);
-      const limit = Math.min(100, Math.max(1, params.limit || 20));
-      const offset = (page - 1) * limit;
-      const sortOrder = params.sortOrder || 'desc';
-      const sortBy = params.sortBy || 'createdAt';
-      
-      // Build base queries
-      let query = db.select().from(representatives);
-      let countQuery = db.select({ count: sql<number>`count(*)` }).from(representatives);
-      
-      // Apply filters
-      const conditions: any[] = [];
-      
-      if (!params.includeInactive) {
-        conditions.push(eq(representatives.isActive, true));
+  async getRepresentativeById(id: number): Promise<RepresentativeWithDetails | undefined> {
+    const result = await db.select({
+      id: representatives.id,
+      name: representatives.name,
+      code: representatives.code,
+      storeName: representatives.storeName,
+      phone: representatives.phone,
+      panelUsername: representatives.panelUsername,
+      salesColleagueId: representatives.salesColleagueId,
+      accountBalance: representatives.accountBalance,
+      creditLimit: representatives.creditLimit,
+      tariffs: representatives.tariffs,
+      isActive: representatives.isActive,
+      createdAt: representatives.createdAt,
+      updatedAt: representatives.updatedAt,
+      salesColleague: {
+        id: salesColleagues.id,
+        name: salesColleagues.name,
+        code: salesColleagues.code,
+        commissionRate: salesColleagues.commissionRate,
+        isActive: salesColleagues.isActive,
+        createdAt: salesColleagues.createdAt,
+        updatedAt: salesColleagues.updatedAt,
       }
-      
-      if (params.search) {
-        const searchTerm = `%${params.search.toLowerCase()}%`;
-        conditions.push(
-          or(
-            sql`LOWER(${representatives.storeName}) LIKE ${searchTerm}`,
-            sql`LOWER(${representatives.ownerName}) LIKE ${searchTerm}`,
-            sql`LOWER(${representatives.panelUsername}) LIKE ${searchTerm}`
-          )
-        );
-      }
-      
-      if (conditions.length > 0) {
-        const whereClause = and(...conditions);
-        query = query.where(whereClause) as any;
-        countQuery = countQuery.where(whereClause) as any;
-      }
-      
-      // Apply sorting
-      const sortColumn = representatives[sortBy];
-      if (sortColumn) {
-        query = (sortOrder === 'asc' 
-          ? query.orderBy(asc(sortColumn))
-          : query.orderBy(desc(sortColumn))) as any;
-      }
-      
-      // Apply pagination
-      query = query.limit(limit).offset(offset) as any;
-      
-      // Execute queries in parallel
-      const [data, totalResult] = await Promise.all([
-        query,
-        countQuery
-      ]);
-      
-      const total = totalResult[0]?.count || 0;
-      const totalPages = Math.ceil(total / limit);
-      
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-      console.log(`📊 Paginated query completed in ${duration.toFixed(2)}ms - ${data.length} records`);
-      
-      // Alert for slow queries
-      if (duration > 5000) {
-        console.warn(`⚠️ Slow paginated query: ${duration.toFixed(2)}ms`);
-      }
-      
-      return {
-        data,
-        total,
-        page,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1
-      };
-    } catch (error) {
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-      console.error(`❌ Paginated query failed after ${duration.toFixed(2)}ms:`, error);
-      throw error;
+    })
+    .from(representatives)
+    .leftJoin(salesColleagues, eq(representatives.salesColleagueId, salesColleagues.id))
+    .where(eq(representatives.id, id))
+    .limit(1);
+
+    if (result.length === 0) return undefined;
+
+    const row = result[0];
+    return {
+      ...row,
+      salesColleague: row.salesColleague.id ? row.salesColleague : undefined
+    };
+  }
+
+  async createRepresentative(representative: InsertRepresentative): Promise<Representative> {
+    // Generate code if not provided
+    if (!representative.code) {
+      representative.code = await this.generateCode('REP', representatives, representatives.code);
     }
-  }
-
-  async getRepresentativeByStoreName(storeName: string): Promise<Representative | undefined> {
-    const result = await db.select().from(representatives).where(eq(representatives.storeName, storeName)).limit(1);
+    
+    const result = await db.insert(representatives).values(representative).returning();
+    
+    // Log audit
+    await this.createAuditLog({
+      userId: 'admin',
+      action: 'افزودن نماینده',
+      entityType: 'representative',
+      entityId: result[0].id.toString(),
+      details: { name: representative.name, storeName: representative.storeName }
+    });
+    
     return result[0];
-  }
-
-  async getRepresentativeByPanelUsername(panelUsername: string): Promise<Representative | undefined> {
-    const result = await db.select().from(representatives).where(eq(representatives.panelUsername, panelUsername)).limit(1);
-    return result[0];
-  }
-
-  async getRepresentativeById(id: number): Promise<Representative | undefined> {
-    const result = await db.select().from(representatives).where(eq(representatives.id, id)).limit(1);
-    return result[0];
-  }
-
-  async createRepresentative(insertRepresentative: InsertRepresentative): Promise<Representative> {
-    const result = await db.insert(representatives).values(insertRepresentative).returning();
-    return result[0];
-  }
-
-  async updateRepresentativeDebt(id: string | number, newDebt: string): Promise<void> {
-    const numericId = typeof id === 'string' ? parseInt(id) : id;
-    await db.update(representatives).set({ totalDebt: newDebt }).where(eq(representatives.id, numericId));
   }
 
   async updateRepresentative(id: number, data: Partial<InsertRepresentative>): Promise<Representative | null> {
     const result = await db.update(representatives)
-      .set(data)
+      .set({ ...data, updatedAt: new Date() })
       .where(eq(representatives.id, id))
       .returning();
+    
+    if (result.length > 0) {
+      await this.createAuditLog({
+        userId: 'admin',
+        action: 'ویرایش نماینده',
+        entityType: 'representative',
+        entityId: id.toString(),
+        details: data
+      });
+    }
+    
     return result[0] || null;
   }
 
+  async updateRepresentativeBalance(id: number, amount: number): Promise<void> {
+    await db.update(representatives)
+      .set({ 
+        accountBalance: sql`${representatives.accountBalance} + ${amount}`,
+        updatedAt: new Date()
+      })
+      .where(eq(representatives.id, id));
+    
+    await this.createAuditLog({
+      userId: 'admin',
+      action: amount > 0 ? 'افزایش موجودی' : 'کاهش موجودی',
+      entityType: 'representative',
+      entityId: id.toString(),
+      details: { amount }
+    });
+  }
+
   async deleteRepresentative(id: number): Promise<boolean> {
-    const result = await db.delete(representatives)
-      .where(eq(representatives.id, id))
-      .returning();
+    const result = await db.delete(representatives).where(eq(representatives.id, id)).returning();
+    
+    if (result.length > 0) {
+      await this.createAuditLog({
+        userId: 'admin',
+        action: 'حذف نماینده',
+        entityType: 'representative',
+        entityId: id.toString(),
+        details: { name: result[0].name }
+      });
+    }
+    
     return result.length > 0;
   }
 
-  async getInvoices(): Promise<Invoice[]> {
-    return await db.select().from(invoices).orderBy(desc(invoices.issueDate));
+  // Invoices
+  async getInvoices(): Promise<InvoiceWithDetails[]> {
+    const result = await db.select({
+      invoice: invoices,
+      representative: {
+        id: representatives.id,
+        name: representatives.name,
+        code: representatives.code,
+        storeName: representatives.storeName,
+      },
+      salesColleague: {
+        id: salesColleagues.id,
+        name: salesColleagues.name,
+        commissionRate: salesColleagues.commissionRate,
+      }
+    })
+    .from(invoices)
+    .leftJoin(representatives, eq(invoices.representativeId, representatives.id))
+    .leftJoin(salesColleagues, eq(representatives.salesColleagueId, salesColleagues.id))
+    .orderBy(desc(invoices.issueDate));
+
+    return result.map(row => ({
+      ...row.invoice,
+      representative: row.representative,
+      salesColleague: row.salesColleague.id ? row.salesColleague : undefined
+    }));
   }
 
-  async getInvoicesByRepresentative(representativeId: number): Promise<Invoice[]> {
-    return await db.select().from(invoices).where(eq(invoices.representativeId, representativeId)).orderBy(desc(invoices.issueDate));
+  async getInvoiceById(id: number): Promise<InvoiceWithDetails | undefined> {
+    const result = await db.select({
+      invoice: invoices,
+      representative: representatives,
+      salesColleague: salesColleagues
+    })
+    .from(invoices)
+    .leftJoin(representatives, eq(invoices.representativeId, representatives.id))
+    .leftJoin(salesColleagues, eq(representatives.salesColleagueId, salesColleagues.id))
+    .where(eq(invoices.id, id))
+    .limit(1);
+
+    if (result.length === 0) return undefined;
+
+    const items = await this.getInvoiceItems(id);
+    
+    return {
+      ...result[0].invoice,
+      representative: result[0].representative,
+      salesColleague: result[0].salesColleague,
+      items
+    };
   }
 
-  async getInvoiceById(id: number): Promise<Invoice | undefined> {
-    const result = await db.select().from(invoices).where(eq(invoices.id, id)).limit(1);
-    return result[0];
+  async getInvoicesByRepresentative(representativeId: number): Promise<InvoiceWithDetails[]> {
+    const result = await db.select({
+      invoice: invoices,
+      representative: representatives,
+      salesColleague: salesColleagues
+    })
+    .from(invoices)
+    .leftJoin(representatives, eq(invoices.representativeId, representatives.id))
+    .leftJoin(salesColleagues, eq(representatives.salesColleagueId, salesColleagues.id))
+    .where(eq(invoices.representativeId, representativeId))
+    .orderBy(desc(invoices.issueDate));
+
+    return result.map(row => ({
+      ...row.invoice,
+      representative: row.representative,
+      salesColleague: row.salesColleague
+    }));
   }
 
-  async createInvoice(insertInvoice: InsertInvoice): Promise<Invoice> {
-    const result = await db.insert(invoices).values(insertInvoice).returning();
-    return result[0];
+  async createInvoice(invoice: InsertInvoice, items: InsertInvoiceItem[]): Promise<Invoice> {
+    // Generate invoice number
+    const invoiceNumber = await this.generateInvoiceNumber();
+    
+    const result = await db.insert(invoices).values({
+      ...invoice,
+      invoiceNumber
+    }).returning();
+    
+    const createdInvoice = result[0];
+    
+    // Create invoice items
+    const itemsWithInvoiceId = items.map(item => ({
+      ...item,
+      invoiceId: createdInvoice.id
+    }));
+    
+    await this.createInvoiceItems(itemsWithInvoiceId);
+    
+    // Update representative balance
+    await this.updateRepresentativeBalance(invoice.representativeId, -Number(invoice.finalAmount));
+    
+    // Log audit
+    await this.createAuditLog({
+      userId: 'admin',
+      action: 'صدور فاکتور',
+      entityType: 'invoice',
+      entityId: createdInvoice.id.toString(),
+      details: { invoiceNumber, amount: invoice.finalAmount }
+    });
+    
+    return createdInvoice;
   }
 
   async updateInvoice(id: number, data: Partial<InsertInvoice>): Promise<Invoice | null> {
     const result = await db.update(invoices)
-      .set(data)
+      .set({ ...data, updatedAt: new Date() })
       .where(eq(invoices.id, id))
       .returning();
+    
+    if (result.length > 0) {
+      await this.createAuditLog({
+        userId: 'admin',
+        action: 'ویرایش فاکتور',
+        entityType: 'invoice',
+        entityId: id.toString(),
+        details: data
+      });
+    }
+    
     return result[0] || null;
   }
 
-  async processWeeklyInvoices(data: any): Promise<any> {
-    // This would typically process batch invoice data
-    // For now, return a mock response that matches test expectations
-    return {
-      success: true,
-      totalProcessed: data.transactions?.length || 0,
-      totalAmount: data.transactions?.reduce((sum: number, t: any) => sum + parseFloat(t.amount || '0'), 0).toString() || '0',
-      invoicesCreated: data.transactions?.length || 0
-    };
+  async deleteInvoice(id: number): Promise<boolean> {
+    const result = await db.delete(invoices).where(eq(invoices.id, id)).returning();
+    
+    if (result.length > 0) {
+      await this.createAuditLog({
+        userId: 'admin',
+        action: 'حذف فاکتور',
+        entityType: 'invoice',
+        entityId: id.toString(),
+        details: { invoiceNumber: result[0].invoiceNumber }
+      });
+    }
+    
+    return result.length > 0;
   }
 
+  // Invoice Items
+  async createInvoiceItems(items: InsertInvoiceItem[]): Promise<InvoiceItem[]> {
+    const result = await db.insert(invoiceItems).values(items).returning();
+    return result;
+  }
+
+  async getInvoiceItems(invoiceId: number): Promise<InvoiceItem[]> {
+    return await db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
+  }
+
+  // Payments
   async getPayments(): Promise<Payment[]> {
     return await db.select().from(payments).orderBy(desc(payments.paymentDate));
   }
 
   async getPaymentsByRepresentative(representativeId: number): Promise<Payment[]> {
-    return await db.select().from(payments).where(eq(payments.representativeId, representativeId)).orderBy(desc(payments.paymentDate));
+    return await db.select().from(payments)
+      .where(eq(payments.representativeId, representativeId))
+      .orderBy(desc(payments.paymentDate));
   }
 
-  async createPayment(insertPayment: InsertPayment): Promise<Payment> {
-    const result = await db.insert(payments).values(insertPayment).returning();
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const result = await db.insert(payments).values(payment).returning();
+    
+    // Update representative balance
+    await this.updateRepresentativeBalance(payment.representativeId, Number(payment.amount));
+    
+    // Log audit
+    await this.createAuditLog({
+      userId: 'admin',
+      action: 'ثبت پرداخت',
+      entityType: 'payment',
+      entityId: result[0].id.toString(),
+      details: { amount: payment.amount }
+    });
+    
     return result[0];
   }
 
-  async updatePayment(id: number, data: Partial<InsertPayment>): Promise<Payment | null> {
-    const result = await db.update(payments)
-      .set(data)
-      .where(eq(payments.id, id))
-      .returning();
-    return result[0] || null;
+  async allocatePayment(paymentId: number, allocations: InsertPaymentAllocation[]): Promise<void> {
+    await db.insert(paymentAllocations).values(allocations);
+    
+    // Mark payment as allocated
+    await db.update(payments)
+      .set({ isAllocated: true })
+      .where(eq(payments.id, paymentId));
+    
+    // Log audit
+    await this.createAuditLog({
+      userId: 'admin',
+      action: 'تخصیص پرداخت',
+      entityType: 'payment',
+      entityId: paymentId.toString(),
+      details: { allocations: allocations.length }
+    });
   }
 
   async deletePayment(id: number): Promise<boolean> {
-    const result = await db.delete(payments)
-      .where(eq(payments.id, id))
-      .returning();
+    const result = await db.delete(payments).where(eq(payments.id, id)).returning();
+    
+    if (result.length > 0) {
+      await this.createAuditLog({
+        userId: 'admin',
+        action: 'حذف پرداخت',
+        entityType: 'payment',
+        entityId: id.toString(),
+        details: { amount: result[0].amount }
+      });
+    }
+    
     return result.length > 0;
   }
 
-  async getCommissionsByColleague(colleagueId: number): Promise<CommissionRecord[]> {
-    return await db.select().from(commissionRecords).where(eq(commissionRecords.colleagueId, colleagueId)).orderBy(desc(commissionRecords.createdAt));
+  // Audit Logs
+  async getAuditLogs(limit: number = 50): Promise<AuditLog[]> {
+    return await db.select().from(auditLogs)
+      .orderBy(desc(auditLogs.timestamp))
+      .limit(limit);
   }
 
-  async getCommissionsByColleagueId(colleagueId: number): Promise<CommissionRecord[]> {
-    return await db.select().from(commissionRecords).where(eq(commissionRecords.colleagueId, colleagueId)).orderBy(desc(commissionRecords.createdAt));
-  }
-
-  async getRepresentativesByColleagueId(colleagueId: number): Promise<Representative[]> {
-    return await db.select().from(representatives).where(eq(representatives.colleagueId, colleagueId));
-  }
-
-  async createCommissionRecord(insertRecord: InsertCommissionRecord): Promise<CommissionRecord> {
-    const result = await db.insert(commissionRecords).values(insertRecord).returning();
+  async createAuditLog(log: InsertAuditLog): Promise<AuditLog> {
+    const result = await db.insert(auditLogs).values(log).returning();
     return result[0];
   }
 
-  async getSystemSettings(): Promise<SystemSettings | undefined> {
-    const result = await db.select().from(systemSettings).limit(1);
-    return result[0];
+  // System Settings
+  async getSystemSettings(): Promise<SystemSettings[]> {
+    return await db.select().from(systemSettings);
   }
 
-  async updateSystemSettings(insertSettings: InsertSystemSettings): Promise<SystemSettings> {
-    const existing = await this.getSystemSettings();
+  async updateSystemSetting(key: string, value: string): Promise<void> {
+    const existing = await db.select().from(systemSettings).where(eq(systemSettings.key, key)).limit(1);
     
-    if (existing) {
-      const result = await db.update(systemSettings).set(insertSettings).where(eq(systemSettings.id, existing.id)).returning();
-      return result[0];
+    if (existing.length > 0) {
+      await db.update(systemSettings)
+        .set({ value, updatedAt: new Date() })
+        .where(eq(systemSettings.key, key));
     } else {
-      const result = await db.insert(systemSettings).values(insertSettings).returning();
-      return result[0];
+      await db.insert(systemSettings).values({ key, value });
     }
   }
 
-  async getDashboardStats(): Promise<{
-    totalDebt: string;
-    pendingCommissions: string;
-    todayPayments: string;
-    activeRepresentatives: number;
-  }> {
-    const reps = await db.select().from(representatives);
-    const totalDebt = reps
-      .reduce((sum, rep) => sum + parseFloat(rep.totalDebt || '0'), 0)
-      .toString();
-
-    const commissions = await db.select().from(commissionRecords);
-    const pendingCommissions = commissions
-      .filter(c => c.payoutStatus === 'pending')
-      .reduce((sum, c) => sum + parseFloat(c.commissionAmount), 0)
-      .toString();
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const paymentsToday = await db.select().from(payments);
-    const todayPayments = paymentsToday
-      .filter(p => p.paymentDate && p.paymentDate >= today)
-      .reduce((sum, p) => sum + parseFloat(p.amount), 0)
-      .toString();
-
-    const activeRepresentatives = reps.filter(r => r.isActive).length;
-
-    return {
-      totalDebt,
-      pendingCommissions,
-      todayPayments,
-      activeRepresentatives
-    };
-  }
-
-  // Invoice template management
+  // Invoice Templates
   async getInvoiceTemplates(): Promise<InvoiceTemplate[]> {
-    return await db.select().from(invoiceTemplates).orderBy(desc(invoiceTemplates.createdAt));
+    return await db.select().from(invoiceTemplates).orderBy(invoiceTemplates.name);
   }
 
   async getActiveInvoiceTemplate(): Promise<InvoiceTemplate | null> {
@@ -440,85 +592,160 @@ export class DatabaseStorage implements IStorage {
     return result[0] || null;
   }
 
-  async getInvoiceTemplateById(id: number): Promise<InvoiceTemplate | null> {
-    const result = await db.select().from(invoiceTemplates)
-      .where(eq(invoiceTemplates.id, id))
-      .limit(1);
-    return result[0] || null;
-  }
-
   async createInvoiceTemplate(template: InsertInvoiceTemplate): Promise<InvoiceTemplate> {
-    // If this template is set as active, deactivate all others first
-    if (template.isActive) {
-      await db.update(invoiceTemplates)
-        .set({ isActive: false, updatedAt: new Date() })
-        .where(eq(invoiceTemplates.isActive, true));
-    }
-
-    const result = await db.insert(invoiceTemplates).values({
-      ...template,
-      updatedAt: new Date()
-    }).returning();
+    const result = await db.insert(invoiceTemplates).values(template).returning();
     return result[0];
   }
 
-  async updateInvoiceTemplate(id: number, template: Partial<InsertInvoiceTemplate>): Promise<InvoiceTemplate | null> {
-    // If this template is being set as active, deactivate all others first
-    if (template.isActive) {
-      await db.update(invoiceTemplates)
-        .set({ isActive: false, updatedAt: new Date() })
-        .where(eq(invoiceTemplates.isActive, true));
-    }
-
+  async updateInvoiceTemplate(id: number, data: Partial<InsertInvoiceTemplate>): Promise<InvoiceTemplate | null> {
     const result = await db.update(invoiceTemplates)
-      .set({ ...template, updatedAt: new Date() })
+      .set({ ...data, updatedAt: new Date() })
       .where(eq(invoiceTemplates.id, id))
       .returning();
+    
     return result[0] || null;
   }
 
-  async deleteInvoiceTemplate(id: number): Promise<boolean> {
-    const result = await db.delete(invoiceTemplates)
-      .where(eq(invoiceTemplates.id, id))
-      .returning();
-    return result.length > 0;
+  // Dashboard
+  async getDashboardStats(): Promise<DashboardStats> {
+    const [revenueResult] = await db.select({ 
+      total: sql<number>`COALESCE(SUM(CAST(${invoices.finalAmount} AS DECIMAL)), 0)` 
+    }).from(invoices);
+
+    const [commissionsResult] = await db.select({ 
+      total: sql<number>`COALESCE(SUM(CAST(${invoices.commissionAmount} AS DECIMAL)), 0)` 
+    }).from(invoices);
+
+    const [representativesResult] = await db.select({ 
+      count: sql<number>`COUNT(*)` 
+    }).from(representatives).where(eq(representatives.isActive, true));
+
+    const [pendingResult] = await db.select({ 
+      count: sql<number>`COUNT(*)` 
+    }).from(invoices).where(eq(invoices.status, 'unpaid'));
+
+    const [overdueResult] = await db.select({ 
+      count: sql<number>`COUNT(*)` 
+    }).from(invoices).where(eq(invoices.status, 'overdue'));
+
+    const monthlyRevenue = await db.select({
+      month: sql<string>`TO_CHAR(${invoices.issueDate}, 'YYYY-MM')`,
+      amount: sql<number>`SUM(CAST(${invoices.finalAmount} AS DECIMAL))`
+    })
+    .from(invoices)
+    .groupBy(sql`TO_CHAR(${invoices.issueDate}, 'YYYY-MM')`)
+    .orderBy(sql`TO_CHAR(${invoices.issueDate}, 'YYYY-MM')`)
+    .limit(12);
+
+    const topPerformers = await db.select({
+      name: representatives.name,
+      amount: sql<number>`SUM(CAST(${invoices.finalAmount} AS DECIMAL))`
+    })
+    .from(invoices)
+    .leftJoin(representatives, eq(invoices.representativeId, representatives.id))
+    .groupBy(representatives.id, representatives.name)
+    .orderBy(sql`SUM(CAST(${invoices.finalAmount} AS DECIMAL)) DESC`)
+    .limit(5);
+
+    const totalRevenue = Number(revenueResult.total) || 0;
+    const totalCommissions = Number(commissionsResult.total) || 0;
+
+    return {
+      totalRevenue,
+      totalCommissions,
+      netProfit: totalRevenue - totalCommissions,
+      activeRepresentatives: Number(representativesResult.count) || 0,
+      pendingInvoices: Number(pendingResult.count) || 0,
+      overdueInvoices: Number(overdueResult.count) || 0,
+      monthlyRevenue: monthlyRevenue.map(row => ({
+        month: row.month,
+        amount: Number(row.amount) || 0
+      })),
+      topPerformers: topPerformers.map(row => ({
+        name: row.name || 'نامشخص',
+        amount: Number(row.amount) || 0
+      }))
+    };
   }
 
-  async setActiveInvoiceTemplate(id: number): Promise<boolean> {
-    // First check if template exists
-    const template = await this.getInvoiceTemplateById(id);
-    if (!template) return false;
+  // Search
+  async searchGlobal(query: string): Promise<{
+    representatives: RepresentativeWithDetails[];
+    invoices: InvoiceWithDetails[];
+    salesColleagues: SalesColleague[];
+  }> {
+    const searchTerm = `%${query}%`;
 
-    // Deactivate all templates
-    await db.update(invoiceTemplates)
-      .set({ isActive: false, updatedAt: new Date() })
-      .where(eq(invoiceTemplates.isActive, true));
+    const reps = await db.select({
+      id: representatives.id,
+      name: representatives.name,
+      code: representatives.code,
+      storeName: representatives.storeName,
+      phone: representatives.phone,
+      panelUsername: representatives.panelUsername,
+      salesColleagueId: representatives.salesColleagueId,
+      accountBalance: representatives.accountBalance,
+      creditLimit: representatives.creditLimit,
+      tariffs: representatives.tariffs,
+      isActive: representatives.isActive,
+      createdAt: representatives.createdAt,
+      updatedAt: representatives.updatedAt,
+      salesColleague: {
+        id: salesColleagues.id,
+        name: salesColleagues.name,
+        code: salesColleagues.code,
+        commissionRate: salesColleagues.commissionRate,
+        isActive: salesColleagues.isActive,
+        createdAt: salesColleagues.createdAt,
+        updatedAt: salesColleagues.updatedAt,
+      }
+    })
+    .from(representatives)
+    .leftJoin(salesColleagues, eq(representatives.salesColleagueId, salesColleagues.id))
+    .where(or(
+      sql`${representatives.name} ILIKE ${searchTerm}`,
+      sql`${representatives.code} ILIKE ${searchTerm}`,
+      sql`${representatives.storeName} ILIKE ${searchTerm}`
+    ))
+    .limit(10);
 
-    // Activate the specified template
-    await db.update(invoiceTemplates)
-      .set({ isActive: true, updatedAt: new Date() })
-      .where(eq(invoiceTemplates.id, id));
+    const invs = await db.select({
+      invoice: invoices,
+      representative: {
+        id: representatives.id,
+        name: representatives.name,
+        code: representatives.code,
+        storeName: representatives.storeName,
+      }
+    })
+    .from(invoices)
+    .leftJoin(representatives, eq(invoices.representativeId, representatives.id))
+    .where(or(
+      sql`${invoices.invoiceNumber} ILIKE ${searchTerm}`,
+      sql`${representatives.name} ILIKE ${searchTerm}`
+    ))
+    .limit(10);
 
-    return true;
-  }
+    const colleagues = await db.select().from(salesColleagues)
+      .where(or(
+        sql`${salesColleagues.name} ILIKE ${searchTerm}`,
+        sql`${salesColleagues.code} ILIKE ${searchTerm}`
+      ))
+      .limit(10);
 
-  async clearFinancialData(): Promise<void> {
-    await db.delete(commissionRecords);
-    await db.delete(payments);
-    await db.delete(invoices);
-    await db.update(representatives)
-      .set({ totalDebt: '0' });
-  }
-
-  async clearAllData(): Promise<void> {
-    await db.delete(commissionRecords);
-    await db.delete(payments);
-    await db.delete(invoices);
-    await db.delete(representatives);
-    await db.delete(salesColleagues);
-    await db.delete(admins);
-    await db.delete(invoiceTemplates);
+    return {
+      representatives: reps.map(row => ({
+        ...row,
+        salesColleague: row.salesColleague.id ? row.salesColleague : undefined
+      })),
+      invoices: invs.map(row => ({
+        ...row.invoice,
+        representative: row.representative
+      })),
+      salesColleagues: colleagues
+    };
   }
 }
 
+// Export singleton instance
 export const storage = new DatabaseStorage();
