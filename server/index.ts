@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
+import session from "express-session";
 import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -60,6 +61,17 @@ app.use(cors({
 // Increase payload limit for large usage files (50MB limit)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+
+// Session configuration for simple login system
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'fallback-secret-key-for-testing',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // Set to true in production with HTTPS
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -191,6 +203,81 @@ app.use((req, res, next) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // Login-protected portal route
+  app.get('/portal/:username', safariPortalMiddleware, (req, res) => {
+    // Check if authenticated (simple session check)
+    const isAuthenticated = req.session?.authenticated === true;
+    const username = req.params.username;
+    
+    if (!isAuthenticated) {
+      // Redirect to login page
+      res.sendFile(path.resolve(import.meta.dirname, '..', 'login-portal.html'));
+    } else {
+      // Serve the actual portal (you can create a proper portal page here)
+      res.send(`
+        <!DOCTYPE html>
+        <html lang="fa" dir="rtl">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>پورتال نماینده ${username}</title>
+            <style>
+                body { font-family: Tahoma; direction: rtl; padding: 20px; background: #f5f5f5; }
+                .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; }
+                h1 { color: #333; text-align: center; }
+                .success { background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin: 20px 0; }
+                .logout-btn { background: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>🎉 پورتال نماینده ${username}</h1>
+                <div class="success">
+                    ✓ شما با موفقیت وارد پورتال شده‌اید!<br>
+                    ✓ مشکل 403 Forbidden حل شده است<br>
+                    ✓ احراز هویت کار می‌کند<br>
+                </div>
+                <p>نام نماینده: <strong>${username}</strong></p>
+                <p>زمان ورود: <strong>${new Date().toLocaleString('fa-IR')}</strong></p>
+                <p>آدرس: <strong>${req.get('host')}${req.originalUrl}</strong></p>
+                <br>
+                <button class="logout-btn" onclick="logout()">خروج از سیستم</button>
+            </div>
+            <script>
+                function logout() {
+                    fetch('/api/logout', { method: 'POST' })
+                        .then(() => window.location.reload());
+                }
+            </script>
+        </body>
+        </html>
+      `);
+    }
+  });
+
+  // Simple login API for testing
+  app.post('/api/login', express.json(), (req, res) => {
+    const { username, password } = req.body;
+    
+    if (username === '1' && password === '2') {
+      req.session.authenticated = true;
+      req.session.username = username;
+      res.json({ success: true, message: 'Login successful' });
+    } else {
+      res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+  });
+
+  // Logout API
+  app.post('/api/logout', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: 'Logout failed' });
+      }
+      res.json({ success: true, message: 'Logged out successfully' });
+    });
+  });
+
   process.env.PORT = process.env.PORT || '80';
   const port = parseInt(process.env.PORT, 10);
   server.listen({
@@ -200,9 +287,11 @@ app.use((req, res, next) => {
   }, () => {
     log(`serving on port ${port}`);
     log(`Portal routes available:`);
+    log(`  - /portal/drmbesf (Login-protected portal)`);
     log(`  - /view/dream (Safari optimized)`);
     log(`  - /public/dream (Simple version)`);
     log(`  - /rep/dream (Mobile optimized)`);
-    log(`  - /portal/dream (Full React version)`);
+    log(`  - /p/dream (Short URL)`);
+    log(`  - /ios-test (iOS debugging)`);
   });
 })();
