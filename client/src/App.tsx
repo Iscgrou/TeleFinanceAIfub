@@ -13,6 +13,7 @@ import Reports from './pages/Reports'
 import ActivityLog from './pages/ActivityLog'
 import SettingsPage from './pages/SettingsPage'
 import InvoiceHistoryPage from './pages/InvoiceHistoryPage'
+import AIAnalytics from './pages/AIAnalytics'
 
 // Create QueryClient instance
 const queryClient = new QueryClient({
@@ -98,10 +99,7 @@ export default function App() {
                   <Route path="/invoices/history" component={InvoiceHistoryPage} />
                   
                   {/* AI Analytics Route - Phase 5.1 */}
-                  <Route path="/ai-analytics" component={() => {
-                    const AIAnalytics = require('./pages/AIAnalytics').default;
-                    return <AIAnalytics />;
-                  }} />
+                  <Route path="/ai-analytics" component={AIAnalytics} />
                   
                   {/* Legacy Route Redirects */}
                   <Route path="/admin/advanced">
