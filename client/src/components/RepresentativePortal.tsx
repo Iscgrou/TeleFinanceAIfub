@@ -18,6 +18,31 @@ interface Invoice {
   status: string;
   createdAt: string;
   dueDate: string | null;
+  usageJsonDetails?: any[];
+  issueDate?: string;
+}
+
+interface InvoiceDetail {
+  invoice: Invoice;
+  lineItems: Array<{
+    description: string;
+    amount: number;
+    date: string;
+  }>;
+}
+
+interface InvoiceTemplate {
+  id: number;
+  name: string;
+  headerTitle: string;
+  headerSubtitle: string;
+  footerText: string;
+  footerContact: string;
+  representativeLabel: string;
+  invoiceLabel: string;
+  lineItemLabel: string;
+  totalLabel: string;
+  payableLabel: string;
 }
 
 interface Payment {
@@ -57,10 +82,23 @@ export default function RepresentativePortal({ username }: RepresentativePortalP
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceDetail | null>(null);
+  const [invoiceTemplate, setInvoiceTemplate] = useState<InvoiceTemplate | null>(null);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
   useEffect(() => {
     loadPortalData();
   }, [username]);
+
+  const loadInvoiceDetails = async (invoiceId: number) => {
+    try {
+      const response = await api.get<InvoiceDetail>(`/api/invoices/${invoiceId}/detail`);
+      setSelectedInvoice(response);
+      setShowInvoiceModal(true);
+    } catch (error) {
+      console.error('Error loading invoice details:', error);
+    }
+  };
 
   const loadPortalData = async () => {
     try {
@@ -91,6 +129,14 @@ export default function RepresentativePortal({ username }: RepresentativePortalP
         }
       } catch (err) {
         console.log('Using default portal texts');
+      }
+
+      // Load invoice template
+      try {
+        const templateResponse = await api.get<{template: InvoiceTemplate}>('/api/invoice-templates/active');
+        setInvoiceTemplate(templateResponse.template);
+      } catch (err) {
+        console.log('No active invoice template found, using defaults');
       }
 
     } catch (err) {
@@ -227,20 +273,28 @@ export default function RepresentativePortal({ username }: RepresentativePortalP
                         <p className="text-sm text-gray-600">{formatDate(invoice.createdAt)}</p>
                       </div>
                     </div>
-                    <div className="text-left">
-                      <p className="font-bold text-lg text-gray-900">
-                        {formatCurrency(parseFloat(invoice.amount))}
-                      </p>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        invoice.status === 'paid' 
-                          ? 'bg-green-100 text-green-800' 
-                          : invoice.status === 'partially_paid'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {invoice.status === 'paid' ? 'پرداخت شده' : 
-                         invoice.status === 'partially_paid' ? 'نیمه پرداخت' : 'پرداخت نشده'}
-                      </span>
+                    <div className="flex items-center space-x-3 space-x-reverse">
+                      <div className="text-left">
+                        <p className="font-bold text-lg text-gray-900">
+                          {formatCurrency(parseFloat(invoice.amount))}
+                        </p>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          invoice.status === 'paid' 
+                            ? 'bg-green-100 text-green-800' 
+                            : invoice.status === 'partially_paid'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {invoice.status === 'paid' ? 'پرداخت شده' : 
+                           invoice.status === 'partially_paid' ? 'نیمه پرداخت' : 'پرداخت نشده'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => loadInvoiceDetails(invoice.id)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        مشاهده جزئیات
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -304,6 +358,125 @@ export default function RepresentativePortal({ username }: RepresentativePortalP
           </div>
         </div>
       </main>
+
+      {/* Invoice Details Modal */}
+      {showInvoiceModal && selectedInvoice && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold">
+                    {invoiceTemplate?.headerTitle || 'فاکتور فروش'}
+                  </h2>
+                  <p className="text-blue-100">
+                    {invoiceTemplate?.headerSubtitle || 'سرویس پروکسی پرسرعت'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowInvoiceModal(false)}
+                  className="text-white hover:text-blue-200 text-2xl font-bold p-2"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-6">
+              <div className="space-y-8">
+                {/* Invoice Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Representative Info */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">
+                      {invoiceTemplate?.representativeLabel || 'اطلاعات نماینده'}
+                    </h3>
+                    <div className="space-y-2">
+                      <p><span className="font-medium">نام فروشگاه:</span> {representative?.storeName}</p>
+                      <p><span className="font-medium">نام کاربری:</span> {representative?.panelUsername}</p>
+                      {representative?.ownerName && (
+                        <p><span className="font-medium">مالک:</span> {representative.ownerName}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Invoice Info */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">
+                      {invoiceTemplate?.invoiceLabel || 'اطلاعات فاکتور'}
+                    </h3>
+                    <div className="space-y-2">
+                      <p><span className="font-medium">شماره فاکتور:</span> #{selectedInvoice.invoice.id}</p>
+                      <p><span className="font-medium">تاریخ صدور:</span> {formatDate(selectedInvoice.invoice.issueDate || selectedInvoice.invoice.createdAt)}</p>
+                      <p><span className="font-medium">وضعیت:</span> 
+                        <span className={`mr-2 px-2 py-1 rounded-full text-xs ${
+                          selectedInvoice.invoice.status === 'paid' 
+                            ? 'bg-green-100 text-green-800' 
+                            : selectedInvoice.invoice.status === 'partially_paid'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {selectedInvoice.invoice.status === 'paid' ? 'پرداخت شده' : 
+                           selectedInvoice.invoice.status === 'partially_paid' ? 'نیمه پرداخت' : 'پرداخت نشده'}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Line Items */}
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">
+                    {invoiceTemplate?.lineItemLabel || 'شرح خدمات'}
+                  </h3>
+                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 px-4 py-3 grid grid-cols-4 text-sm font-medium text-gray-700">
+                      <div className="col-span-2">شرح</div>
+                      <div>تاریخ</div>
+                      <div className="text-left">مبلغ</div>
+                    </div>
+                    <div className="divide-y divide-gray-200">
+                      {selectedInvoice.lineItems.map((item, index) => (
+                        <div key={index} className="px-4 py-3 grid grid-cols-4 text-sm">
+                          <div className="col-span-2 text-gray-900">{item.description}</div>
+                          <div className="text-gray-600">{formatDate(item.date)}</div>
+                          <div className="text-left font-medium text-gray-900">
+                            {formatCurrency(item.amount)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Total */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-bold text-blue-900">
+                      {invoiceTemplate?.totalLabel || 'جمع کل'}:
+                    </span>
+                    <span className="text-2xl font-bold text-blue-900">
+                      {formatCurrency(parseFloat(selectedInvoice.invoice.amount))}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="border-t pt-6 text-center text-gray-600 space-y-2">
+                  <p className="text-sm">
+                    {invoiceTemplate?.footerText || 'این فاکتور به صورت خودکار توسط سیستم مدیریت مالی تولید شده است'}
+                  </p>
+                  <p className="text-sm">
+                    {invoiceTemplate?.footerContact || 'در صورت هرگونه سوال با پشتیبانی تماس بگیرید'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
