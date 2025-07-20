@@ -1,224 +1,328 @@
-import { pgTable, text, serial, integer, boolean, numeric, timestamp, jsonb, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, numeric, timestamp, jsonb, varchar, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Sales Colleagues (همکاران فروش)
+export const admins = pgTable("admins", {
+  chatId: text("chat_id").primaryKey(),
+  fullName: text("full_name").notNull(),
+  isSuperAdmin: boolean("is_super_admin").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const salesColleagues = pgTable("sales_colleagues", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  code: text("code").notNull().unique(),
-  commissionRate: numeric("commission_rate", { precision: 5, scale: 2 }).notNull(), // e.g., 10.50 for 10.5%
-  isActive: boolean("is_active").default(true),
+  commissionRate: numeric("commission_rate", { precision: 5, scale: 4 }).notNull(), // e.g., 0.1000 for 10%
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Representatives (نمایندگان)
 export const representatives = pgTable("representatives", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  code: text("code").notNull().unique(),
-  storeName: text("store_name").notNull(),
+  storeName: text("store_name").notNull().unique(),
+  ownerName: text("owner_name"),
   phone: text("phone"),
+  telegramId: text("telegram_id"),
   panelUsername: text("panel_username").notNull().unique(),
-  salesColleagueId: integer("sales_colleague_id").references(() => salesColleagues.id),
-  accountBalance: numeric("account_balance", { precision: 15, scale: 2 }).default('0'), // موجودی حساب
-  creditLimit: numeric("credit_limit", { precision: 15, scale: 2 }).default('1000000'),
-  tariffs: jsonb("tariffs"), // 12 سطح تعرفه
+  salesColleagueName: text("sales_colleague_name"),
+  totalDebt: numeric("total_debt", { precision: 15, scale: 2 }).default('0'),
+  creditLimit: numeric("credit_limit", { precision: 15, scale: 2 }).default('1000000'), // Default 1M Toman credit limit
+  riskLevel: text("risk_level", { enum: ["low", "medium", "high", "critical"] }).default("medium"),
+  colleagueId: integer("colleague_id").references(() => salesColleagues.id),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Invoices (فاکتورها)
 export const invoices = pgTable("invoices", {
   id: serial("id").primaryKey(),
-  invoiceNumber: text("invoice_number").notNull().unique(),
   representativeId: integer("representative_id").references(() => representatives.id).notNull(),
-  totalAmount: numeric("total_amount", { precision: 15, scale: 2 }).notNull(),
-  commissionAmount: numeric("commission_amount", { precision: 15, scale: 2 }).default('0'),
-  finalAmount: numeric("final_amount", { precision: 15, scale: 2 }).notNull(),
-  status: text("status", { enum: ["unpaid", "partially_paid", "paid", "overdue"] }).default("unpaid"),
+  amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
+  status: text("status", { enum: ["unpaid", "partially_paid", "paid"] }).default("unpaid"),
   issueDate: timestamp("issue_date").defaultNow(),
-  dueDate: timestamp("due_date"),
-  isManual: boolean("is_manual").default(true),
-  notes: text("notes"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  usageJsonDetails: jsonb("usage_json_details"),
+  isManual: boolean("is_manual").default(false),
+  usageHash: text("usage_hash"), // Hash to prevent duplicate processing
+  processingBatchId: text("processing_batch_id"), // Track which batch created this invoice
 });
 
-// Invoice Items (آیتم‌های فاکتور)
-export const invoiceItems = pgTable("invoice_items", {
-  id: serial("id").primaryKey(),
-  invoiceId: integer("invoice_id").references(() => invoices.id).notNull(),
-  description: text("description").notNull(),
-  quantity: integer("quantity").default(1),
-  unitPrice: numeric("unit_price", { precision: 15, scale: 2 }).notNull(),
-  totalPrice: numeric("total_price", { precision: 15, scale: 2 }).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Payments (پرداخت‌ها)
 export const payments = pgTable("payments", {
   id: serial("id").primaryKey(),
   representativeId: integer("representative_id").references(() => representatives.id).notNull(),
   amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
   paymentDate: timestamp("payment_date").defaultNow(),
-  paymentMethod: text("payment_method").default("cash"),
-  referenceNumber: text("reference_number"),
   notes: text("notes"),
-  isAllocated: boolean("is_allocated").default(false), // آیا تخصیص یافته است
+});
+
+export const commissionRecords = pgTable("commission_records", {
+  id: serial("id").primaryKey(),
+  colleagueId: integer("colleague_id").references(() => salesColleagues.id).notNull(),
+  sourceInvoiceId: integer("source_invoice_id").references(() => invoices.id).notNull(),
+  commissionAmount: numeric("commission_amount", { precision: 15, scale: 2 }).notNull(),
+  payoutStatus: text("payout_status", { enum: ["pending", "paid"] }).default("pending"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Payment Allocations (تخصیص پرداخت‌ها)
-export const paymentAllocations = pgTable("payment_allocations", {
-  id: serial("id").primaryKey(),
-  paymentId: integer("payment_id").references(() => payments.id).notNull(),
-  invoiceId: integer("invoice_id").references(() => invoices.id).notNull(),
-  allocatedAmount: numeric("allocated_amount", { precision: 15, scale: 2 }).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Audit Logs (ردگیری تغییرات)
-export const auditLogs = pgTable("audit_logs", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id").default("admin"), // فعلاً فقط ادمین
-  action: text("action").notNull(), // e.g., "افزودن نماینده", "حذف فاکتور"
-  entityType: text("entity_type").notNull(), // e.g., "representative", "invoice"
-  entityId: text("entity_id"),
-  details: jsonb("details"),
-  timestamp: timestamp("timestamp").defaultNow(),
-});
-
-// System Settings (تنظیمات سیستم)
 export const systemSettings = pgTable("system_settings", {
   id: serial("id").primaryKey(),
-  key: text("key").notNull().unique(),
-  value: text("value"),
-  description: text("description"),
-  category: text("category").default("general"),
+  geminiApiKey: text("gemini_api_key"),
+  speechToTextProvider: text("speech_to_text_provider").default("google"),
+  speechToTextApiKey: text("speech_to_text_api_key"),
+  telegramBotToken: text("telegram_bot_token"),
+  adminChatId: text("admin_chat_id"),
+  invoiceTemplate: text("invoice_template"),
+  representativePortalTexts: text("representative_portal_texts"),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Invoice Templates (قالب‌های فاکتور)
-export const invoiceTemplates = pgTable("invoice_templates", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  companyName: text("company_name").default("شرکت پروکسی سرویس"),
-  headerTitle: text("header_title").default("فاکتور فروش"),
-  footerText: text("footer_text").default("با تشکر از انتخاب شما"),
-  primaryColor: text("primary_color").default("#1f2937"),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+// Invoice templates for customizable invoice layouts
+export const invoiceTemplates = pgTable('invoice_templates', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 100 }).notNull(),
+  headerTitle: varchar('header_title', { length: 200 }).notNull().default('فاکتور فروش'),
+  headerSubtitle: varchar('header_subtitle', { length: 200 }).notNull().default('سرویس پروکسی پرسرعت'),
+  footerText: text('footer_text').notNull().default('این فاکتور به صورت خودکار توسط سیستم مدیریت مالی تولید شده است'),
+  footerContact: text('footer_contact').notNull().default('در صورت هرگونه سوال با پشتیبانی تماس بگیرید'),
+  representativeLabel: varchar('representative_label', { length: 100 }).notNull().default('اطلاعات نماینده'),
+  invoiceLabel: varchar('invoice_label', { length: 100 }).notNull().default('اطلاعات فاکتور'),
+  lineItemLabel: varchar('line_item_label', { length: 100 }).notNull().default('شرح خدمات'),
+  totalLabel: varchar('total_label', { length: 100 }).notNull().default('جمع کل'),
+  payableLabel: varchar('payable_label', { length: 100 }).notNull().default('مبلغ قابل پرداخت'),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
 
-// Insert Schemas
-export const insertSalesColleagueSchema = createInsertSchema(salesColleagues).omit({ 
-  id: true, 
-  createdAt: true, 
-  updatedAt: true 
+// Invoice template types
+export type InvoiceTemplate = typeof invoiceTemplates.$inferSelect;
+export type NewInvoiceTemplate = typeof invoiceTemplates.$inferInsert;
+
+// Create insert schema for invoice templates
+export const insertInvoiceTemplateSchema = createInsertSchema(invoiceTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
 });
 
-export const insertRepresentativeSchema = createInsertSchema(representatives).omit({ 
-  id: true, 
-  accountBalance: true,
-  createdAt: true, 
-  updatedAt: true 
-});
+export type InsertInvoiceTemplate = z.infer<typeof insertInvoiceTemplateSchema>;
 
-export const insertInvoiceSchema = createInsertSchema(invoices).omit({ 
-  id: true, 
-  invoiceNumber: true,
-  issueDate: true,
-  createdAt: true, 
-  updatedAt: true 
-});
-
-export const insertInvoiceItemSchema = createInsertSchema(invoiceItems).omit({ 
-  id: true, 
-  createdAt: true 
-});
-
-export const insertPaymentSchema = createInsertSchema(payments).omit({ 
-  id: true, 
-  paymentDate: true,
-  createdAt: true 
-});
-
-export const insertPaymentAllocationSchema = createInsertSchema(paymentAllocations).omit({ 
-  id: true, 
-  createdAt: true 
-});
-
-export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({ 
-  id: true, 
-  timestamp: true 
-});
-
-export const insertSystemSettingsSchema = createInsertSchema(systemSettings).omit({ 
-  id: true, 
-  updatedAt: true 
-});
-
-export const insertInvoiceTemplateSchema = createInsertSchema(invoiceTemplates).omit({ 
-  id: true, 
-  createdAt: true, 
-  updatedAt: true 
-});
+// Insert schemas
+export const insertAdminSchema = createInsertSchema(admins).omit({ createdAt: true });
+export const insertSalesColleagueSchema = createInsertSchema(salesColleagues).omit({ id: true, createdAt: true });
+export const insertRepresentativeSchema = createInsertSchema(representatives).omit({ id: true, createdAt: true, totalDebt: true });
+export const insertInvoiceSchema = createInsertSchema(invoices)
+  .omit({ id: true, issueDate: true })
+  .extend({
+    amount: z.string().refine((val) => {
+      const num = parseFloat(val);
+      return !isNaN(num) && num >= 0;
+    }, {
+      message: "Amount must be a valid non-negative number"
+    })
+  });
+export const insertPaymentSchema = createInsertSchema(payments).omit({ id: true, paymentDate: true });
+export const insertCommissionRecordSchema = createInsertSchema(commissionRecords).omit({ id: true, createdAt: true });
+export const insertSystemSettingsSchema = createInsertSchema(systemSettings).omit({ id: true, updatedAt: true });
 
 // Types
+export type Admin = typeof admins.$inferSelect;
+export type InsertAdmin = z.infer<typeof insertAdminSchema>;
 export type SalesColleague = typeof salesColleagues.$inferSelect;
 export type InsertSalesColleague = z.infer<typeof insertSalesColleagueSchema>;
-
 export type Representative = typeof representatives.$inferSelect;
 export type InsertRepresentative = z.infer<typeof insertRepresentativeSchema>;
-
 export type Invoice = typeof invoices.$inferSelect;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
-
-export type InvoiceItem = typeof invoiceItems.$inferSelect;
-export type InsertInvoiceItem = z.infer<typeof insertInvoiceItemSchema>;
-
 export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
-
-export type PaymentAllocation = typeof paymentAllocations.$inferSelect;
-export type InsertPaymentAllocation = z.infer<typeof insertPaymentAllocationSchema>;
-
-export type AuditLog = typeof auditLogs.$inferSelect;
-export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
-
+export type CommissionRecord = typeof commissionRecords.$inferSelect;
+export type InsertCommissionRecord = z.infer<typeof insertCommissionRecordSchema>;
 export type SystemSettings = typeof systemSettings.$inferSelect;
 export type InsertSystemSettings = z.infer<typeof insertSystemSettingsSchema>;
 
-export type InvoiceTemplate = typeof invoiceTemplates.$inferSelect;
-export type InsertInvoiceTemplate = z.infer<typeof insertInvoiceTemplateSchema>;
+// Reminder Rules for Automated Payment Notifications
+export const reminderRules = pgTable('reminder_rules', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  triggerConditions: jsonb('trigger_conditions').notNull(),
+  schedulePattern: varchar('schedule_pattern', { length: 100 }).notNull(),
+  channels: text('channels').array().notNull(),
+  templateId: integer('template_id'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
 
-// Extended types for complex operations
-export interface RepresentativeWithDetails extends Representative {
-  salesColleague?: SalesColleague;
-  totalInvoices?: number;
-  totalPaid?: number;
-  totalUnpaid?: number;
-  lastPaymentDate?: Date;
-}
+// Message Templates for Multi-language Support
+export const messageTemplates = pgTable('message_templates', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  language: varchar('language', { length: 10 }).default('fa').notNull(),
+  channel: varchar('channel', { length: 50 }).notNull(),
+  subject: varchar('subject', { length: 255 }),
+  content: text('content').notNull(),
+  variables: jsonb('variables'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
 
-export interface InvoiceWithDetails extends Invoice {
-  representative?: Representative;
-  items?: InvoiceItem[];
-  payments?: PaymentAllocation[];
-  salesColleague?: SalesColleague;
-}
+// Reminder Logs for Tracking and Analytics
+export const reminderLogs = pgTable('reminder_logs', {
+  id: serial('id').primaryKey(),
+  representativeId: integer('representative_id').references(() => representatives.id).notNull(),
+  ruleId: integer('rule_id').references(() => reminderRules.id).notNull(),
+  channel: varchar('channel', { length: 50 }).notNull(),
+  messageContent: text('message_content'),
+  sentAt: timestamp('sent_at').defaultNow().notNull(),
+  deliveryStatus: varchar('delivery_status', { length: 50 }).default('pending').notNull(),
+  responseReceived: boolean('response_received').default(false).notNull(),
+  responseContent: text('response_content'),
+  nextReminderAt: timestamp('next_reminder_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
 
-export interface DashboardStats {
-  totalRevenue: number;
-  totalCommissions: number;
-  netProfit: number;
-  activeRepresentatives: number;
-  pendingInvoices: number;
-  overdueInvoices: number;
-  monthlyRevenue: Array<{ month: string; amount: number }>;
-  topPerformers: Array<{ name: string; amount: number }>;
-}
+// Risk Profiles for AI Analytics
+export const riskProfiles = pgTable('risk_profiles', {
+  id: serial('id').primaryKey(),
+  representativeId: integer('representative_id').references(() => representatives.id).notNull(),
+  riskScore: decimal('risk_score', { precision: 5, scale: 4 }).notNull(),
+  riskCategory: varchar('risk_category', { length: 20 }).notNull(),
+  factors: jsonb('factors').notNull(),
+  paymentProbability30d: decimal('payment_probability_30d', { precision: 5, scale: 4 }),
+  paymentProbability60d: decimal('payment_probability_60d', { precision: 5, scale: 4 }),
+  paymentProbability90d: decimal('payment_probability_90d', { precision: 5, scale: 4 }),
+  recommendedActions: jsonb('recommended_actions'),
+  modelVersion: varchar('model_version', { length: 50 }),
+  calculatedAt: timestamp('calculated_at').defaultNow().notNull(),
+  expiresAt: timestamp('expires_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Chat Sessions for Intelligent Chatbot
+export const chatSessions = pgTable('chat_sessions', {
+  id: text('id').primaryKey(),
+  userId: varchar('user_id', { length: 255 }).notNull(),
+  platform: varchar('platform', { length: 50 }).notNull(),
+  startedAt: timestamp('started_at').defaultNow().notNull(),
+  lastActivity: timestamp('last_activity').defaultNow().notNull(),
+  context: jsonb('context'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Chat Messages for Conversation History
+export const chatMessages = pgTable('chat_messages', {
+  id: serial('id').primaryKey(),
+  sessionId: text('session_id').references(() => chatSessions.id).notNull(),
+  role: varchar('role', { length: 20 }).notNull(),
+  content: text('content').notNull(),
+  intent: varchar('intent', { length: 100 }),
+  entities: jsonb('entities'),
+  responseTimeMs: integer('response_time_ms'),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Credit Control System
+export const creditLimits = pgTable('credit_limits', {
+  id: serial('id').primaryKey(),
+  representativeId: integer('representative_id').references(() => representatives.id).notNull(),
+  creditLimit: numeric('credit_limit', { precision: 15, scale: 2 }).notNull(),
+  availableCredit: numeric('available_credit', { precision: 15, scale: 2 }).notNull(),
+  lastReviewDate: timestamp('last_review_date').defaultNow().notNull(),
+  autoAdjust: boolean('auto_adjust').default(true).notNull(),
+  createdBy: text('created_by').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Cash Flow Forecasting
+export const cashFlowForecasts = pgTable('cash_flow_forecasts', {
+  id: serial('id').primaryKey(),
+  forecastDate: timestamp('forecast_date').notNull(),
+  expectedInflows: numeric('expected_inflows', { precision: 15, scale: 2 }).notNull(),
+  expectedOutflows: numeric('expected_outflows', { precision: 15, scale: 2 }).notNull(),
+  netCashFlow: numeric('net_cash_flow', { precision: 15, scale: 2 }).notNull(),
+  confidence: decimal('confidence', { precision: 5, scale: 4 }).notNull(), // 0.0 to 1.0
+  modelVersion: varchar('model_version', { length: 50 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Profitability Analysis
+export const profitabilityReports = pgTable('profitability_reports', {
+  id: serial('id').primaryKey(),
+  representativeId: integer('representative_id').references(() => representatives.id),
+  periodStart: timestamp('period_start').notNull(),
+  periodEnd: timestamp('period_end').notNull(),
+  totalRevenue: numeric('total_revenue', { precision: 15, scale: 2 }).notNull(),
+  totalCosts: numeric('total_costs', { precision: 15, scale: 2 }).notNull(),
+  netProfit: numeric('net_profit', { precision: 15, scale: 2 }).notNull(),
+  profitMargin: decimal('profit_margin', { precision: 5, scale: 4 }).notNull(),
+  roi: decimal('roi', { precision: 5, scale: 4 }).notNull(), // Return on Investment
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Bank Reconciliation
+export const bankTransactions = pgTable('bank_transactions', {
+  id: serial('id').primaryKey(),
+  bankReference: varchar('bank_reference', { length: 100 }).notNull().unique(),
+  transactionDate: timestamp('transaction_date').notNull(),
+  amount: numeric('amount', { precision: 15, scale: 2 }).notNull(),
+  description: text('description'),
+  accountNumber: varchar('account_number', { length: 50 }).notNull(),
+  reconciled: boolean('reconciled').default(false).notNull(),
+  matchedPaymentId: integer('matched_payment_id').references(() => payments.id),
+  importBatch: varchar('import_batch', { length: 100 }),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Security Audit Log
+export const securityAuditLog = pgTable('security_audit_log', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id', { length: 255 }),
+  action: varchar('action', { length: 100 }).notNull(),
+  resource: varchar('resource', { length: 100 }).notNull(),
+  details: jsonb('details'),
+  ipAddress: varchar('ip_address', { length: 45 }),
+  userAgent: text('user_agent'),
+  success: boolean('success').notNull(),
+  timestamp: timestamp('timestamp').defaultNow().notNull()
+});
+
+// Insert schemas for new tables
+export const insertReminderRuleSchema = createInsertSchema(reminderRules).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertMessageTemplateSchema = createInsertSchema(messageTemplates).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertReminderLogSchema = createInsertSchema(reminderLogs).omit({ id: true, sentAt: true, createdAt: true });
+export const insertRiskProfileSchema = createInsertSchema(riskProfiles).omit({ id: true, calculatedAt: true, createdAt: true });
+export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({ startedAt: true, lastActivity: true, createdAt: true });
+export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({ id: true, createdAt: true });
+
+// New types for advanced features
+export type ReminderRule = typeof reminderRules.$inferSelect;
+export type InsertReminderRule = z.infer<typeof insertReminderRuleSchema>;
+export type MessageTemplate = typeof messageTemplates.$inferSelect;
+export type InsertMessageTemplate = z.infer<typeof insertMessageTemplateSchema>;
+export type ReminderLog = typeof reminderLogs.$inferSelect;
+export type InsertReminderLog = z.infer<typeof insertReminderLogSchema>;
+export type RiskProfile = typeof riskProfiles.$inferSelect;
+export type InsertRiskProfile = z.infer<typeof insertRiskProfileSchema>;
+export type ChatSession = typeof chatSessions.$inferSelect;
+export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+
+// New schema types for advanced features
+export const insertCreditLimitSchema = createInsertSchema(creditLimits).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertCashFlowForecastSchema = createInsertSchema(cashFlowForecasts).omit({ id: true, createdAt: true });
+export const insertProfitabilityReportSchema = createInsertSchema(profitabilityReports).omit({ id: true, createdAt: true });
+export const insertBankTransactionSchema = createInsertSchema(bankTransactions).omit({ id: true, createdAt: true });
+export const insertSecurityAuditLogSchema = createInsertSchema(securityAuditLog).omit({ id: true, timestamp: true });
+
+// New types for advanced features
+export type CreditLimit = typeof creditLimits.$inferSelect;
+export type InsertCreditLimit = z.infer<typeof insertCreditLimitSchema>;
+export type CashFlowForecast = typeof cashFlowForecasts.$inferSelect;
+export type InsertCashFlowForecast = z.infer<typeof insertCashFlowForecastSchema>;
+export type ProfitabilityReport = typeof profitabilityReports.$inferSelect;
+export type InsertProfitabilityReport = z.infer<typeof insertProfitabilityReportSchema>;
+export type BankTransaction = typeof bankTransactions.$inferSelect;
+export type InsertBankTransaction = z.infer<typeof insertBankTransactionSchema>;
+export type SecurityAuditLog = typeof securityAuditLog.$inferSelect;
+export type InsertSecurityAuditLog = z.infer<typeof insertSecurityAuditLogSchema>;
