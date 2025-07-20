@@ -1,16 +1,18 @@
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
+import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// Configure CORS to allow all origins in development
+// Configure CORS to allow all origins with enhanced mobile support
 app.use(cors({
   origin: true, // Allow all origins
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Accept-Language', 'Accept-Encoding', 'User-Agent'],
+  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 }));
 
 // Increase payload limit for large usage files (50MB limit)
@@ -85,6 +87,17 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 80 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
+  // Add mobile portal routes before vite setup
+  app.get('/mobile-portal/:username?', (req, res) => {
+    const username = req.params.username || 'demo';
+    res.sendFile(path.resolve(import.meta.dirname, '..', 'mobile-portal.html'));
+  });
+
+  app.get('/simple-portal/:username?', (req, res) => {
+    const username = req.params.username || 'demo';
+    res.sendFile(path.resolve(import.meta.dirname, '..', 'simple-portal.html'));
+  });
+
   process.env.PORT = process.env.PORT || '80';
   const port = parseInt(process.env.PORT, 10);
   server.listen({
@@ -93,5 +106,6 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    log(`Mobile portal available at: /mobile-portal/dream`);
   });
 })();

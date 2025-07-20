@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پورتال ساده نماینده</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Tahoma', sans-serif;
+            direction: rtl;
+            background: #f0f4f8;
+            padding: 15px;
+            color: #333;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .header {
+            text-align: center;
+            background: linear-gradient(45deg, #4299e1, #667eea);
+            color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .store-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+        }
+        
+        .stat-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4299e1;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #edf2f7;
+        }
+        
+        .data-row:last-child {
+            border-bottom: none;
+        }
+        
+        .status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-active {
+            background: #c6f6d5;
+            color: #2f855a;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top-color: #4299e1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .refresh-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .refresh-btn:hover {
+            background: #3182ce;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="card">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>در حال بارگذاری...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('Simple Portal Started');
+        
+        // Get username from URL
+        const username = window.location.pathname.includes('/portal/') ? 
+                        window.location.pathname.split('/portal/')[1] : 
+                        'dream';
+        
+        console.log('Username:', username);
+        console.log('Base URL:', window.location.origin);
+        
+        async function loadData() {
+            const app = document.getElementById('app');
+            
+            try {
+                console.log('Fetching representative data...');
+                
+                const response = await fetch(`${window.location.origin}/api/representatives/by-username/${username}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`نماینده یافت نشد (${response.status})`);
+                }
+                
+                const data = await response.json();
+                console.log('Data received:', data);
+                
+                // Display success
+                renderPortal(data);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                renderError(error.message);
+            }
+        }
+        
+        function renderPortal(rep) {
+            const app = document.getElementById('app');
+            app.innerHTML = `
+                <div class="header">
+                    <div class="store-title">${rep.storeName || 'نام فروشگاه'}</div>
+                    <div class="subtitle">پورتال نماینده</div>
+                </div>
+                
+                <div class="stats">
+                    <div class="card stat-item">
+                        <div class="stat-number">${Number(rep.totalDebt || 0).toLocaleString('fa-IR')}</div>
+                        <div class="stat-label">بدهی کل (تومان)</div>
+                    </div>
+                    <div class="card stat-item">
+                        <div class="stat-number">${rep.isActive ? 'فعال' : 'غیرفعال'}</div>
+                        <div class="stat-label">وضعیت حساب</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="section-title">اطلاعات نماینده</div>
+                    <div class="data-row">
+                        <span>نام فروشگاه:</span>
+                        <span>${rep.storeName}</span>
+                    </div>
+                    <div class="data-row">
+                        <span>نام مالک:</span>
+                        <span>${rep.ownerName || 'نامشخص'}</span>
+                    </div>
+                    <div class="data-row">
+                        <span>شماره تماس:</span>
+                        <span>${rep.phoneNumber || 'نامشخص'}</span>
+                    </div>
+                    <div class="data-row">
+                        <span>وضعیت:</span>
+                        <span class="status ${rep.isActive ? 'status-active' : 'status-inactive'}">
+                            ${rep.isActive ? 'فعال' : 'غیرفعال'}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="section-title">پیام سیستم</div>
+                    <p style="color: #666; text-align: center; padding: 15px;">
+                        پورتال ساده با موفقیت بارگذاری شد!<br>
+                        برای پشتیبانی با مدیریت تماس بگیرید.
+                    </p>
+                </div>
+            `;
+        }
+        
+        function renderError(message) {
+            const app = document.getElementById('app');
+            app.innerHTML = `
+                <div class="card">
+                    <div class="error">
+                        <h3>خطا در بارگذاری</h3>
+                        <p>${message}</p>
+                        <p>نام کاربری: ${username}</p>
+                        <button class="refresh-btn" onclick="location.reload()">تلاش مجدد</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Start loading
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadData);
+        } else {
+            loadData();
+        }
+    </script>
+</body>
+</html>

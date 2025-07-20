@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Router, Route, Switch } from 'wouter'
 import { Toaster } from '@/components/ui/toaster'
+import ErrorBoundary from './components/ErrorBoundary'
 import MainLayout from './components/MainLayout'
 import UnifiedDashboard from './components/UnifiedDashboard'
 import RepresentativePortal from './components/RepresentativePortal'
@@ -65,10 +66,11 @@ function NotFoundPage() {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <Switch>
-          {/* Representative Portal Routes (No Layout) */}
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <Switch>
+            {/* Representative Portal Routes (No Layout) */}
           <Route path="/portal/:username" component={({ params }) => {
             if (!params?.username) {
               return (
@@ -81,7 +83,11 @@ export default function App() {
                 </div>
               );
             }
-            return <RepresentativePortal username={params.username} />;
+            return (
+              <ErrorBoundary>
+                <RepresentativePortal username={params.username} />
+              </ErrorBoundary>
+            );
           }} />
 
           {/* Main Application Routes (With Layout) */}
@@ -123,6 +129,7 @@ export default function App() {
         </Switch>
       </Router>
       <Toaster />
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

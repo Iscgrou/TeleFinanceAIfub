@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>پورتال نماینده موبایل</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+            direction: rtl;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 100%;
+            padding: 10px;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 15px;
+            color: white;
+        }
+        
+        .store-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .welcome-text {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            padding: 10px;
+            text-align: right;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #eee;
+            font-size: 14px;
+        }
+        
+        .table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 16px;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            min-height: 100vh;
+            background: white;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .error-icon {
+            font-size: 48px;
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+        
+        .retry-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-family: inherit;
+        }
+        
+        .retry-btn:hover {
+            background: #5a67d8;
+        }
+        
+        .detail-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .detail-btn:hover {
+            background: #218838;
+        }
+        
+        @media (max-width: 480px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .table th, .table td {
+                padding: 8px 5px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="loading">
+        <div class="spinner"></div>
+        <p style="color: #666; font-size: 16px;">در حال بارگذاری پورتال...</p>
+    </div>
+
+    <script>
+        // Auto-detect username from URL
+        const urlPath = window.location.pathname;
+        const username = urlPath.includes('/portal/') ? 
+                        urlPath.split('/portal/')[1] : 
+                        'dream'; // Default for testing
+                        
+        const apiBase = window.location.origin;
+        
+        // Enhanced mobile-friendly portal loader
+        async function loadMobilePortal() {
+            const app = document.getElementById('app');
+            
+            try {
+                console.log('Loading mobile portal for:', username);
+                console.log('API Base:', apiBase);
+                
+                // Show loading state
+                showLoadingState();
+                
+                // Fetch representative data with timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const repResponse = await fetch(`${apiBase}/api/representatives/by-username/${username}`, {
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                clearTimeout(timeoutId);
+                
+                if (!repResponse.ok) {
+                    throw new Error(`Representative not found (${repResponse.status})`);
+                }
+                
+                const representative = await repResponse.json();
+                console.log('Representative loaded:', representative);
+                
+                // Fetch additional data in parallel
+                const dataPromises = [
+                    fetchSafely(`${apiBase}/api/representatives/${representative.id}/invoices`),
+                    fetchSafely(`${apiBase}/api/representatives/${representative.id}/payments`),
+                    fetchSafely(`${apiBase}/api/representatives/${representative.id}/stats`)
+                ];
+                
+                const [invoicesData, paymentsData, statsData] = await Promise.all(dataPromises);
+                
+                const invoices = invoicesData?.data || [];
+                const payments = paymentsData?.data || [];
+                const stats = statsData?.data || {};
+                
+                console.log('All data loaded successfully');
+                
+                // Render the mobile portal
+                renderMobilePortal(representative, invoices, payments, stats);
+                
+            } catch (error) {
+                console.error('Error loading mobile portal:', error);
+                showErrorState(error.message);
+            }
+        }
+        
+        async function fetchSafely(url) {
+            try {
+                const response = await fetch(url);
+                return response.ok ? await response.json() : { data: [] };
+            } catch (error) {
+                console.warn('Failed to fetch:', url, error);
+                return { data: [] };
+            }
+        }
+        
+        function showLoadingState() {
+            const app = document.getElementById('app');
+            app.className = 'loading';
+            app.innerHTML = `
+                <div class="spinner"></div>
+                <p style="color: #666; font-size: 16px;">در حال بارگذاری پورتال ${username}...</p>
+            `;
+        }
+        
+        function showErrorState(message) {
+            const app = document.getElementById('app');
+            app.className = 'container';
+            app.innerHTML = `
+                <div class="error">
+                    <div class="error-icon">❌</div>
+                    <h2 style="color: #dc3545; margin-bottom: 10px;">خطا در بارگذاری پورتال</h2>
+                    <p style="color: #666; margin-bottom: 10px;">${message}</p>
+                    <p style="color: #999; font-size: 14px; margin-bottom: 15px;">نام کاربری: ${username}</p>
+                    <p style="color: #999; font-size: 12px; margin-bottom: 15px;">آدرس: ${window.location.href}</p>
+                    <button class="retry-btn" onclick="location.reload()">تلاش مجدد</button>
+                </div>
+            `;
+        }
+        
+        function renderMobilePortal(representative, invoices, payments, stats) {
+            const app = document.getElementById('app');
+            app.className = 'container';
+            
+            const totalDebt = parseFloat(representative.totalDebt || 0);
+            const unpaidInvoices = invoices.filter(inv => inv.status !== 'paid');
+            const lastPayment = payments[0];
+            
+            app.innerHTML = `
+                <div class="header">
+                    <div class="logo">🏪</div>
+                    <div class="store-name">${representative.storeName}</div>
+                    <div class="welcome-text">خوش آمدید ${representative.storeName}</div>
+                    <div class="status-badge ${representative.isActive ? 'status-active' : 'status-pending'}">
+                        ${representative.isActive ? 'فعال' : 'غیرفعال'}
+                    </div>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value">${totalDebt.toLocaleString('fa-IR')}</div>
+                        <div class="stat-label">بدهی کل (تومان)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${unpaidInvoices.length.toLocaleString('fa-IR')}</div>
+                        <div class="stat-label">فاکتور معوق</div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">📋 فاکتورهای اخیر</div>
+                    ${renderInvoicesTable(invoices.slice(0, 5))}
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">💳 پرداخت‌های اخیر</div>
+                    ${renderPaymentsTable(payments.slice(0, 5))}
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">ℹ️ اطلاعات تماس</div>
+                    <p style="text-align: center; color: #666;">
+                        برای پشتیبانی با مدیریت تماس بگیرید
+                    </p>
+                </div>
+            `;
+        }
+        
+        function renderInvoicesTable(invoices) {
+            if (invoices.length === 0) {
+                return '<div class="empty-state">فاکتوری یافت نشد</div>';
+            }
+            
+            return `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>شماره</th>
+                            <th>تاریخ</th>
+                            <th>مبلغ</th>
+                            <th>وضعیت</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${invoices.map(invoice => `
+                            <tr>
+                                <td>${invoice.invoiceNumber || '-'}</td>
+                                <td>${new Date(invoice.issueDate).toLocaleDateString('fa-IR')}</td>
+                                <td>${parseFloat(invoice.totalAmount).toLocaleString('fa-IR')}</td>
+                                <td>
+                                    <span class="status-badge ${invoice.status === 'paid' ? 'status-active' : 'status-pending'}">
+                                        ${invoice.status === 'paid' ? 'پرداخت شده' : 'معوق'}
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        function renderPaymentsTable(payments) {
+            if (payments.length === 0) {
+                return '<div class="empty-state">پرداختی ثبت نشده است</div>';
+            }
+            
+            return `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>تاریخ</th>
+                            <th>مبلغ</th>
+                            <th>نوع</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${payments.map(payment => `
+                            <tr>
+                                <td>${new Date(payment.paymentDate).toLocaleDateString('fa-IR')}</td>
+                                <td>${parseFloat(payment.amount).toLocaleString('fa-IR')}</td>
+                                <td>${payment.paymentMethod || 'نقدی'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        // Enhanced error handling
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript Error:', e);
+            showErrorState('خطای JavaScript: ' + e.message);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Promise Rejection:', e);
+            showErrorState('خطای ناشناخته: ' + e.reason);
+        });
+        
+        // Start loading when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadMobilePortal);
+        } else {
+            loadMobilePortal();
+        }
+    </script>
+</body>
+</html>
